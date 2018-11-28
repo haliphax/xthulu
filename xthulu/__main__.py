@@ -7,10 +7,12 @@ from blessed import Terminal
 import asyncio
 import asyncssh
 import crypt
+# local
+from xthulu import load_config
 
 #:
 passwords = {'guest': ''}
-
+config = load_config()
 
 class XthuluSSHServer(asyncssh.SSHServer):
 
@@ -30,7 +32,7 @@ class XthuluSSHServer(asyncssh.SSHServer):
     def begin_auth(self, username):
         "Check for auth bypass"
 
-        return passwords.get(username) != ''
+        return username not in config['ssh']['auth']['no_password']
 
     def password_auth_supported(self):
         "Support password authentication"
@@ -59,8 +61,9 @@ def handle_client(proc):
 async def start_server():
     "throw SSH server into asyncio event loop"
 
-    await asyncssh.create_server(XthuluSSHServer, '', 8022,
-                                 server_host_keys=['ssh_host_key'],
+    await asyncssh.create_server(XthuluSSHServer, config['ssh']['host'],
+                                 int(config['ssh']['port']),
+                                 server_host_keys=config['ssh']['host_keys'],
                                  process_factory=handle_client)
 
 loop = asyncio.get_event_loop()

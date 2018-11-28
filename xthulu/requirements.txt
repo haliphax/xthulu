@@ -1,3 +1,4 @@
 asyncssh==1.15.0
 bcrypt==3.1.4
 blessed==1.15.0
+PyYAML==3.13
