@@ -7,17 +7,8 @@ from os.path import dirname, join
 from yaml import safe_load
 
 config = {}
+config_file = (environ['XTHULU_CONFIG'] if 'XTHULU_CONFIG' in environ
+               else join(dirname(__file__), '..', 'data', 'config.yml'))
 
-
-def load_config():
-    "Load configuration"
-
-    global config
-
-    config_file = (environ['XTHULU_CONFIG'] if 'XTHULU_CONFIG' in environ
-                   else join(dirname(__file__), '..', 'data', 'config.yml'))
-
-    with open(config_file) as f:
-        config = safe_load(f)
-
-load_config()
+with open(config_file) as f:
+    config = safe_load(f)
