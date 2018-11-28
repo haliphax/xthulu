@@ -8,11 +8,10 @@ import asyncio
 import asyncssh
 import crypt
 # local
-from xthulu import load_config
+from xthulu import config
 
 #:
 passwords = {'guest': ''}
-config = load_config()
 
 class XthuluSSHServer(asyncssh.SSHServer):
 
