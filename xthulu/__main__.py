@@ -1,14 +1,20 @@
 "xthulu main entry point"
 
 # stdlib
-import sys
-# 3rd party
-from blessed import Terminal
 import asyncio
-import asyncssh
+import codecs
 import crypt
+import functools
+import multiprocessing
+import sys
+from threading import Thread
+from time import sleep
+# 3rd party
+import asyncssh
+from blessed import Terminal
+from blessed.keyboard import Keystroke
 # local
-from xthulu import config
+from . import config
 
 #:
 passwords = {'guest': ''}
@@ -25,7 +31,7 @@ class XthuluSSHServer(asyncssh.SSHServer):
     def connection_lost(self, exc):
         "Connection closed"
 
-        if (exc):
+        if exc:
             print('Error: %s' % str(exc), file=sys.stderr)
 
     def begin_auth(self, username):
@@ -49,12 +55,36 @@ class XthuluSSHServer(asyncssh.SSHServer):
 def handle_client(proc):
     "Client connected"
 
-    term = Terminal(kind=proc.get_terminal_type(), stream=proc.stdout,
-                    force_styling=True)
-    proc.stdout.write(term.normal)
-    proc.stdout.write('Connected: %s\n' %
-                       term.bright_blue(proc.get_extra_info('username')))
-    proc.exit(0)
+    async def handle_inp(proc, q):
+        while True:
+            if proc.is_closing():
+                return
+
+
+            r = await proc.stdin.read(1)
+
+            if not r:
+                continue
+
+            await q.put(r)
+
+    async def handle_out(proc, q):
+        term = Terminal(kind=proc.get_terminal_type(), stream=proc.stdout,
+                        force_styling=True)
+        proc.stdout.write(term.normal)
+        proc.stdout.write('Connected: %s\n' %
+                           term.bright_blue(proc.get_extra_info('username')))
+        await q.get()
+        print('done')
+        proc.exit(0)
+
+    proc.stdin.channel.set_line_mode(False)
+    loop = asyncio.get_event_loop()
+    q = asyncio.Queue()
+    inp = loop.create_task(handle_inp(proc, q))
+    # out = loop.run_in_executor(None, functools.partial(handle_out, proc, q))
+    out = loop.create_task(handle_out(proc, q))
+    asyncio.wait((inp, out))
 
 
 async def start_server():
