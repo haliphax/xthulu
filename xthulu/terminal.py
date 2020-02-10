@@ -17,7 +17,6 @@ class AsyncTerminal(Terminal):
         resolve = functools.partial(resolve_sequence,
                                     mapper=self._keymap,
                                     codes=self._keycodes)
-
         ucs = ''
 
         while not self.keyboard.empty():
@@ -34,7 +33,7 @@ class AsyncTerminal(Terminal):
                 except TimeoutError:
                     return None
 
-        ks = resolve(text=ucs)
+            ks = resolve(text=ucs)
 
         if ks.code == self.KEY_ESCAPE:
             while ucs in self._keymap_prefixes:
