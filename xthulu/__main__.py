@@ -1,23 +1,19 @@
 "xthulu main entry point"
 
 # stdlib
-import asyncio
-import codecs
+import asyncio as aio
 import crypt
 import functools
-import multiprocessing
 import sys
-from threading import Thread
-from time import sleep
 # 3rd party
 import asyncssh
-from blessed import Terminal
-from blessed.keyboard import Keystroke
 # local
 from . import config
+from .terminal import AsyncTerminal
 
 #:
 passwords = {'guest': ''}
+
 
 class XthuluSSHServer(asyncssh.SSHServer):
 
@@ -47,7 +43,7 @@ class XthuluSSHServer(asyncssh.SSHServer):
     def validate_password(self, username, password):
         "Validate provided password"
 
-        pw = passwords.get(username, '*')
+        pw = passwords.get(username)
 
         return crypt.crypt(password, pw) == pw
 
@@ -55,47 +51,61 @@ class XthuluSSHServer(asyncssh.SSHServer):
 def handle_client(proc):
     "Client connected"
 
-    async def handle_inp(proc, q):
+    async def stdin_loop():
         while True:
             if proc.is_closing():
                 return
 
-
-            r = await proc.stdin.read(1)
-
-            if not r:
+            try:
+                await q.put(await proc.stdin.readexactly(1))
+            except aio.streams.IncompleteReadError:
                 continue
 
-            await q.put(r)
+    async def main_process():
+        echo = lambda x: proc.stdout.write(x)
+        echo(term.normal)
+        echo('Connected: %s\n' %
+             term.bright_blue(proc.get_extra_info('username')))
 
-    async def handle_out(proc, q):
-        term = Terminal(kind=proc.get_terminal_type(), stream=proc.stdout,
-                        force_styling=True)
-        proc.stdout.write(term.normal)
-        proc.stdout.write('Connected: %s\n' %
-                           term.bright_blue(proc.get_extra_info('username')))
-        await q.get()
-        print('done')
-        proc.exit(0)
+        while True:
+            if proc.is_closing():
+                return
 
+            ks = await term.inkey()
+
+            if ks.code == term.KEY_LEFT:
+                echo(term.bright_red('LEFT!\n'))
+            elif ks.code == term.KEY_RIGHT:
+                echo(term.bright_red('RIGHT!\n'))
+            elif ks.code == term.KEY_UP:
+                echo(term.bright_red('UP!\n'))
+            elif ks.code == term.KEY_DOWN:
+                echo(term.bright_red('DOWN!\n'))
+            elif ks.code == term.KEY_ESCAPE:
+                echo(term.bright_red('ESCAPE!\n'))
+                proc.exit(0)
+
+                return
+
+    q = aio.Queue()
     proc.stdin.channel.set_line_mode(False)
-    loop = asyncio.get_event_loop()
-    q = asyncio.Queue()
-    inp = loop.create_task(handle_inp(proc, q))
-    # out = loop.run_in_executor(None, functools.partial(handle_out, proc, q))
-    out = loop.create_task(handle_out(proc, q))
-    asyncio.wait((inp, out))
+    term = AsyncTerminal(kind=proc.get_terminal_type(), keyboard=q,
+                         stream=proc.stdout, force_styling=True)
+    loop = aio.get_event_loop()
+    inp = loop.create_task(stdin_loop())
+    out = loop.create_task(main_process())
+    aio.wait((inp, out,))
 
 
 async def start_server():
-    "throw SSH server into asyncio event loop"
+    "throw SSH server into aio event loop"
 
     await asyncssh.create_server(XthuluSSHServer, config['ssh']['host'],
                                  int(config['ssh']['port']),
                                  server_host_keys=config['ssh']['host_keys'],
                                  process_factory=handle_client)
 
-loop = asyncio.get_event_loop()
+loop = aio.get_event_loop()
 
 try:
     loop.run_until_complete(start_server())
