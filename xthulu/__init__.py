@@ -4,6 +4,7 @@
 import asyncio as aio
 import crypt
 import functools
+import logging
 from os import environ
 from os.path import dirname, join
 import sys
@@ -13,6 +14,12 @@ from yaml import safe_load
 # local
 from .terminal import AsyncTerminal
 
+log = logging.getLogger(__name__)
+streamHandler = logging.StreamHandler(sys.stdout)
+streamHandler.setFormatter(logging.Formatter(
+        '{asctime} {module}.{funcName}: {message}', style='{'))
+log.addHandler(streamHandler)
+log.setLevel(logging.DEBUG)
 config = {}
 config_file = (environ['XTHULU_CONFIG'] if 'XTHULU_CONFIG' in environ
                else join(dirname(__file__), '..', 'data', 'config.yml'))
@@ -30,13 +37,14 @@ class XthuluSSHServer(asyncssh.SSHServer):
     def connection_made(self, conn):
         "Connection opened"
 
-        print('Connection from %s' % conn.get_extra_info('peername')[0])
+        log.info('Connection from {}'
+                 .format(conn.get_extra_info('peername')[0]))
 
     def connection_lost(self, exc):
         "Connection closed"
 
         if exc:
-            print('Error: %s' % str(exc), file=sys.stderr)
+            log.error('Error: {}'.format(exc))
 
     def begin_auth(self, username):
         "Check for auth bypass"
@@ -70,13 +78,17 @@ def handle_client(proc):
                 continue
 
     async def main_process():
+        username = proc.get_extra_info('username')
+        peername = proc.get_extra_info('peername')[0]
         echo = lambda x: proc.stdout.write(x)
         echo(term.normal)
-        echo('Connected: %s\n' %
-             term.bright_blue(proc.get_extra_info('username')))
+        echo('Connected: {}@{}\n'
+             .format(term.bright_blue(username), term.bright_blue(peername)))
 
         while True:
             if proc.is_closing():
+                log.info('Connection lost: {}@{}'.format(username, peername))
+
                 return
 
             ks = await term.inkey()
@@ -92,8 +104,6 @@ def handle_client(proc):
             elif ks.code == term.KEY_ESCAPE:
                 echo(term.bright_red('ESCAPE!\n'))
                 proc.exit(0)
-
-                return
 
     q = aio.Queue()
     proc.stdin.channel.set_line_mode(False)
