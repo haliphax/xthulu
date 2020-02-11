@@ -57,7 +57,7 @@ class XthuluContext(object):
         raise Goto(script, *args, **kwargs)
 
     async def runscript(self, script):
-        "Run script and return result"
+        "Run script and return result; used by :meth:`goto` and :meth:`gosub`"
 
         log.info('Running {}'.format(script))
         imp = __import__('scripts', fromlist=(script.name,))
