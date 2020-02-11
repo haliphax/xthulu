@@ -1,3 +1,3 @@
-# xthulu Python 3 asyncio BBS software
+# xthulu Python 3 asyncio terminal server
 
 ...
