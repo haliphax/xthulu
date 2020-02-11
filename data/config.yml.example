@@ -1,0 +1,17 @@
+ssh:
+    host_keys:
+        - data/ssh_host_key
+    host: 0.0.0.0
+    port: 8022
+    auth:
+        no_password:
+            - guest
+        bad_usernames:
+            - admin
+            - administrator
+            - root
+            - system
+            - god
+    userland:
+        custom_syspath: /home/haliphax/dev/xthulu/userland
+        top: top
