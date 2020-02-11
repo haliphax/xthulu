@@ -32,7 +32,12 @@ class XthuluSSHServer(asyncssh.SSHServer):
     def begin_auth(self, username):
         "Check for auth bypass"
 
-        return username not in config['ssh']['auth']['no_password']
+        if ('no_password' in config['ssh']['auth'] and
+                username in config['ssh']['auth']['no_password']):
+            log.info('No password required for {}'.format(username))
+            return False
+
+        return True
 
     def password_auth_supported(self):
         "Support password authentication"
@@ -44,7 +49,12 @@ class XthuluSSHServer(asyncssh.SSHServer):
 
         pw = passwords.get(username)
 
-        return crypt.crypt(password, pw) == pw
+        if crypt.crypt(password, pw) == pw:
+            log.info('Valid credentials received for {}'.format(username))
+            return True
+
+        log.info('Invalid credentials received for {}'.format(username))
+        return False
 
 
 def handle_client(proc):
