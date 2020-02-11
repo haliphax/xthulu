@@ -15,4 +15,5 @@ ssh:
     userland:
         paths:
             - userland
-        top: top
+        top:
+            - top

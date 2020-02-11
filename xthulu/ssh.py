@@ -72,10 +72,11 @@ def handle_client(proc):
     async def main_process():
         username = xc.username
         remote_ip = xc.remote_ip
-        top_name = (config['ssh']['userland']['top']
-                    if 'top' in config['ssh']['userland'] else 'top')
-        xc.stack.append(Script(name=top_name, args=(), kwargs={}))
-        script = None
+        top_names = (config['ssh']['userland']['top']
+                     if 'top' in config['ssh']['userland'] else ('top',))
+
+        for s in top_names:
+            xc.stack.append(Script(name=s, args=(), kwargs={}))
 
         while len(xc.stack):
             try:
