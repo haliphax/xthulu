@@ -70,7 +70,7 @@ def handle_client(proc):
     async def main_process():
         top_name = (config['ssh']['userland']['top']
                     if 'top' in config['ssh']['userland'] else 'top')
-        imp = __import__('scripts', fromlist=(top_name,))
+        imp = __import__('scripts.{}'.format(top_name))
         await getattr(imp, top_name).main(xc)
 
     if 'paths' in config['ssh']['userland']:
