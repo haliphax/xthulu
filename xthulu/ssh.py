@@ -67,27 +67,6 @@ def handle_client(proc):
         while not xc.events.empty():
             raise await xc.events.get()
 
-    async def stdin_loop():
-        "Handle input"
-
-        while True:
-            if proc.stdin.at_eof():
-                proc.close()
-
-            if proc.is_closing():
-                return
-
-            try:
-                r = await aio.wait_for(proc.stdin.read(1), timeout=1)
-
-                if r is not None:
-                    await xc.keyboard.put(r)
-            except aio.futures.TimeoutError:
-                pass
-            except asyncssh.misc.TerminalSizeChanged:
-                # TODO update AsyncTerminal size
-                await xc.events.put(Event('resize', None))
-
     async def main_process():
         "Main client process"
 
@@ -102,29 +81,27 @@ def handle_client(proc):
             xc.stack.append(Script(name=s, args=(), kwargs={}))
 
         # main script engine loop
-        while len(xc.stack):
-            try:
-                script = xc.stack.pop()
-                await xc.runscript(script)
-            except Goto as goto_script:
-                xc.stack = [goto_script.value]
-            except ProcessClosingException:
-                log.info('Connection closed: {}@{}'
-                         .format(username, remote_ip))
-                xc.stack = []
+        try:
+            while len(xc.stack):
+                try:
+                    script = xc.stack.pop()
+                    await xc.runscript(script)
+                except Goto as goto_script:
+                    xc.stack = [goto_script.value]
+                except ProcessClosingException:
+                    xc.stack = []
+        finally:
+            log.info('Disconnected: {}@{}'.format(username, remote_ip))
+            proc.close()
 
-        xc.proc.close()
-
-    loop = aio.get_event_loop()
     proc.stdin.channel.set_line_mode(False)
-    xc = XthuluContext(proc=proc)
-    term = AsyncTerminal(kind=proc.get_terminal_type(), keyboard=xc.keyboard,
-                         proc=proc, stream=proc.stdout, force_styling=True,
+    term = AsyncTerminal(kind=proc.get_terminal_type(), stdin=proc.stdin,
+                         stream=proc.stdout, force_styling=True,
                          yield_func=yield_func)
-    xc.term = term
-    inp = loop.create_task(stdin_loop())
-    out = loop.create_task(main_process())
-    aio.wait((inp, out,))
+    xc = XthuluContext(proc=proc, term=term)
+    loop = aio.get_event_loop()
+    task = loop.create_task(main_process())
+    aio.wait(task)
 
 
 async def start_server():

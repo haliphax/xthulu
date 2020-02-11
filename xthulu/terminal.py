@@ -6,20 +6,21 @@ from asyncio.futures import TimeoutError
 import functools
 from time import time
 # 3rd party
+from asyncssh.misc import TerminalSizeChanged
 from blessed import Terminal
 from blessed.keyboard import resolve_sequence
 # local
-from .exceptions import ProcessClosingException
+from .exceptions import Event, ProcessClosingException
 
 # TODO tty methods (at least cbreak, height, width), get size from asyncssh
 
 
 class AsyncTerminal(Terminal):
 
-    def __init__(self, keyboard, proc, yield_func, *args, **kwargs):
-        self._kbd = keyboard
-        self._proc = proc
+    def __init__(self, stdin, yield_func, *args, **kwargs):
+        self._stdin = stdin
         self._yield = yield_func
+        self._kbdbuf = []
         super().__init__(*args, **kwargs)
 
     async def inkey(self, timeout=None, esc_delay=0.35):
@@ -29,9 +30,10 @@ class AsyncTerminal(Terminal):
         ucs = ''
 
         # get anything currently in kbd buffer
-        while not self._kbd.empty():
-            ucs += await self._kbd.get()
+        for c in self._kbdbuf:
+            ucs += c
 
+        self._kbdbuf = []
         ks = resolve(text=ucs)
 
         # either buffer was empty or we don't have enough for a keystroke;
@@ -43,22 +45,28 @@ class AsyncTerminal(Terminal):
                 # connection is dropped and events can be processed by
                 # the yield function
                 while True:
+                    if self._stdin.at_eof():
+                        raise ProcessClosingException()
+
                     try:
                         await self._yield()
-                        ucs += await wait_for(self._kbd.get(), timeout=0.1)
+                        ucs += await wait_for(self._stdin.read(1), timeout=0.1)
 
                         break
                     except TimeoutError:
-                        if self._proc.is_closing():
-                            raise ProcessClosingException()
-
+                        pass
+                    except TerminalSizeChanged:
+                        raise Event('resize', None)
                         continue
             else:
                 try:
                     await self._yield()
-                    ucs += await wait_for(self._kbd.get(), timeout=timeout)
+                    ucs += await wait_for(self._stdin.read(1), timeout=timeout)
                 except TimeoutError:
                     return None
+                except TerminalSizeChanged:
+                    raise Event('resize', None)
+                    continue
 
             ks = resolve(text=ucs)
 
@@ -66,14 +74,18 @@ class AsyncTerminal(Terminal):
             # esc was received; let's see if we're getting a key sequence
             while ucs in self._keymap_prefixes:
                 try:
-                    ucs += await wait_for(self._kbd.get(), timeout=esc_delay)
+                    ucs += await wait_for(self._stdin.read(1),
+                                          timeout=esc_delay)
                 except TimeoutError:
                     break
+                except TerminalSizeChanged:
+                    raise Event('resize', None)
+                    continue
 
             ks = resolve(text=ucs)
 
         # push any remaining input back into the kbd buffer
-        for key in ucs[len(ks):]:
-            await self._kbd.put(key)
+        for c in ucs[len(ks):]:
+            self._kbdbuf.append(c)
 
         return ks
