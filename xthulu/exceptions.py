@@ -11,7 +11,7 @@ class Goto(Exception):
         self.value = Script(name=script, args=args, kwargs=kwargs)
 
 
-class ProcessClosingException(Exception):
+class ProcessClosing(Exception):
 
     "Thrown when the SSHServerProcess is closing"
 

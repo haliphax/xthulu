@@ -11,7 +11,7 @@ from asyncssh.misc import TerminalSizeChanged
 from blessed import Terminal
 from blessed.keyboard import resolve_sequence
 # local
-from .exceptions import ProcessClosingException
+from .exceptions import ProcessClosing
 from .structs import EventData
 
 # TODO tty methods (at least cbreak, height, width), get size from asyncssh
@@ -55,7 +55,7 @@ class AsyncTerminal(Terminal):
 
                     break
                 except IncompleteReadError:
-                    raise ProcessClosingException()
+                    raise ProcessClosing()
                 except TimeoutError:
                     if timeout is not None:
                         break
@@ -71,7 +71,7 @@ class AsyncTerminal(Terminal):
                     ucs += await wait_for(stdin.readexactly(1),
                                           timeout=esc_delay)
                 except IncompleteReadError:
-                    raise ProcessClosingException()
+                    raise ProcessClosing()
                 except TimeoutError:
                     break
                 except TerminalSizeChanged:

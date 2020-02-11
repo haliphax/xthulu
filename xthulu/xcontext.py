@@ -5,7 +5,7 @@ from asyncio import Queue
 from collections import namedtuple
 # local
 from . import log as syslog
-from .exceptions import Goto, ProcessClosingException
+from .exceptions import Goto, ProcessClosing
 from .structs import EventData, Script
 
 
@@ -72,7 +72,7 @@ class XthuluContext(object):
         try:
             return await getattr(imp, script.name).main(self, *script.args,
                                                         **script.kwargs)
-        except (ProcessClosingException, Goto):
+        except (ProcessClosing, Goto):
             raise
         except Exception as exc:
             self.echo(self.term.bright_red_on_black('Exception in {}\n'

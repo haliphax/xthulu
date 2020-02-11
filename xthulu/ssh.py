@@ -8,7 +8,7 @@ import sys
 import asyncssh
 # local
 from . import config, log
-from .exceptions import Goto, ProcessClosingException
+from .exceptions import Goto, ProcessClosing
 from .structs import Script
 from .terminal import AsyncTerminal
 from .xcontext import XthuluContext
@@ -82,7 +82,7 @@ def handle_client(proc):
                     await xc.runscript(script)
                 except Goto as goto_script:
                     xc.stack = [goto_script.value]
-                except ProcessClosingException:
+                except ProcessClosing:
                     xc.stack = []
         finally:
             log.info('{}@{} disconnected'.format(username, remote_ip))
