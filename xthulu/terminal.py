@@ -15,7 +15,7 @@ from blessed.keyboard import resolve_sequence
 class AsyncTerminal(Terminal):
 
     def __init__(self, keyboard, *args, **kwargs):
-        self.keyboard = keyboard
+        self._kbd = keyboard
         super().__init__(*args, **kwargs)
 
     async def inkey(self, timeout=None, esc_delay=0.35):
@@ -25,8 +25,8 @@ class AsyncTerminal(Terminal):
         ucs = ''
 
         # get anything currently in kbd buffer
-        while not self.keyboard.empty():
-            ucs += await self.keyboard.get()
+        while not self._kbd.empty():
+            ucs += await self._kbd.get()
 
         ks = resolve(text=ucs)
 
@@ -39,13 +39,13 @@ class AsyncTerminal(Terminal):
                 # connection is dropped
                 while True:
                     try:
-                        ucs += await wait_for(self.keyboard.get(), timeout=1)
+                        ucs += await wait_for(self._kbd.get(), timeout=1)
                         break
                     except TimeoutError:
                         continue
             else:
                 try:
-                    ucs += await wait_for(self.keyboard.get(), timeout=timeout)
+                    ucs += await wait_for(self._kbd.get(), timeout=timeout)
                 except TimeoutError:
                     return None
 
@@ -55,8 +55,7 @@ class AsyncTerminal(Terminal):
             # esc was received; let's see if we're getting a key sequence
             while ucs in self._keymap_prefixes:
                 try:
-                    ucs += await wait_for(self.keyboard.get(),
-                                          timeout=esc_delay)
+                    ucs += await wait_for(self._kbd.get(), timeout=esc_delay)
                 except TimeoutError:
                     break
 
@@ -64,6 +63,6 @@ class AsyncTerminal(Terminal):
 
         # push any remaining input back into the kbd buffer
         for key in ucs[len(ks):]:
-            self.keyboard.put_nowait(key)
+            self._kbd.put_nowait(key)
 
         return ks

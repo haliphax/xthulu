@@ -60,7 +60,7 @@ def handle_client(proc):
                 r = await aio.wait_for(proc.stdin.read(1), timeout=1)
 
                 if r is not None:
-                    await q.put(r)
+                    await kbd.put(r)
             except aio.futures.TimeoutError:
                 pass
             except asyncssh.misc.TerminalSizeChanged:
@@ -77,9 +77,9 @@ def handle_client(proc):
         sys.path.insert(0, config['ssh']['userland']['custom_syspath'])
 
     loop = aio.get_event_loop()
-    q = aio.Queue()
+    kbd = aio.Queue()
     proc.stdin.channel.set_line_mode(False)
-    term = AsyncTerminal(kind=proc.get_terminal_type(), keyboard=q,
+    term = AsyncTerminal(kind=proc.get_terminal_type(), keyboard=kbd,
                          stream=proc.stdout, force_styling=True)
     xc = ProcBag(proc=proc, term=term,
                  username=proc.get_extra_info('username'),
