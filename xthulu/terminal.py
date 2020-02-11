@@ -1,3 +1,5 @@
+"Asyncio blessed.Terminal implementation"
+
 # stdlib
 from asyncio import wait_for
 from asyncio.futures import TimeoutError
@@ -6,6 +8,9 @@ from time import time
 # 3rd party
 from blessed import Terminal
 from blessed.keyboard import resolve_sequence
+
+# TODO tty methods (at least cbreak, height, width), get size from asyncssh
+
 
 class AsyncTerminal(Terminal):
 

@@ -1,4 +1,4 @@
-"xthulu python 3 asyncio BBS software"
+"xthulu module initialization"
 
 # stdlib
 import logging

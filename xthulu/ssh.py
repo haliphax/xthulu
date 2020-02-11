@@ -1,13 +1,19 @@
+"SSH server module"
+
 # stdlib
 import asyncio as aio
+from collections import namedtuple
 import crypt
 import functools
 import sys
+from threading import Thread
 # 3rd party
 import asyncssh
 # local
 from . import config, log
 from .terminal import AsyncTerminal
+
+ProcBag = namedtuple('ProcBag', ('proc', 'term', 'username', 'remote_ip',))
 
 
 class XthuluSSHServer(asyncssh.SSHServer):
@@ -55,47 +61,28 @@ def handle_client(proc):
             try:
                 await q.put(await proc.stdin.readexactly(1))
             except aio.streams.IncompleteReadError:
-                continue
+                pass
+            except asyncssh.misc.TerminalSizeChanged:
+                # TODO session event queue, update AsyncTerminal size
+                pass
 
     async def main_process():
-        username = proc.get_extra_info('username')
-        peername = proc.get_extra_info('peername')[0]
-        echo = lambda x: proc.stdout.write(x)
-        echo(term.normal)
-        echo('Connected: {}@{}\n'
-             .format(term.bright_blue(username), term.bright_blue(peername)))
-        top_name = config['ssh']['userland']['top']
+        top_name = (config['ssh']['userland']['top']
+                    if 'top' in config['ssh']['userland'] else 'top')
         imp = __import__('scripts', fromlist=(top_name,))
-        getattr(imp, top_name).main(proc)
-
-        while True:
-            if proc.is_closing():
-                log.info('Connection lost: {}@{}'.format(username, peername))
-
-                return
-
-            ks = await term.inkey()
-
-            if ks.code == term.KEY_LEFT:
-                echo(term.bright_red('LEFT!\n'))
-            elif ks.code == term.KEY_RIGHT:
-                echo(term.bright_red('RIGHT!\n'))
-            elif ks.code == term.KEY_UP:
-                echo(term.bright_red('UP!\n'))
-            elif ks.code == term.KEY_DOWN:
-                echo(term.bright_red('DOWN!\n'))
-            elif ks.code == term.KEY_ESCAPE:
-                echo(term.bright_red('ESCAPE!\n'))
-                proc.exit(0)
+        await getattr(imp, top_name).main(xc)
 
     if 'custom_syspath' in config['ssh']['userland']:
         sys.path.insert(0, config['ssh']['userland']['custom_syspath'])
 
+    loop = aio.get_event_loop()
     q = aio.Queue()
     proc.stdin.channel.set_line_mode(False)
     term = AsyncTerminal(kind=proc.get_terminal_type(), keyboard=q,
                          stream=proc.stdout, force_styling=True)
-    loop = aio.get_event_loop()
+    xc = ProcBag(proc=proc, term=term,
+                 username=proc.get_extra_info('username'),
+                 remote_ip=proc.get_extra_info('peername')[0],)
     inp = loop.create_task(stdin_loop())
     out = loop.create_task(main_process())
     aio.wait((inp, out,))

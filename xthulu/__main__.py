@@ -1,3 +1,5 @@
+"xthulu main entry point"
+
 # stdlib
 from asyncio import get_event_loop
 import sys
