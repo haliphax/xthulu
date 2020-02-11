@@ -8,7 +8,7 @@ import sys
 import asyncssh
 # local
 from . import config, log
-from .exceptions import Goto, Event, ProcessClosingException
+from .exceptions import Goto, ProcessClosingException
 from .structs import Script
 from .terminal import AsyncTerminal
 from .xcontext import XthuluContext
@@ -61,12 +61,6 @@ class XthuluSSHServer(asyncssh.SSHServer):
 def handle_client(proc):
     "Client connected"
 
-    async def yield_func():
-        "Yield function for checking events, etc."
-
-        while not xc.events.empty():
-            raise await xc.events.get()
-
     async def main_process():
         "Main client process"
 
@@ -95,10 +89,10 @@ def handle_client(proc):
             proc.close()
 
     proc.stdin.channel.set_line_mode(False)
-    term = AsyncTerminal(kind=proc.get_terminal_type(), stdin=proc.stdin,
-                         stream=proc.stdout, force_styling=True,
-                         yield_func=yield_func)
-    xc = XthuluContext(proc=proc, term=term)
+    xc = XthuluContext(proc=proc)
+    term = AsyncTerminal(kind=proc.get_terminal_type(), xc=xc,
+                         stream=proc.stdout, force_styling=True)
+    xc.term = term
     loop = aio.get_event_loop()
     task = loop.create_task(main_process())
     aio.wait(task)

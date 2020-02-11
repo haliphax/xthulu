@@ -3,6 +3,7 @@
 # stdlib
 from asyncio import wait_for
 from asyncio.futures import TimeoutError
+from asyncio.streams import IncompleteReadError
 import functools
 from time import time
 # 3rd party
@@ -10,16 +11,16 @@ from asyncssh.misc import TerminalSizeChanged
 from blessed import Terminal
 from blessed.keyboard import resolve_sequence
 # local
-from .exceptions import Event, ProcessClosingException
+from .exceptions import ProcessClosingException
+from .structs import EventData
 
 # TODO tty methods (at least cbreak, height, width), get size from asyncssh
 
 
 class AsyncTerminal(Terminal):
 
-    def __init__(self, stdin, yield_func, *args, **kwargs):
-        self._stdin = stdin
-        self._yield = yield_func
+    def __init__(self, xc, *args, **kwargs):
+        self.xc  = xc
         self._kbdbuf = []
         super().__init__(*args, **kwargs)
 
@@ -28,6 +29,7 @@ class AsyncTerminal(Terminal):
                                     mapper=self._keymap,
                                     codes=self._keycodes)
         ucs = ''
+        stdin = self.xc.proc.stdin
 
         # get anything currently in kbd buffer
         for c in self._kbdbuf:
@@ -42,30 +44,34 @@ class AsyncTerminal(Terminal):
             if timeout is None:
                 # don't actually wait indefinitely; wait in 0.1 second
                 # increments so that the coroutine can be aborted if the
-                # connection is dropped and events can be processed by
-                # the yield function
+                # connection is dropped
                 while True:
-                    if self._stdin.at_eof():
+                    if stdin.at_eof() or self.xc.prox.is_closing():
                         raise ProcessClosingException()
 
                     try:
-                        await self._yield()
-                        ucs += await wait_for(self._stdin.read(1), timeout=0.1)
+                        ucs += await wait_for(stdin.readexactly(1),
+                                              timeout=0.1)
 
                         break
+                    except IncompleteReadError:
+                        raise ProcessClosingException()
                     except TimeoutError:
                         pass
                     except TerminalSizeChanged:
-                        raise Event('resize', None)
-                        continue
+                        await self.xc.events.put(EventData('resize', None))
             else:
-                try:
-                    await self._yield()
-                    ucs += await wait_for(self._stdin.read(1), timeout=timeout)
-                except TimeoutError:
-                    return None
-                except TerminalSizeChanged:
-                    raise Event('resize', None)
+                while True:
+                    try:
+                        ucs += await wait_for(stdin.readexactly(1),
+                                              timeout=timeout)
+                        break
+                    except IncompleteReadError:
+                        raise ProcessClosingException()
+                    except TimeoutError:
+                        break
+                    except TerminalSizeChanged:
+                        await self.xc.events.put(EventData('resize', None))
 
             ks = resolve(text=ucs)
 
@@ -73,13 +79,14 @@ class AsyncTerminal(Terminal):
             # esc was received; let's see if we're getting a key sequence
             while ucs in self._keymap_prefixes:
                 try:
-                    ucs += await wait_for(self._stdin.read(1),
+                    ucs += await wait_for(stdin.readexactly(1),
                                           timeout=esc_delay)
+                except IncompleteReadError:
+                    raise ProcessClosingException()
                 except TimeoutError:
                     break
                 except TerminalSizeChanged:
-                    raise Event('resize', None)
-                    continue
+                    await self.xc.events.put(EventData('resize', None))
 
             ks = resolve(text=ucs)
 
