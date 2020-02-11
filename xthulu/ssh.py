@@ -59,8 +59,11 @@ def handle_client(proc):
                 return
 
             try:
-                await q.put(await proc.stdin.readexactly(1))
-            except aio.streams.IncompleteReadError:
+                r = await aio.wait_for(proc.stdin.read(1), timeout=1)
+
+                if r is not None:
+                    await q.put(r)
+            except aio.futures.TimeoutError:
                 pass
             except asyncssh.misc.TerminalSizeChanged:
                 # TODO session event queue, update AsyncTerminal size

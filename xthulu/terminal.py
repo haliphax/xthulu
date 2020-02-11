@@ -24,14 +24,25 @@ class AsyncTerminal(Terminal):
                                     codes=self._keycodes)
         ucs = ''
 
+        # get anything currently in kbd buffer
         while not self.keyboard.empty():
             ucs += await self.keyboard.get()
 
         ks = resolve(text=ucs)
 
+        # either buffer was empty or we don't have enough for a keystroke;
+        # wait for input from kbd
         if not ks:
             if timeout is None:
-                ucs += await self.keyboard.get()
+                # don't actually wait indefinitely; wait in 1 second
+                # increments so that the coroutine can be aborted if the
+                # connection is dropped
+                while True:
+                    try:
+                        ucs += await wait_for(self.keyboard.get(), timeout=1)
+                        break
+                    except TimeoutError:
+                        continue
             else:
                 try:
                     ucs += await wait_for(self.keyboard.get(), timeout=timeout)
@@ -41,6 +52,7 @@ class AsyncTerminal(Terminal):
             ks = resolve(text=ucs)
 
         if ks.code == self.KEY_ESCAPE:
+            # esc was received; let's see if we're getting a key sequence
             while ucs in self._keymap_prefixes:
                 try:
                     ucs += await wait_for(self.keyboard.get(),
@@ -50,6 +62,7 @@ class AsyncTerminal(Terminal):
 
             ks = resolve(text=ucs)
 
+        # push any remaining input back into the kbd buffer
         for key in ucs[len(ks):]:
             self.keyboard.put_nowait(key)
 
