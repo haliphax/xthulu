@@ -9,6 +9,7 @@ import sys
 import asyncssh
 # local
 from . import config, log
+from .exceptions import ProcessClosingException
 from .terminal import AsyncTerminal
 
 ProcBag = namedtuple('ProcBag', ('proc', 'term', 'username', 'remote_ip',))
@@ -53,6 +54,9 @@ def handle_client(proc):
 
     async def stdin_loop():
         while True:
+            if proc.stdin.at_eof():
+                proc.close()
+
             if proc.is_closing():
                 return
 
@@ -71,7 +75,14 @@ def handle_client(proc):
         top_name = (config['ssh']['userland']['top']
                     if 'top' in config['ssh']['userland'] else 'top')
         imp = __import__('scripts.{}'.format(top_name))
-        await getattr(imp, top_name).main(xc)
+
+        try:
+            await getattr(imp, top_name).main(xc)
+        except ProcessClosingException:
+            pass
+        finally:
+            log.info('Connection lost: {}@{}'
+                     .format(xc.username, xc.remote_ip))
 
     if 'paths' in config['ssh']['userland']:
         for p in config['ssh']['userland']['paths']:
@@ -81,7 +92,7 @@ def handle_client(proc):
     kbd = aio.Queue()
     proc.stdin.channel.set_line_mode(False)
     term = AsyncTerminal(kind=proc.get_terminal_type(), keyboard=kbd,
-                         stream=proc.stdout, force_styling=True)
+                         proc=proc, stream=proc.stdout, force_styling=True)
     xc = ProcBag(proc=proc, term=term,
                  username=proc.get_extra_info('username'),
                  remote_ip=proc.get_extra_info('peername')[0],)

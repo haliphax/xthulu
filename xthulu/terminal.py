@@ -8,14 +8,17 @@ from time import time
 # 3rd party
 from blessed import Terminal
 from blessed.keyboard import resolve_sequence
+# local
+from .exceptions import ProcessClosingException
 
 # TODO tty methods (at least cbreak, height, width), get size from asyncssh
 
 
 class AsyncTerminal(Terminal):
 
-    def __init__(self, keyboard, *args, **kwargs):
+    def __init__(self, keyboard, proc, *args, **kwargs):
         self._kbd = keyboard
+        self._proc = proc
         super().__init__(*args, **kwargs)
 
     async def inkey(self, timeout=None, esc_delay=0.35):
@@ -40,8 +43,12 @@ class AsyncTerminal(Terminal):
                 while True:
                     try:
                         ucs += await wait_for(self._kbd.get(), timeout=1)
+
                         break
                     except TimeoutError:
+                        if self._proc.is_closing():
+                            raise ProcessClosingException()
+
                         continue
             else:
                 try:
@@ -63,6 +70,6 @@ class AsyncTerminal(Terminal):
 
         # push any remaining input back into the kbd buffer
         for key in ucs[len(ks):]:
-            self._kbd.put_nowait(key)
+            await self._kbd.put(key)
 
         return ks

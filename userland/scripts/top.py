@@ -11,12 +11,6 @@ async def main(xc):
                  term.bright_blue(xc.remote_ip)))
 
     while True:
-        if xc.proc.is_closing():
-            log.info('Connection lost: {}@{}'
-                     .format(xc.username, xc.remote_ip))
-
-            return
-
         ks = await term.inkey()
 
         if ks.code == term.KEY_LEFT:
