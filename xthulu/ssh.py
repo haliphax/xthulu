@@ -87,7 +87,8 @@ def handle_client(proc):
         username = xc.username
         remote_ip = xc.remote_ip
         top_names = (config['ssh']['userland']['top']
-                     if 'top' in config['ssh']['userland'] else ('top',))
+                     if 'userland' in config['ssh'] and
+                     'top' in config['ssh']['userland'] else ('top',))
 
         # prep script stack with top scripts
         for s in top_names:
@@ -106,12 +107,6 @@ def handle_client(proc):
                 xc.stack = []
 
         xc.proc.close()
-
-    if 'paths' in config['ssh']['userland']:
-        # insert paths in reverse order so that first path in the config
-        # is the one searched first
-        for p in reversed(config['ssh']['userland']['paths']):
-            sys.path.insert(0, p)
 
     loop = aio.get_event_loop()
     kbd = aio.Queue()
