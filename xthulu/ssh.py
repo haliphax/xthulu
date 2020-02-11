@@ -8,9 +8,9 @@ import sys
 import asyncssh
 # local
 from . import config, log
-from .exceptions import ProcessClosingException
+from .exceptions import Goto, ProcessClosingException
 from .terminal import AsyncTerminal
-from .xcontext import XthuluContext, Script, Goto
+from .xcontext import XthuluContext, Script
 
 
 class XthuluSSHServer(asyncssh.SSHServer):
@@ -85,7 +85,8 @@ def handle_client(proc):
             except Goto as goto_script:
                 xc.stack = [goto_script.value]
             except ProcessClosingException:
-                log.info('Connection lost: {}@{}'.format(username, remote_ip))
+                log.info('Connection closed: {}@{}'
+                         .format(username, remote_ip))
                 xc.stack = []
 
         xc.proc.close()

@@ -4,17 +4,9 @@
 from collections import namedtuple
 # local
 from . import log
-from .exceptions import ProcessClosingException
+from .exceptions import Goto, ProcessClosingException
 
 Script = namedtuple('Script', ('name', 'args', 'kwargs',))
-
-
-class Goto(Exception):
-
-    "Thrown to change script without returning"
-
-    def __init__(self, script, *args, **kwargs):
-        self.value = Script(name=script, args=args, kwargs=kwargs)
 
 
 class XthuluContext(object):
