@@ -11,7 +11,7 @@ from yaml import safe_load
 log = logging.getLogger(__name__)
 streamHandler = logging.StreamHandler(sys.stdout)
 streamHandler.setFormatter(logging.Formatter(
-        '{asctime} {module}.{funcName}: {message}', style='{'))
+        '{asctime} {levelname} {module}.{funcName}: {message}', style='{'))
 log.addHandler(streamHandler)
 log.setLevel(logging.DEBUG)
 config = {}

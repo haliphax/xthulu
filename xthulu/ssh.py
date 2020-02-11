@@ -2,7 +2,6 @@
 
 # stdlib
 import asyncio as aio
-from collections import namedtuple
 import crypt
 import sys
 # 3rd party
@@ -11,8 +10,7 @@ import asyncssh
 from . import config, log
 from .exceptions import ProcessClosingException
 from .terminal import AsyncTerminal
-
-ProcBag = namedtuple('ProcBag', ('proc', 'term', 'username', 'remote_ip',))
+from .xcontext import XthuluContext, Script, Goto
 
 
 class XthuluSSHServer(asyncssh.SSHServer):
@@ -72,17 +70,24 @@ def handle_client(proc):
                 pass
 
     async def main_process():
+        username = xc.username
+        remote_ip = xc.remote_ip
         top_name = (config['ssh']['userland']['top']
                     if 'top' in config['ssh']['userland'] else 'top')
-        imp = __import__('scripts.{}'.format(top_name))
+        xc.stack.append(Script(name=top_name, args=(), kwargs={}))
+        script = None
 
-        try:
-            await getattr(imp, top_name).main(xc)
-        except ProcessClosingException:
-            pass
-        finally:
-            log.info('Connection lost: {}@{}'
-                     .format(xc.username, xc.remote_ip))
+        while len(xc.stack):
+            try:
+                script = xc.stack.pop()
+                await xc.runscript(script)
+            except Goto as goto_script:
+                xc.stack = [goto_script.value]
+            except ProcessClosingException:
+                log.info('Connection lost: {}@{}'.format(username, remote_ip))
+                xc.stack = []
+
+        xc.proc.close()
 
     if 'paths' in config['ssh']['userland']:
         for p in config['ssh']['userland']['paths']:
@@ -93,9 +98,7 @@ def handle_client(proc):
     proc.stdin.channel.set_line_mode(False)
     term = AsyncTerminal(kind=proc.get_terminal_type(), keyboard=kbd,
                          proc=proc, stream=proc.stdout, force_styling=True)
-    xc = ProcBag(proc=proc, term=term,
-                 username=proc.get_extra_info('username'),
-                 remote_ip=proc.get_extra_info('peername')[0],)
+    xc = XthuluContext(proc=proc, term=term)
     inp = loop.create_task(stdin_loop())
     out = loop.create_task(main_process())
     aio.wait((inp, out,))

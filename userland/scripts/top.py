@@ -3,24 +3,23 @@
 from xthulu import log
 
 async def main(xc):
-    echo = lambda x: xc.proc.stdout.write(x)
-    term = xc.term
-    echo(term.normal)
-    echo('Connected: {}@{}\n'
-         .format(term.bright_blue(xc.username),
-                 term.bright_blue(xc.remote_ip)))
+    xc.echo(xc.term.normal)
+    xc.echo('Connected: {}@{}\n'
+            .format(xc.term.bright_blue(xc.username),
+                    xc.term.bright_blue(xc.remote_ip)))
 
     while True:
-        ks = await term.inkey()
+        ks = await xc.term.inkey()
 
-        if ks.code == term.KEY_LEFT:
-            echo(term.bright_red('LEFT!\n'))
-        elif ks.code == term.KEY_RIGHT:
-            echo(term.bright_red('RIGHT!\n'))
-        elif ks.code == term.KEY_UP:
-            echo(term.bright_red('UP!\n'))
-        elif ks.code == term.KEY_DOWN:
-            echo(term.bright_red('DOWN!\n'))
-        elif ks.code == term.KEY_ESCAPE:
-            echo(term.bright_red('ESCAPE!\n'))
+        if ks.code == xc.term.KEY_LEFT:
+            xc.echo(xc.term.bright_red('LEFT!\n'))
+        elif ks.code == xc.term.KEY_RIGHT:
+            xc.echo(xc.term.bright_red('RIGHT!\n'))
+        elif ks.code == xc.term.KEY_UP:
+            xc.echo(xc.term.bright_red('UP!\n'))
+        elif ks.code == xc.term.KEY_DOWN:
+            xc.echo(xc.term.bright_red('DOWN!\n'))
+            await xc.gosub('down', 1, arg2='adsf')
+        elif ks.code == xc.term.KEY_ESCAPE:
+            xc.echo(xc.term.bright_red('ESCAPE!\n'))
             xc.proc.exit(0)
