@@ -4,7 +4,7 @@
 from asyncio import Queue
 from collections import namedtuple
 # local
-from . import log
+from . import log as syslog
 from .exceptions import Goto, ProcessClosingException
 from .structs import EventData, Script
 
@@ -59,10 +59,16 @@ class XthuluContext(object):
 
         raise Goto(script, *args, **kwargs)
 
+    def log(self, level, message):
+        "Log message with username@host"
+
+        func = getattr(syslog, level)
+        func('{}@{} {}'.format(self.username, self.remote_ip, message))
+
     async def runscript(self, script):
         "Run script and return result; used by :meth:`goto` and :meth:`gosub`"
 
-        log.info('Running {}'.format(script))
+        self.log('info', 'Running {}'.format(script))
         imp = __import__('scripts', fromlist=(script.name,))
 
         try:
@@ -73,4 +79,4 @@ class XthuluContext(object):
         except Exception as exc:
             self.echo(self.term.bright_red_on_black('Exception in {}\n'
                                                     .format(script.name)))
-            log.exception(exc)
+            self.log('exception', exc)

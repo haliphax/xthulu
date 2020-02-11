@@ -66,7 +66,6 @@ class AsyncTerminal(Terminal):
                     return None
                 except TerminalSizeChanged:
                     raise Event('resize', None)
-                    continue
 
             ks = resolve(text=ucs)
 

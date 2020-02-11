@@ -91,7 +91,7 @@ def handle_client(proc):
                 except ProcessClosingException:
                     xc.stack = []
         finally:
-            log.info('Disconnected: {}@{}'.format(username, remote_ip))
+            log.info('{}@{} disconnected'.format(username, remote_ip))
             proc.close()
 
     proc.stdin.channel.set_line_mode(False)
