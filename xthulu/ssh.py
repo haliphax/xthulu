@@ -61,6 +61,8 @@ def handle_client(proc):
     "Client connected"
 
     async def stdin_loop():
+        "Handle input"
+
         while True:
             if proc.stdin.at_eof():
                 proc.close()
@@ -80,14 +82,18 @@ def handle_client(proc):
                 pass
 
     async def main_process():
+        "Main client process"
+
         username = xc.username
         remote_ip = xc.remote_ip
         top_names = (config['ssh']['userland']['top']
                      if 'top' in config['ssh']['userland'] else ('top',))
 
+        # prep script stack with top scripts
         for s in top_names:
             xc.stack.append(Script(name=s, args=(), kwargs={}))
 
+        # main script engine loop
         while len(xc.stack):
             try:
                 script = xc.stack.pop()
@@ -102,7 +108,9 @@ def handle_client(proc):
         xc.proc.close()
 
     if 'paths' in config['ssh']['userland']:
-        for p in config['ssh']['userland']['paths']:
+        # insert paths in reverse order so that first path in the config
+        # is the one searched first
+        for p in reversed(config['ssh']['userland']['paths']):
             sys.path.insert(0, p)
 
     loop = aio.get_event_loop()
