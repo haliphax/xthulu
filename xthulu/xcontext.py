@@ -44,12 +44,12 @@ class XthuluContext(object):
 
         self.proc.stdout.write(text)
 
-    def gosub(self, script, *args, **kwargs):
+    async def gosub(self, script, *args, **kwargs):
         "Execute script and return result"
 
         script = Script(name=script, args=args, kwargs=kwargs)
 
-        return self.runscript(script)
+        return await self.runscript(script)
 
     def goto(self, script, *args, **kwargs):
         "Switch to script and clear stack"
