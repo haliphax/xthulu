@@ -21,8 +21,6 @@ class XthuluContext(object):
     stack = []
     #: Event queue for this session
     events = Queue()
-    #: Keyboard queue for stdin
-    keyboard = Queue()
 
     def __init__(self, proc, *args, **kwargs):
         self.proc = proc
