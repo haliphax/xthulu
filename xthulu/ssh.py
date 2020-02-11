@@ -4,9 +4,7 @@
 import asyncio as aio
 from collections import namedtuple
 import crypt
-import functools
 import sys
-from threading import Thread
 # 3rd party
 import asyncssh
 # local
