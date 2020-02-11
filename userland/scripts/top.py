@@ -10,8 +10,8 @@ async def main(xc):
         ks = None
 
         while not ks:
-            while not xc.events.empty():
-                ev = await xc.events.get()
+            while len(xc.events):
+                ev = xc.events.pop(0)
 
                 if ev.name == 'resize':
                     xc.echo(xc.term.bright_green('RESIZE!\n'))

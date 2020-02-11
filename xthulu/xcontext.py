@@ -1,7 +1,6 @@
 "xthulu context class module"
 
 # stdlib
-from asyncio import Queue
 from collections import namedtuple
 # local
 from . import log as syslog
@@ -20,7 +19,7 @@ class XthuluContext(object):
     #: Script stack
     stack = []
     #: Event queue for this session
-    events = Queue()
+    events = []
 
     def __init__(self, proc, *args, **kwargs):
         self.proc = proc

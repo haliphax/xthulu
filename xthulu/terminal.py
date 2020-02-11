@@ -60,7 +60,7 @@ class AsyncTerminal(Terminal):
                     if timeout is not None:
                         break
                 except TerminalSizeChanged:
-                    await self.xc.events.put(EventData('resize', None))
+                    self.xc.events.append(EventData('resize', None))
 
             ks = resolve(text=ucs)
 
@@ -75,11 +75,11 @@ class AsyncTerminal(Terminal):
                 except TimeoutError:
                     break
                 except TerminalSizeChanged:
-                    await self.xc.events.put(EventData('resize', None))
+                    self.xc.events.append(EventData('resize', None))
 
             ks = resolve(text=ucs)
 
-        # push any remaining input back into the kbd buffer
+        # append any remaining input back into the kbd buffer
         for c in ucs[len(ks):]:
             self._kbdbuf.append(c)
 
