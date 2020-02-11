@@ -41,37 +41,26 @@ class AsyncTerminal(Terminal):
         # either buffer was empty or we don't have enough for a keystroke;
         # wait for input from kbd
         if not ks:
-            if timeout is None:
-                # don't actually wait indefinitely; wait in 0.1 second
-                # increments so that the coroutine can be aborted if the
-                # connection is dropped
-                while True:
-                    if stdin.at_eof() or self.xc.prox.is_closing():
-                        raise ProcessClosingException()
-
-                    try:
+            while True:
+                try:
+                    # don't actually wait indefinitely; wait in 0.1 second
+                    # increments so that the coroutine can be aborted if the
+                    # connection is dropped
+                    if timeout is None:
                         ucs += await wait_for(stdin.readexactly(1),
                                               timeout=0.1)
-
-                        break
-                    except IncompleteReadError:
-                        raise ProcessClosingException()
-                    except TimeoutError:
-                        pass
-                    except TerminalSizeChanged:
-                        await self.xc.events.put(EventData('resize', None))
-            else:
-                while True:
-                    try:
+                    else:
                         ucs += await wait_for(stdin.readexactly(1),
                                               timeout=timeout)
+
+                    break
+                except IncompleteReadError:
+                    raise ProcessClosingException()
+                except TimeoutError:
+                    if timeout is not None:
                         break
-                    except IncompleteReadError:
-                        raise ProcessClosingException()
-                    except TimeoutError:
-                        break
-                    except TerminalSizeChanged:
-                        await self.xc.events.put(EventData('resize', None))
+                except TerminalSizeChanged:
+                    await self.xc.events.put(EventData('resize', None))
 
             ks = resolve(text=ucs)
 
