@@ -17,7 +17,6 @@ class Goto(Exception):
         self.value = Script(name=script, args=args, kwargs=kwargs)
 
 
-
 class XthuluContext(object):
 
     "Context object for SSH sessions"
