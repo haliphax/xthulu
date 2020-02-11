@@ -1,7 +1,5 @@
 "Userland entry point"
 
-from xthulu import log
-
 async def main(xc):
     xc.echo(xc.term.normal)
     xc.echo('Connected: {}@{}\n'
