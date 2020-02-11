@@ -1,13 +1,13 @@
 # stdlib
-import asyncio as aio
+from asyncio import get_event_loop
 import sys
 # 3rd party
 import asyncssh
 # local
 from . import log
-from . import start_server
+from .ssh import start_server
 
-loop = aio.get_event_loop()
+loop = get_event_loop()
 
 try:
     loop.run_until_complete(start_server())
