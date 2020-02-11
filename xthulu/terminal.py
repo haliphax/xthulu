@@ -16,9 +16,10 @@ from .exceptions import ProcessClosingException
 
 class AsyncTerminal(Terminal):
 
-    def __init__(self, keyboard, proc, *args, **kwargs):
+    def __init__(self, keyboard, proc, yield_func, *args, **kwargs):
         self._kbd = keyboard
         self._proc = proc
+        self._yield = yield_func
         super().__init__(*args, **kwargs)
 
     async def inkey(self, timeout=None, esc_delay=0.35):
@@ -37,12 +38,14 @@ class AsyncTerminal(Terminal):
         # wait for input from kbd
         if not ks:
             if timeout is None:
-                # don't actually wait indefinitely; wait in 1 second
+                # don't actually wait indefinitely; wait in 0.1 second
                 # increments so that the coroutine can be aborted if the
-                # connection is dropped
+                # connection is dropped and events can be processed by
+                # the yield function
                 while True:
                     try:
-                        ucs += await wait_for(self._kbd.get(), timeout=1)
+                        await self._yield()
+                        ucs += await wait_for(self._kbd.get(), timeout=0.1)
 
                         break
                     except TimeoutError:
@@ -52,6 +55,7 @@ class AsyncTerminal(Terminal):
                         continue
             else:
                 try:
+                    await self._yield()
                     ucs += await wait_for(self._kbd.get(), timeout=timeout)
                 except TimeoutError:
                     return None

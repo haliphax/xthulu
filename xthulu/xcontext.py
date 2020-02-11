@@ -1,12 +1,12 @@
 "xthulu context class module"
 
 # stdlib
+from asyncio import Queue
 from collections import namedtuple
 # local
 from . import log
 from .exceptions import Goto, ProcessClosingException
-
-Script = namedtuple('Script', ('name', 'args', 'kwargs',))
+from .structs import EventData, Script
 
 
 class XthuluContext(object):
@@ -19,10 +19,13 @@ class XthuluContext(object):
     term = None
     #: Script stack
     stack = []
+    #: Event queue for this session
+    events = Queue()
+    #: Keyboard queue for stdin
+    keyboard = Queue()
 
-    def __init__(self, proc, term, *args, **kwargs):
+    def __init__(self, proc, *args, **kwargs):
         self.proc = proc
-        self.term = term
 
         for k in kwargs.keys():
             setattr(self, k, kwargs[k])

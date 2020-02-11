@@ -8,9 +8,10 @@ import sys
 import asyncssh
 # local
 from . import config, log
-from .exceptions import Goto, ProcessClosingException
+from .exceptions import Goto, Event, ProcessClosingException
+from .structs import EventData, Script
 from .terminal import AsyncTerminal
-from .xcontext import XthuluContext, Script
+from .xcontext import XthuluContext
 
 
 class XthuluSSHServer(asyncssh.SSHServer):
@@ -60,6 +61,12 @@ class XthuluSSHServer(asyncssh.SSHServer):
 def handle_client(proc):
     "Client connected"
 
+    async def yield_func():
+        "Yield function for checking events, etc."
+
+        while not xc.events.empty():
+            raise await xc.events.get()
+
     async def stdin_loop():
         "Handle input"
 
@@ -74,12 +81,12 @@ def handle_client(proc):
                 r = await aio.wait_for(proc.stdin.read(1), timeout=1)
 
                 if r is not None:
-                    await kbd.put(r)
+                    await xc.keyboard.put(r)
             except aio.futures.TimeoutError:
                 pass
             except asyncssh.misc.TerminalSizeChanged:
-                # TODO session event queue, update AsyncTerminal size
-                pass
+                # TODO update AsyncTerminal size
+                await xc.events.put(Event('resize', None))
 
     async def main_process():
         "Main client process"
@@ -109,11 +116,12 @@ def handle_client(proc):
         xc.proc.close()
 
     loop = aio.get_event_loop()
-    kbd = aio.Queue()
     proc.stdin.channel.set_line_mode(False)
-    term = AsyncTerminal(kind=proc.get_terminal_type(), keyboard=kbd,
-                         proc=proc, stream=proc.stdout, force_styling=True)
-    xc = XthuluContext(proc=proc, term=term)
+    xc = XthuluContext(proc=proc)
+    term = AsyncTerminal(kind=proc.get_terminal_type(), keyboard=xc.keyboard,
+                         proc=proc, stream=proc.stdout, force_styling=True,
+                         yield_func=yield_func)
+    xc.term = term
     inp = loop.create_task(stdin_loop())
     out = loop.create_task(main_process())
     aio.wait((inp, out,))

@@ -1,13 +1,23 @@
 "Userland entry point"
 
+# local
+from xthulu.exceptions import Event
+
 async def main(xc):
     xc.echo(xc.term.normal)
     xc.echo('Connected: {}@{}\n'
             .format(xc.term.bright_blue(xc.username),
                     xc.term.bright_blue(xc.remote_ip)))
+    ks = None
 
     while True:
-        ks = await xc.term.inkey()
+        try:
+            ks = await xc.term.inkey()
+        except Event as event:
+            if event.value.name == 'resize':
+                xc.echo(xc.term.bright_green('RESIZE!\n'))
+
+            continue
 
         if ks.code == xc.term.KEY_LEFT:
             xc.echo(xc.term.bright_red('LEFT!\n'))
