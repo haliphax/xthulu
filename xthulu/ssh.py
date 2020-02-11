@@ -9,7 +9,7 @@ import asyncssh
 # local
 from . import config, log
 from .exceptions import Goto, Event, ProcessClosingException
-from .structs import EventData, Script
+from .structs import Script
 from .terminal import AsyncTerminal
 from .xcontext import XthuluContext
 
