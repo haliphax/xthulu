@@ -13,5 +13,6 @@ ssh:
             - system
             - god
     userland:
-        custom_syspath: /home/haliphax/dev/xthulu/userland
+        paths:
+            - userland
         top: top

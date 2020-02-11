@@ -73,8 +73,9 @@ def handle_client(proc):
         imp = __import__('scripts', fromlist=(top_name,))
         await getattr(imp, top_name).main(xc)
 
-    if 'custom_syspath' in config['ssh']['userland']:
-        sys.path.insert(0, config['ssh']['userland']['custom_syspath'])
+    if 'paths' in config['ssh']['userland']:
+        for p in config['ssh']['userland']['paths']:
+            sys.path.insert(0, p)
 
     loop = aio.get_event_loop()
     kbd = aio.Queue()
