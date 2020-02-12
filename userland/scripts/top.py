@@ -24,6 +24,7 @@ async def main(xc):
             xc.echo(xc.term.bright_red('RIGHT!\n'))
         elif ks.code == xc.term.KEY_UP:
             xc.echo(xc.term.bright_red('UP!\n'))
+            xc.echo('{}\n'.format(await xc.gosub('retval')))
         elif ks.code == xc.term.KEY_DOWN:
             xc.echo(xc.term.bright_red('DOWN!\n'))
             await xc.gosub('down', 1, arg2='adsf')
