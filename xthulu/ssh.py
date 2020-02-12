@@ -70,8 +70,10 @@ def handle_client(proc):
                      if 'userland' in config['ssh'] and
                      'top' in config['ssh']['userland'] else ('top',))
 
-        # prep script stack with top scripts
-        for s in top_names:
+        # prep script stack with top scripts;
+        # since we're treating it as a stack and not a queue, add them in
+        # reverse order so they are executed in the order they were defined
+        for s in reversed(top_names):
             xc.stack.append(Script(name=s, args=(), kwargs={}))
 
         # main script engine loop
