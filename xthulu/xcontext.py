@@ -20,6 +20,8 @@ class XthuluContext(object):
     stack = []
     #: Event queue for this session
     events = []
+    #: Encoding for connection
+    encoding = 'utf-8'
 
     def __init__(self, proc, *args, **kwargs):
         self.proc = proc
@@ -42,7 +44,7 @@ class XthuluContext(object):
     def echo(self, text):
         "Echo text to the terminal"
 
-        self.proc.stdout.write(text)
+        self.proc.stdout.write(text.encode(self.encoding))
 
     async def gosub(self, script, *args, **kwargs):
         "Execute script and return result"
@@ -73,7 +75,7 @@ class XthuluContext(object):
                                                         **script.kwargs)
         except (ProcessClosing, Goto):
             raise
-        except Exception as exc:
-            self.echo(self.term.bright_red_on_black('Exception in {}\n'
-                                                    .format(script.name)))
-            self.log('exception', exc)
+        # except Exception as exc:
+        #     self.echo(self.term.bright_red_on_black('Exception in {}\n'
+        #                                             .format(script.name)))
+        #     self.log('exception', exc)

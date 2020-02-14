@@ -4,32 +4,85 @@
 from asyncio import wait_for
 from asyncio.futures import TimeoutError
 from asyncio.streams import IncompleteReadError
+import contextlib
 import functools
 from time import time
 # 3rd party
 from asyncssh.misc import TerminalSizeChanged
-from blessed import Terminal
+from blessed import Terminal as BlessedTerminal
 from blessed.keyboard import resolve_sequence
 # local
+from . import log
 from .exceptions import ProcessClosing
 from .structs import EventData
 
-# TODO tty methods (at least cbreak, height, width), get size from asyncssh
+# TODO tty methods (at least height, width), get size from asyncssh
 
 
-class AsyncTerminal(Terminal):
+class Terminal(BlessedTerminal):
 
-    def __init__(self, xc, *args, **kwargs):
-        self.xc  = xc
-        self._kbdbuf = []
-        super().__init__(*args, **kwargs)
+    def __init__(self, kind, stream, *args, **kwargs):
+        super().__init__(kind, stream, *args, **kwargs)
+        self._keyboard_fd = 'defunc'
+
+    @contextlib.contextmanager
+    def raw(self):
+        yield
+
+    @contextlib.contextmanager
+    def cbreak(self):
+        yield
+
+    @property
+    def is_a_tty(self):
+        return True
+
+
+class TerminalProxy(object):
+
+    _kbdbuf = []
+    # Terminal attributes that do not accept paramters must be treated
+    # specially, or else they have to be called like term.normal() everywhere
+    _fixattrs = ('clear_eol', 'normal',)
+
+    def __init__(self, stdin, encoding, proxy_in, proxy_out, *args, **kwargs):
+        self.encoding = encoding
+        self._stdin = stdin
+        self._in = proxy_in
+        self._out = proxy_out
+        # pre-load a few attributes so we don't have to query them from the
+        # proxy every single time we use them (i.e., in loops)
+        self._keymap = self._keymap()
+        self._keycodes = self._keycodes()
+        self._keymap_prefixes = self._keymap_prefixes()
+
+    def __getattr__(self, attr):
+        def wrap(*args, **kwargs):
+            self._in.send((attr, args, kwargs))
+            out = self._in.recv()
+            log.debug('proxy result {}: {}'.format(attr, out))
+
+            return out
+
+        log.debug('wrapping {} for proxy'.format(attr))
+        a = None
+
+        try:
+            a = getattr(AsyncTerminal, attr)
+        except:
+            pass
+
+        if callable(a) or attr.startswith('KEY_') or attr in self._fixattrs:
+            return wrap()
+
+        return wrap
 
     async def inkey(self, timeout=None, esc_delay=0.35):
         resolve = functools.partial(resolve_sequence,
                                     mapper=self._keymap,
                                     codes=self._keycodes)
         ucs = ''
-        stdin = self.xc.proc.stdin
+        stdin = self._stdin
 
         # get anything currently in kbd buffer
         for c in self._kbdbuf:
@@ -47,11 +100,13 @@ class AsyncTerminal(Terminal):
                     # increments so that the coroutine can be aborted if the
                     # connection is dropped
                     if timeout is None:
-                        ucs += await wait_for(stdin.readexactly(1),
-                                              timeout=0.1)
+                        ucs += ((await wait_for(stdin.readexactly(1),
+                                                timeout=0.1))
+                                 .decode(self.encoding))
                     else:
-                        ucs += await wait_for(stdin.readexactly(1),
-                                              timeout=timeout)
+                        ucs += ((await wait_for(stdin.readexactly(1),
+                                                timeout=timeout))
+                                .decode(self.encoding))
 
                     break
                 except IncompleteReadError:
@@ -59,8 +114,6 @@ class AsyncTerminal(Terminal):
                 except TimeoutError:
                     if timeout is not None:
                         break
-                except TerminalSizeChanged:
-                    self.xc.events.append(EventData('resize', None))
 
             ks = resolve(text=ucs)
 
@@ -68,14 +121,13 @@ class AsyncTerminal(Terminal):
             # esc was received; let's see if we're getting a key sequence
             while ucs in self._keymap_prefixes:
                 try:
-                    ucs += await wait_for(stdin.readexactly(1),
-                                          timeout=esc_delay)
+                    ucs += ((await wait_for(stdin.readexactly(1),
+                                            timeout=esc_delay))
+                             .decode(self.encoding))
                 except IncompleteReadError:
                     raise ProcessClosing()
                 except TimeoutError:
                     break
-                except TerminalSizeChanged:
-                    self.xc.events.append(EventData('resize', None))
 
             ks = resolve(text=ucs)
 

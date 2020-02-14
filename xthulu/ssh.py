@@ -3,6 +3,7 @@
 # stdlib
 import asyncio as aio
 import crypt
+from multiprocessing import Process, Pipe
 import sys
 # 3rd party
 import asyncssh
@@ -10,7 +11,7 @@ import asyncssh
 from . import config, log
 from .exceptions import Goto, ProcessClosing
 from .structs import Script
-from .terminal import AsyncTerminal
+from .terminal import Terminal, TerminalProxy
 from .xcontext import XthuluContext
 
 
@@ -23,6 +24,7 @@ class XthuluSSHServer(asyncssh.SSHServer):
 
         log.info('Connection from {}'
                  .format(conn.get_extra_info('peername')[0]))
+        self._conn = conn
 
     def connection_lost(self, exc):
         "Connection closed"
@@ -57,6 +59,13 @@ class XthuluSSHServer(asyncssh.SSHServer):
         log.info('Invalid credentials received for {}'.format(username))
         return False
 
+    def session_requested(self):
+        "Create new channel and session"
+
+        chan = self._conn.create_server_channel(encoding='iso-8859-1')
+
+        return (chan, asyncssh.SSHSession())
+
 
 def handle_client(proc):
     "Client connected"
@@ -64,6 +73,33 @@ def handle_client(proc):
     async def main_process():
         "Main client process"
 
+        xc = XthuluContext(proc=proc)
+
+        if 'LANG' not in xc.proc.env or 'UTF-8' not in xc.proc.env['LANG']:
+            xc.encoding = 'cp437'
+
+        termtype = xc.proc.get_terminal_type()
+        proc.env['TERM'] = termtype
+
+        def terminal_loop():
+            term = Terminal(termtype, proc.stdin, proc.stdout)
+            inner_loop = aio.new_event_loop()
+
+            while True:
+                inp = proxy_out.recv()
+                log.debug('proxy received: {}'.format(inp))
+                attr = getattr(term, inp[0])
+
+                if callable(attr) or len(inp[1]) or inp[2]:
+                    log.debug('{} callable'.format(inp[0]))
+                    proxy_out.send(attr(*inp[1], **inp[2]))
+                else:
+                    log.debug('{} not callable'.format(inp[0]))
+                    proxy_out.send(attr)
+
+        pt = Process(target=terminal_loop)
+        pt.start()
+        xc.term = TerminalProxy(proc.stdin, xc.encoding, proxy_in, proxy_out)
         username = xc.username
         remote_ip = xc.remote_ip
         top_names = (config['ssh']['userland']['top']
@@ -88,16 +124,13 @@ def handle_client(proc):
                     xc.stack = []
         finally:
             log.info('{}@{} disconnected'.format(username, remote_ip))
+            pt.terminate()
             proc.close()
 
-    proc.stdin.channel.set_line_mode(False)
-    xc = XthuluContext(proc=proc)
-    term = AsyncTerminal(kind=proc.get_terminal_type(), xc=xc,
-                         stream=proc.stdout, force_styling=True)
-    xc.term = term
+    proxy_in, proxy_out = Pipe()
     loop = aio.get_event_loop()
-    task = loop.create_task(main_process())
-    aio.wait(task)
+    t_main = loop.create_task(main_process())
+    aio.wait(t_main)
 
 
 async def start_server():
@@ -106,4 +139,5 @@ async def start_server():
     await asyncssh.create_server(XthuluSSHServer, config['ssh']['host'],
                                  int(config['ssh']['port']),
                                  server_host_keys=config['ssh']['host_keys'],
-                                 process_factory=handle_client)
+                                 process_factory=handle_client,
+                                 encoding=None)
