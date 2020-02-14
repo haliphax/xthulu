@@ -4,6 +4,7 @@
 from collections import namedtuple
 # local
 from . import log as syslog
+from .events import EventQueues
 from .exceptions import Goto, ProcessClosing
 from .structs import EventData, Script
 
@@ -25,6 +26,8 @@ class XthuluContext(object):
 
     def __init__(self, proc, *args, **kwargs):
         self.proc = proc
+        self.events = EventQueues.q['{}:{}'
+                .format(*self.proc.get_extra_info('peername'))]
 
         for k in kwargs.keys():
             setattr(self, k, kwargs[k])

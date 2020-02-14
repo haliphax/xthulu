@@ -9,6 +9,7 @@ import sys
 import asyncssh
 # local
 from . import config, log
+from .events import EventQueues
 from .exceptions import Goto, ProcessClosing
 from .structs import Script
 from .terminal import Terminal, TerminalProxy
@@ -22,12 +23,14 @@ class XthuluSSHServer(asyncssh.SSHServer):
     def connection_made(self, conn):
         "Connection opened"
 
-        log.info('Connection from {}'
-                 .format(conn.get_extra_info('peername')[0]))
-        self._conn = conn
+        self._peername = conn.get_extra_info('peername')
+        EventQueues.q['{}:{}'.format(*self._peername)] = aio.Queue()
+        log.info('Connection from {}'.format(self._peername[0]))
 
     def connection_lost(self, exc):
         "Connection closed"
+
+        del EventQueues.q['{}:{}'.format(*self._peername)]
 
         if exc:
             log.error('Error: {}'.format(exc))
@@ -75,7 +78,7 @@ def handle_client(proc):
         proc.env['TERM'] = termtype
 
         def terminal_loop():
-            term = Terminal(termtype, proc.stdin, proc.stdout)
+            term = Terminal(termtype, proc.stdout)
             inner_loop = aio.new_event_loop()
 
             while True:

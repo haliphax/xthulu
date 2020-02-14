@@ -18,8 +18,8 @@ from .exceptions import ProcessClosing
 
 class Terminal(BlessedTerminal):
 
-    def __init__(self, kind, stream, *args, **kwargs):
-        super().__init__(kind, stream, *args, **kwargs)
+    def __init__(self, kind, stream):
+        super().__init__(kind, stream, force_styling=True)
         self._keyboard_fd = 'defunc'
 
     @contextlib.contextmanager
@@ -42,7 +42,7 @@ class TerminalProxy(object):
     # specially, or else they have to be called like term.normal() everywhere
     _fixattrs = ('clear_eol', 'normal',)
 
-    def __init__(self, stdin, encoding, proxy_in, proxy_out, *args, **kwargs):
+    def __init__(self, stdin, encoding, proxy_in, proxy_out):
         self.encoding = encoding
         self._stdin = stdin
         self._in = proxy_in
@@ -93,10 +93,10 @@ class TerminalProxy(object):
         if not ks:
             while True:
                 try:
-                    # don't actually wait indefinitely; wait in 0.1 second
-                    # increments so that the coroutine can be aborted if the
-                    # connection is dropped
                     if timeout is None:
+                        # don't actually wait indefinitely; wait in 0.1 second
+                        # increments so that the coroutine can be aborted if
+                        # the connection is dropped
                         ucs += ((await wait_for(stdin.readexactly(1),
                                                 timeout=0.1))
                                  .decode(self.encoding))
