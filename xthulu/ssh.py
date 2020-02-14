@@ -59,13 +59,6 @@ class XthuluSSHServer(asyncssh.SSHServer):
         log.info('Invalid credentials received for {}'.format(username))
         return False
 
-    def session_requested(self):
-        "Create new channel and session"
-
-        chan = self._conn.create_server_channel(encoding='iso-8859-1')
-
-        return (chan, asyncssh.SSHSession())
-
 
 def handle_client(proc):
     "Client connected"

@@ -6,15 +6,12 @@ from asyncio.futures import TimeoutError
 from asyncio.streams import IncompleteReadError
 import contextlib
 import functools
-from time import time
 # 3rd party
-from asyncssh.misc import TerminalSizeChanged
 from blessed import Terminal as BlessedTerminal
 from blessed.keyboard import resolve_sequence
 # local
 from . import log
 from .exceptions import ProcessClosing
-from .structs import EventData
 
 # TODO tty methods (at least height, width), get size from asyncssh
 
