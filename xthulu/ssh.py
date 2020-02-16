@@ -20,12 +20,15 @@ class XthuluSSHServer(asyncssh.SSHServer):
 
     "xthulu SSH Server"
 
+    _username = None
+
     def connection_made(self, conn):
         "Connection opened"
 
+        self._conn = conn
         self._peername = conn.get_extra_info('peername')
         EventQueues.q['{}:{}'.format(*self._peername)] = aio.Queue()
-        log.info('Connection from {}'.format(self._peername[0]))
+        log.info('{} connecting'.format(self._peername[0]))
 
     def connection_lost(self, exc):
         "Connection closed"
@@ -35,15 +38,23 @@ class XthuluSSHServer(asyncssh.SSHServer):
         if exc:
             log.error('Error: {}'.format(exc))
 
+        log.info('{}@{} disconnected'.format(self._username,
+                                             self._peername[0]))
+
     def begin_auth(self, username):
         "Check for auth bypass"
+
+        self._username = username
+        pwd_required = True
 
         if ('no_password' in config['ssh']['auth'] and
                 username in config['ssh']['auth']['no_password']):
             log.info('No password required for {}'.format(username))
-            return False
+            pwd_required = False
 
-        return True
+        log.info('{}@{} connected'.format(username, self._peername[0]))
+
+        return pwd_required
 
     def password_auth_supported(self):
         "Support password authentication"
@@ -57,9 +68,11 @@ class XthuluSSHServer(asyncssh.SSHServer):
 
         if crypt.crypt(password, pw) == pw:
             log.info('Valid credentials received for {}'.format(username))
+
             return True
 
         log.info('Invalid credentials received for {}'.format(username))
+
         return False
 
 
@@ -119,7 +132,6 @@ def handle_client(proc):
                 except ProcessClosing:
                     xc.stack = []
         finally:
-            log.info('{}@{} disconnected'.format(username, remote_ip))
             pt.terminate()
             proc.close()
 
