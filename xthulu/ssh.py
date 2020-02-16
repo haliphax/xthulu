@@ -97,7 +97,7 @@ def handle_client(proc):
         pt.start()
         xc.term = TerminalProxy(proc.stdin, xc.encoding, proxy_in, proxy_out)
         username = xc.username
-        remote_ip = xc.remote_ip
+        remote_ip = xc.ip
         top_names = (config['ssh']['userland']['top']
                      if 'userland' in config['ssh'] and
                      'top' in config['ssh']['userland'] else ('top',))

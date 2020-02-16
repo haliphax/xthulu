@@ -11,7 +11,7 @@ async def main(xc):
     xc.echo(xc.term.normal)
     xc.echo('Connected: {}@{}\r\n'
             .format(xc.term.bright_blue(xc.username),
-                    xc.term.bright_blue(xc.remote_ip)))
+                    xc.term.bright_blue(xc.ip)))
 
     if xc.encoding == 'utf-8':
         xc.echo('\x1b%G')
@@ -26,7 +26,7 @@ async def main(xc):
     # proof that the singleton queue reference works
     await (EventQueues.q['{}:{}'.format(*xc.proc.get_extra_info('peername'))]
            .put(EventData('demo', None)))
-    
+
     while True:
         ks = None
 
