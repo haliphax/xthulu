@@ -15,6 +15,9 @@ from .structs import Script
 from .terminal import Terminal, TerminalProxy
 from .xcontext import XthuluContext
 
+top_names = (config['ssh']['userland']['top']
+             if 'top' in config['ssh']['userland'] else ('top',))
+
 
 class XthuluSSHServer(asyncssh.SSHServer):
 
@@ -111,9 +114,6 @@ def handle_client(proc):
         xc.term = TerminalProxy(proc.stdin, xc.encoding, proxy_in, proxy_out)
         username = xc.username
         remote_ip = xc.ip
-        top_names = (config['ssh']['userland']['top']
-                     if 'userland' in config['ssh'] and
-                     'top' in config['ssh']['userland'] else ('top',))
 
         # prep script stack with top scripts;
         # since we're treating it as a stack and not a queue, add them in

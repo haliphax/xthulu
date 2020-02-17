@@ -2,10 +2,11 @@
 
 # stdlib
 from collections import namedtuple
+from imp import find_module, load_module
 import logging
 import sys
 # local
-from . import log as syslog
+from . import config, log as syslog
 from .events import EventQueues
 from .exceptions import Goto, ProcessClosing
 from .structs import Script
@@ -19,6 +20,8 @@ class XthuluContext(object):
     stack = []
 
     def __init__(self, proc, encoding='utf-8'):
+        _qname = '{}:{}'.format(*proc.get_extra_info('peername'))
+
         #: SSHServerProcess for session
         self.proc = proc
         #: Encoding for session
@@ -30,16 +33,14 @@ class XthuluContext(object):
         #: Logging facility
         self.log = logging.getLogger('xc')
         #: Events queue
-        self.events = EventQueues.q['{}:{}'
-                .format(*self.proc.get_extra_info('peername'))]
-
+        self.events = EventQueues.q[_qname]
         # set up logging
         self.log.addFilter(XthuluContextLogFilter(self.username, self.ip))
         streamHandler = logging.StreamHandler(sys.stdout)
         streamHandler.setFormatter(logging.Formatter(
-                '{asctime} {levelname} {module}.{funcName}: {username}@{ip} '
-                '{message}',
-                style='{'))
+            '{asctime} {levelname} {module}.{funcName}: {username}@{ip} '
+            '{message}',
+            style='{'))
         self.log.addHandler(streamHandler)
         self.log.setLevel(syslog.getEffectiveLevel())
 
@@ -64,16 +65,26 @@ class XthuluContext(object):
         "Run script and return result; used by :meth:`goto` and :meth:`gosub`"
 
         self.log.info('Running {}'.format(script))
-        imp = __import__('scripts', fromlist=(script.name,))
+
+        split = script.name.split('.')
+        found = None
+        mod = None
+
+        for seg in split:
+            if mod is not None:
+                found = find_module(seg, mod.__path__)
+            else:
+                found = find_module(seg, config['ssh']['userland']['paths'])
+
+            mod = load_module(seg, *found)
 
         try:
-            return await getattr(imp, script.name).main(self, *script.args,
-                                                        **script.kwargs)
+            return await mod.main(self, *script.args, **script.kwargs)
         except (ProcessClosing, Goto):
             raise
         except Exception as exc:
-            self.echo(self.term.bright_red_on_black('\r\nException in {}\r\n'
-                                                    .format(script.name)))
+            self.echo(self.term.bright_red_on_black(
+                '\r\nException in {}\r\n'.format(script.name)))
             self.log.exception(exc)
 
 

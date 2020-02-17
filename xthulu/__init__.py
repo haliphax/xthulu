@@ -20,9 +20,3 @@ config_file = (environ['XTHULU_CONFIG'] if 'XTHULU_CONFIG' in environ
 
 with open(config_file) as f:
     config = safe_load(f)
-
-if 'userland' in config['ssh'] and 'paths' in config['ssh']['userland']:
-    # insert paths in reverse order so that first path in the config
-    # is the one searched first
-    for p in reversed(config['ssh']['userland']['paths']):
-        sys.path.insert(0, p)
