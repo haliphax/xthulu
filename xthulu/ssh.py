@@ -1,7 +1,7 @@
 "SSH server module"
 
 # stdlib
-import asyncio as aio
+from asyncio import Queue
 import crypt
 from multiprocessing import Process, Pipe
 import sys
@@ -30,7 +30,7 @@ class XthuluSSHServer(asyncssh.SSHServer):
 
         self._conn = conn
         self._peername = conn.get_extra_info('peername')
-        EventQueues.q['{}:{}'.format(*self._peername)] = aio.Queue()
+        EventQueues.q['{}:{}'.format(*self._peername)] = Queue()
         log.info('{} connecting'.format(self._peername[0]))
 
     def connection_lost(self, exc):
@@ -79,70 +79,62 @@ class XthuluSSHServer(asyncssh.SSHServer):
         return False
 
 
-def handle_client(proc):
+async def handle_client(proc):
     "Client connected"
 
-    async def main_process():
-        "Main client process"
+    xc = XthuluContext(proc=proc)
 
-        xc = XthuluContext(proc=proc)
+    if 'LANG' not in xc.proc.env or 'UTF-8' not in xc.proc.env['LANG']:
+        xc.encoding = 'cp437'
 
-        if 'LANG' not in xc.proc.env or 'UTF-8' not in xc.proc.env['LANG']:
-            xc.encoding = 'cp437'
-
-        termtype = xc.proc.get_terminal_type()
-        proc.env['TERM'] = termtype
-
-        def terminal_loop():
-            term = Terminal(termtype, proc.stdout)
-            inner_loop = aio.new_event_loop()
-
-            while True:
-                inp = proxy_out.recv()
-                log.debug('proxy received: {}'.format(inp))
-                attr = getattr(term, inp[0])
-
-                if callable(attr) or len(inp[1]) or inp[2]:
-                    log.debug('{} callable'.format(inp[0]))
-                    proxy_out.send(attr(*inp[1], **inp[2]))
-                else:
-                    log.debug('{} not callable'.format(inp[0]))
-                    proxy_out.send(attr)
-
-        pt = Process(target=terminal_loop)
-        pt.start()
-        xc.term = TerminalProxy(proc.stdin, xc.encoding, proxy_in, proxy_out)
-        username = xc.username
-        remote_ip = xc.ip
-
-        # prep script stack with top scripts;
-        # since we're treating it as a stack and not a queue, add them in
-        # reverse order so they are executed in the order they were defined
-        for s in reversed(top_names):
-            xc.stack.append(Script(name=s, args=(), kwargs={}))
-
-        # main script engine loop
-        try:
-            while len(xc.stack):
-                try:
-                    script = xc.stack.pop()
-                    await xc.runscript(script)
-                except Goto as goto_script:
-                    xc.stack = [goto_script.value]
-                except ProcessClosing:
-                    xc.stack = []
-        finally:
-            pt.terminate()
-            proc.close()
-
+    termtype = xc.proc.get_terminal_type()
+    proc.env['TERM'] = termtype
     proxy_in, proxy_out = Pipe()
-    loop = aio.get_event_loop()
-    t_main = loop.create_task(main_process())
-    aio.wait(t_main)
+
+    def terminal_loop():
+        term = Terminal(termtype, proc.stdout)
+
+        while True:
+            inp = proxy_out.recv()
+            log.debug('proxy received: {}'.format(inp))
+            attr = getattr(term, inp[0])
+
+            if callable(attr) or len(inp[1]) or inp[2]:
+                log.debug('{} callable'.format(inp[0]))
+                proxy_out.send(attr(*inp[1], **inp[2]))
+            else:
+                log.debug('{} not callable'.format(inp[0]))
+                proxy_out.send(attr)
+
+    pt = Process(target=terminal_loop)
+    pt.start()
+    xc.term = TerminalProxy(proc.stdin, xc.encoding, proxy_in, proxy_out)
+    username = xc.username
+    remote_ip = xc.ip
+
+    # prep script stack with top scripts;
+    # since we're treating it as a stack and not a queue, add them in
+    # reverse order so they are executed in the order they were defined
+    for s in reversed(top_names):
+        xc.stack.append(Script(name=s, args=(), kwargs={}))
+
+    # main script engine loop
+    try:
+        while len(xc.stack):
+            try:
+                script = xc.stack.pop()
+                await xc.runscript(script)
+            except Goto as goto_script:
+                xc.stack = [goto_script.value]
+            except ProcessClosing:
+                xc.stack = []
+    finally:
+        pt.terminate()
+        proc.close()
 
 
 async def start_server():
-    "throw SSH server into aio event loop"
+    "throw SSH server into asyncio event loop"
 
     await asyncssh.create_server(XthuluSSHServer, config['ssh']['host'],
                                  int(config['ssh']['port']),
