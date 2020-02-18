@@ -80,7 +80,7 @@ class XthuluSSHServer(asyncssh.SSHServer):
         return False
 
 
-async def handle_client(proc):
+def handle_client(proc):
     "Client connected"
 
     xc = XthuluContext(proc=proc)
