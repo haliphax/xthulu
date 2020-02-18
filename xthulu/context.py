@@ -13,7 +13,7 @@ from .exceptions import Goto, ProcessClosing
 from .structs import Script
 
 
-class XthuluContext(object):
+class Context(object):
 
     "Context object for SSH sessions"
 
@@ -36,7 +36,7 @@ class XthuluContext(object):
         #: Events queue
         self.events = EventQueues.q[self.sid]
         # set up logging
-        self.log.addFilter(XthuluContextLogFilter(self.username, self.ip))
+        self.log.addFilter(ContextLogFilter(self.username, self.ip))
         streamHandler = logging.StreamHandler(sys.stdout)
         streamHandler.setFormatter(logging.Formatter(
             '{asctime} {levelname} {module}.{funcName}: {username}@{ip} '
@@ -108,7 +108,7 @@ class XthuluContext(object):
             self.log.exception(exc)
 
 
-class XthuluContextLogFilter(logging.Filter):
+class ContextLogFilter(logging.Filter):
 
     "Custom logging.Filter that injects username and remote IP address"
 

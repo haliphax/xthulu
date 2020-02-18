@@ -9,17 +9,17 @@ import sys
 import asyncssh
 # local
 from . import config, locks, log
+from .context import Context
 from .events import EventQueues
 from .exceptions import Goto, ProcessClosing
 from .structs import EventData, Script
 from .terminal import Terminal, TerminalProxy
-from .xcontext import XthuluContext
 
 top_names = (config['ssh']['userland']['top']
              if 'top' in config['ssh']['userland'] else ('top',))
 
 
-class XthuluSSHServer(asyncssh.SSHServer):
+class SSHServer(asyncssh.SSHServer):
 
     "xthulu SSH Server"
 
@@ -83,7 +83,7 @@ class XthuluSSHServer(asyncssh.SSHServer):
 def handle_client(proc):
     "Client connected"
 
-    xc = XthuluContext(proc=proc)
+    xc = Context(proc=proc)
 
     if 'LANG' not in xc.proc.env or 'UTF-8' not in xc.proc.env['LANG']:
         xc.encoding = 'cp437'
@@ -170,7 +170,7 @@ def handle_client(proc):
 async def start_server():
     "throw SSH server into asyncio event loop"
 
-    await asyncssh.create_server(XthuluSSHServer, config['ssh']['host'],
+    await asyncssh.create_server(SSHServer, config['ssh']['host'],
                                  int(config['ssh']['port']),
                                  server_host_keys=config['ssh']['host_keys'],
                                  process_factory=handle_client,
