@@ -10,10 +10,14 @@ import functools
 from blessed import Terminal as BlessedTerminal
 from blessed.keyboard import resolve_sequence
 # local
-from . import log
+from . import config, log
 from .exceptions import ProcessClosing
 
 # TODO tty methods (at least height, width), get size from asyncssh
+
+debug_proxy = (config['debug']['proxy'] if 'debug' in config
+               and 'proxy' in config['debug']
+               else False)
 
 
 class Terminal(BlessedTerminal):
@@ -57,11 +61,15 @@ class TerminalProxy(object):
         def wrap(*args, **kwargs):
             self._in.send((attr, args, kwargs))
             out = self._in.recv()
-            log.debug('proxy result {}: {}'.format(attr, out))
+
+            if debug_proxy:
+                log.debug('proxy result {}: {}'.format(attr, out))
 
             return out
 
-        log.debug('wrapping {} for proxy'.format(attr))
+        if debug_proxy:
+            log.debug('wrapping {} for proxy'.format(attr))
+
         a = None
 
         try:

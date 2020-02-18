@@ -2,6 +2,7 @@
 
 # stdlib
 from collections import namedtuple
+from contextlib import contextmanager
 from imp import find_module, load_module
 import logging
 import sys
@@ -9,6 +10,7 @@ import sys
 from . import config, log as syslog
 from .events import EventQueues
 from .exceptions import Goto, ProcessClosing
+from .locks import Locks
 from .structs import Script
 
 
@@ -20,10 +22,10 @@ class XthuluContext(object):
     stack = []
 
     def __init__(self, proc, encoding='utf-8'):
-        _qname = '{}:{}'.format(*proc.get_extra_info('peername'))
-
         #: SSHServerProcess for session
         self.proc = proc
+        # Session ID (IP:PORT)
+        self.sid = '{}:{}'.format(*proc.get_extra_info('peername'))
         #: Encoding for session
         self.encoding = encoding
         #: Username
@@ -33,7 +35,7 @@ class XthuluContext(object):
         #: Logging facility
         self.log = logging.getLogger('xc')
         #: Events queue
-        self.events = EventQueues.q[_qname]
+        self.events = EventQueues.q[self.sid]
         # set up logging
         self.log.addFilter(XthuluContextLogFilter(self.username, self.ip))
         streamHandler = logging.StreamHandler(sys.stdout)
@@ -60,6 +62,25 @@ class XthuluContext(object):
         "Switch to script and clear stack"
 
         raise Goto(script, *args, **kwargs)
+
+    @contextmanager
+    def lock(self, name):
+        "Session lock context manager"
+
+        try:
+            yield Locks.get(self.sid, name)
+        finally:
+            Locks.release(self.sid, name)
+
+    def get_lock(self, name):
+        "Acquire lock on behalf of session user"
+
+        return Locks.get(self.sid, name)
+
+    def release_lock(self, name):
+        "Release lock on behalf of session user"
+
+        return Locks.release(self.sid, name)
 
     async def runscript(self, script):
         "Run script and return result; used by :meth:`goto` and :meth:`gosub`"

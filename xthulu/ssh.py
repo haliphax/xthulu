@@ -11,6 +11,7 @@ import asyncssh
 from . import config, log
 from .events import EventQueues
 from .exceptions import Goto, ProcessClosing
+from .locks import Locks
 from .structs import Script
 from .terminal import Terminal, TerminalProxy
 from .xcontext import XthuluContext
@@ -28,15 +29,16 @@ class XthuluSSHServer(asyncssh.SSHServer):
     def connection_made(self, conn):
         "Connection opened"
 
-        self._conn = conn
         self._peername = conn.get_extra_info('peername')
-        EventQueues.q['{}:{}'.format(*self._peername)] = Queue()
+        self._sid = '{}:{}'.format(*self._peername)
+        EventQueues.q[self._sid] = Queue()
         log.info('{} connecting'.format(self._peername[0]))
 
     def connection_lost(self, exc):
         "Connection closed"
 
-        del EventQueues.q['{}:{}'.format(*self._peername)]
+        del EventQueues.q[self._sid]
+        Locks.expire(self._sid)
 
         if exc:
             log.error('Error: {}'.format(exc))
@@ -93,17 +95,27 @@ async def handle_client(proc):
 
     def terminal_loop():
         term = Terminal(termtype, proc.stdout)
+        debug_proxy = (config['debug']['proxy']
+                       if 'debug' in config and 'proxy' in config['debug']
+                       else False)
 
         while True:
             inp = proxy_out.recv()
-            log.debug('proxy received: {}'.format(inp))
+
+            if debug_proxy:
+                log.debug('proxy received: {}'.format(inp))
+
             attr = getattr(term, inp[0])
 
             if callable(attr) or len(inp[1]) or inp[2]:
-                log.debug('{} callable'.format(inp[0]))
+                if debug_proxy:
+                    log.debug('{} callable'.format(inp[0]))
+
                 proxy_out.send(attr(*inp[1], **inp[2]))
             else:
-                log.debug('{} not callable'.format(inp[0]))
+                if debug_proxy:
+                    log.debug('{} not callable'.format(inp[0]))
+
                 proxy_out.send(attr)
 
     pt = Process(target=terminal_loop)
