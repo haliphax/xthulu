@@ -1,10 +1,11 @@
 "xthulu context class module"
 
 # stdlib
-from collections import namedtuple
 from contextlib import contextmanager
+from functools import singledispatch
 from imp import find_module, load_module
 import logging
+import subprocess
 import sys
 # local
 from . import config, locks, log as syslog
@@ -80,6 +81,32 @@ class Context(object):
         "Release lock on behalf of session user"
 
         return locks.release(self.sid, name)
+
+    async def redirect(self, proc):
+        "Redirect context IO to other process"
+
+        @singledispatch
+        async def f(proc):
+            raise NotImplemented("proc must be Popen, tuple, list, or str")
+
+        @f.register(subprocess.Popen)
+        async def _(proc):
+            await self.proc.redirect(stdin=proc.stdin, stdout=proc.stdout,
+                                     stderr=proc.stderr, send_eof=False)
+            await self.proc.stdout.drain()
+            await self.proc.stderr.drain()
+            await self.proc.redirect(stdin=subprocess.PIPE)
+
+        @f.register(tuple)
+        @f.register(list)
+        @f.register(str)
+        async def _(proc):
+            p = subprocess.Popen(proc, stdin=subprocess.PIPE,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE, close_fds=False)
+            await self.redirect(p)
+
+        return await f(proc)
 
     async def runscript(self, script):
         "Run script and return result; used by :meth:`goto` and :meth:`gosub`"
