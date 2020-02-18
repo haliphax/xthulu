@@ -25,6 +25,9 @@ class Terminal(BlessedTerminal):
     def __init__(self, kind, stream):
         super().__init__(kind, stream, force_styling=True)
         self._keyboard_fd = 'defunc'
+        self.resolve = functools.partial(resolve_sequence,
+                                         mapper=self._keymap,
+                                         codes=self._keycodes)
 
     @contextlib.contextmanager
     def raw(self):
@@ -56,8 +59,6 @@ class TerminalProxy(object):
         self._height = height
         # pre-load a few attributes so we don't have to query them from the
         # proxy every single time we use them (i.e., in loops)
-        self._keymap = self._keymap()
-        self._keycodes = self._keycodes()
         self._keymap_prefixes = self._keymap_prefixes()
 
     def __getattr__(self, attr):
@@ -94,9 +95,6 @@ class TerminalProxy(object):
         return self._width
 
     async def inkey(self, timeout=None, esc_delay=0.35):
-        resolve = functools.partial(resolve_sequence,
-                                    mapper=self._keymap,
-                                    codes=self._keycodes)
         ucs = ''
         stdin = self._stdin
 
@@ -105,7 +103,7 @@ class TerminalProxy(object):
             ucs += c
 
         self._kbdbuf = []
-        ks = resolve(text=ucs)
+        ks = self.resolve(text=ucs)
 
         # either buffer was empty or we don't have enough for a keystroke;
         # wait for input from kbd
@@ -131,7 +129,7 @@ class TerminalProxy(object):
                     if timeout is not None:
                         break
 
-            ks = resolve(text=ucs)
+            ks = self.resolve(text=ucs)
 
         if ks.code == self.KEY_ESCAPE:
             # esc was received; let's see if we're getting a key sequence
@@ -145,7 +143,7 @@ class TerminalProxy(object):
                 except TimeoutError:
                     break
 
-            ks = resolve(text=ucs)
+            ks = self.resolve(text=ucs)
 
         # append any remaining input back into the kbd buffer
         for c in ucs[len(ks):]:
