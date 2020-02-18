@@ -164,7 +164,8 @@ def handle_client(proc):
             proc.close()
 
     loop = aio.get_event_loop()
-    aio.wait((loop.create_task(input_loop()), loop.create_task(main_process())))
+    aio.wait((loop.create_task(input_loop()),
+              loop.create_task(main_process()),))
 
 
 async def start_server():
