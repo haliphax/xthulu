@@ -23,7 +23,7 @@ class XthuluContext(object):
     def __init__(self, proc, encoding='utf-8'):
         #: SSHServerProcess for session
         self.proc = proc
-        # Session ID (IP:PORT)
+        #: Session ID (IP:PORT)
         self.sid = '{}:{}'.format(*proc.get_extra_info('peername'))
         #: Encoding for session
         self.encoding = encoding
