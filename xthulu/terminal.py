@@ -3,7 +3,7 @@
 # stdlib
 import asyncio as aio
 from contextlib import contextmanager
-import functools
+from functools import partial
 # 3rd party
 from blessed import Terminal as BlessedTerminal
 from blessed.keyboard import resolve_sequence
@@ -23,9 +23,8 @@ class Terminal(BlessedTerminal):
     def __init__(self, kind, stream):
         super().__init__(kind, stream, force_styling=True)
         self._keyboard_fd = 'defunc'
-        self.resolve = functools.partial(resolve_sequence,
-                                         mapper=self._keymap,
-                                         codes=self._keycodes)
+        self.resolve = partial(resolve_sequence, mapper=self._keymap,
+                               codes=self._keycodes)
 
     @contextmanager
     def raw(self):
