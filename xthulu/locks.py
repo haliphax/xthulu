@@ -7,77 +7,77 @@ from . import log
 
 
 class Locks(object):
-    _locks = {}
-    _owned = {}
+    locks = {}
+    owned = {}
 
-    @staticmethod
-    def get(owner, name):
-        "Acquire and hold lock on behalf of user/system"
 
-        log.debug('{} getting lock {}'.format(owner, name))
+def get(owner, name):
+    "Acquire and hold lock on behalf of user/system"
 
-        if name in Locks._locks:
-            log.debug('{} lock already exists'.format(name))
+    log.debug('{} getting lock {}'.format(owner, name))
 
-            return False
+    if name in Locks.locks:
+        log.debug('{} lock already exists'.format(name))
 
-        Locks._locks[name] = True
-        owned = set([])
+        return False
 
-        if owner in Locks._owned:
-            owned = Locks._owned[owner]
+    Locks.locks[name] = True
+    owned = set([])
 
-        owned.add(name)
-        Locks._owned[owner] = owned
+    if owner in Locks.owned:
+        owned = Locks.owned[owner]
 
-        return True
+    owned.add(name)
+    Locks.owned[owner] = owned
 
-    @staticmethod
-    def release(owner, name):
-        "Release a lock owned by user/system"
+    return True
 
-        log.debug('{} releasing lock {}'.format(owner, name))
 
-        if name not in Locks._locks:
-            log.debug('{} lock does not exist'.format(name))
+def release(owner, name):
+    "Release a lock owned by user/system"
 
-            return False
+    log.debug('{} releasing lock {}'.format(owner, name))
 
-        if owner not in Locks._owned or name not in Locks._owned[owner]:
-            log.debug('{} does not own lock {}'.format(owner, name))
+    if name not in Locks.locks:
+        log.debug('{} lock does not exist'.format(name))
 
-            return False
+        return False
 
-        del Locks._locks[name]
-        owned = Locks._owned[owner]
-        owned.remove(name)
-        Locks._owned[owner] = owned
+    if owner not in Locks.owned or name not in Locks.owned[owner]:
+        log.debug('{} does not own lock {}'.format(owner, name))
 
-        return True
+        return False
 
-    @staticmethod
-    @contextmanager
-    def hold(owner, name):
-        "Session-agnostic lock context manager"
+    del Locks.locks[name]
+    owned = Locks.owned[owner]
+    owned.remove(name)
+    Locks.owned[owner] = owned
 
-        try:
-            yield Locks.get(owner, name)
-        finally:
-            Locks.release(owner, name)
+    return True
 
-    @staticmethod
-    def expire(owner):
-        "Remove all locks owned by user"
 
-        log.debug('Releasing locks owned by {}'.format(owner))
+@contextmanager
+def hold(owner, name):
+    "Session-agnostic lock context manager"
 
-        if owner not in Locks._owned or not len(Locks._owned[owner]):
-            log.debug('No locks for {}'.format(owner))
+    try:
+        yield Locks.get(owner, name)
+    finally:
+        Locks.release(owner, name)
 
-            return
 
-        locks = [l for l in Locks._owned[owner] if l in Locks._locks]
+def expire(owner):
+    "Remove all locks owned by user"
 
-        for l in locks:
-            log.debug('Releasing lock {}'.format(l))
-            del Locks._locks[l]
+    log.debug('Releasing locks owned by {}'.format(owner))
+
+    if owner not in Locks.owned or not len(Locks.owned[owner]):
+        log.debug('No locks for {}'.format(owner))
+
+        return
+
+    locks = [l for l in Locks.owned[owner] if l in Locks.locks]
+
+    for l in locks:
+        log.debug('Releasing lock {}'.format(l))
+        del Locks.locks[l]

@@ -7,10 +7,9 @@ from imp import find_module, load_module
 import logging
 import sys
 # local
-from . import config, log as syslog
+from . import config, locks, log as syslog
 from .events import EventQueues
 from .exceptions import Goto, ProcessClosing
-from .locks import Locks
 from .structs import Script
 
 
@@ -68,19 +67,19 @@ class XthuluContext(object):
         "Session lock context manager"
 
         try:
-            yield Locks.get(self.sid, name)
+            yield locks.get(self.sid, name)
         finally:
-            Locks.release(self.sid, name)
+            locks.release(self.sid, name)
 
     def get_lock(self, name):
         "Acquire lock on behalf of session user"
 
-        return Locks.get(self.sid, name)
+        return locks.get(self.sid, name)
 
     def release_lock(self, name):
         "Release lock on behalf of session user"
 
-        return Locks.release(self.sid, name)
+        return locks.release(self.sid, name)
 
     async def runscript(self, script):
         "Run script and return result; used by :meth:`goto` and :meth:`gosub`"

@@ -8,10 +8,9 @@ import sys
 # 3rd party
 import asyncssh
 # local
-from . import config, log
+from . import config, locks, log
 from .events import EventQueues
 from .exceptions import Goto, ProcessClosing
-from .locks import Locks
 from .structs import Script
 from .terminal import Terminal, TerminalProxy
 from .xcontext import XthuluContext
@@ -38,7 +37,7 @@ class XthuluSSHServer(asyncssh.SSHServer):
         "Connection closed"
 
         del EventQueues.q[self._sid]
-        Locks.expire(self._sid)
+        locks.expire(self._sid)
 
         if exc:
             log.error('Error: {}'.format(exc))
