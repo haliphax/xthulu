@@ -17,3 +17,6 @@ ssh:
             - userland/scripts
         top:
             - top
+debug:
+    main: false
+    proxy: false

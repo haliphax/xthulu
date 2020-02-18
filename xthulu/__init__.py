@@ -11,12 +11,17 @@ from yaml import safe_load
 log = logging.getLogger(__name__)
 streamHandler = logging.StreamHandler(sys.stdout)
 streamHandler.setFormatter(logging.Formatter(
-        '{asctime} {levelname} {module}.{funcName}: {message}', style='{'))
+    '{asctime} {levelname} {module}.{funcName}: {message}', style='{'))
 log.addHandler(streamHandler)
-log.setLevel(logging.INFO)
 config = {}
 config_file = (environ['XTHULU_CONFIG'] if 'XTHULU_CONFIG' in environ
                else join(dirname(__file__), '..', 'data', 'config.yml'))
 
 with open(config_file) as f:
     config = safe_load(f)
+
+log.setLevel(logging.DEBUG
+             if 'debug' in config
+                and 'main' in config['debug']
+                and config['debug']['main']
+             else logging.INFO)
