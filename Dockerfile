@@ -9,4 +9,4 @@ RUN sh -c "\
 	apk add -U gcc libffi libffi-dev musl-dev openssl openssl-dev; \
 	pip install -e xthulu; \
 	apk del gcc libffi-dev musl-dev openssl-dev"
-CMD python3 -m xthulu
+ENTRYPOINT ["/usr/local/bin/python3", "-m", "xthulu"]

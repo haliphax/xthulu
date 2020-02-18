@@ -6,6 +6,7 @@ from os import environ
 from os.path import dirname, join
 import sys
 # 3rd party
+from gino import Gino
 from yaml import safe_load
 
 log = logging.getLogger(__name__)
@@ -25,3 +26,4 @@ log.setLevel(logging.DEBUG
                 and 'main' in config['debug']
                 and config['debug']['main']
              else logging.INFO)
+db = Gino()

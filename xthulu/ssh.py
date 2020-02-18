@@ -8,7 +8,7 @@ import sys
 # 3rd party
 import asyncssh
 # local
-from . import config, locks, log
+from . import config, db, locks, log
 from .context import Context
 from .events import EventQueues
 from .exceptions import Goto, ProcessClosing
@@ -170,6 +170,8 @@ def handle_client(proc):
 
 async def start_server():
     "throw SSH server into asyncio event loop"
+
+    await db.set_bind(config['db']['bind'])
 
     await asyncssh.create_server(SSHServer, config['ssh']['host'],
                                  int(config['ssh']['port']),
