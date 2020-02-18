@@ -2,7 +2,7 @@
 
 # stdlib
 import asyncio as aio
-import contextlib
+from contextlib import contextmanager
 import functools
 # 3rd party
 from blessed import Terminal as BlessedTerminal
@@ -27,11 +27,11 @@ class Terminal(BlessedTerminal):
                                          mapper=self._keymap,
                                          codes=self._keycodes)
 
-    @contextlib.contextmanager
+    @contextmanager
     def raw(self):
         yield
 
-    @contextlib.contextmanager
+    @contextmanager
     def cbreak(self):
         yield
 
