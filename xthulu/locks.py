@@ -7,7 +7,7 @@ from . import log
 
 
 class Locks(object):
-    locks = {}
+    locks = set([])
     owned = {}
 
 
@@ -21,7 +21,7 @@ def get(owner, name):
 
         return False
 
-    Locks.locks[name] = True
+    Locks.locks.add(name)
     owned = set([])
 
     if owner in Locks.owned:
@@ -48,7 +48,7 @@ def release(owner, name):
 
         return False
 
-    del Locks.locks[name]
+    Locks.locks.remove(name)
     owned = Locks.owned[owner]
     owned.remove(name)
     Locks.owned[owner] = owned
@@ -80,4 +80,4 @@ def expire(owner):
 
     for l in locks:
         log.debug('Releasing lock {}'.format(l))
-        del Locks.locks[l]
+        Locks.locks.remove(l)
