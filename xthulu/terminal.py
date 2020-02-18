@@ -1,9 +1,7 @@
 "Asyncio blessed.Terminal implementation"
 
 # stdlib
-from asyncio import wait_for
-from asyncio.futures import TimeoutError
-from asyncio.streams import IncompleteReadError
+import asyncio as aio
 import contextlib
 import functools
 # 3rd party
@@ -113,18 +111,18 @@ class TerminalProxy(object):
                         # don't actually wait indefinitely; wait in 0.1 second
                         # increments so that the coroutine can be aborted if
                         # the connection is dropped
-                        ucs += ((await wait_for(self._stdin.get(),
-                                                timeout=0.1))
+                        ucs += ((await aio.wait_for(self._stdin.get(),
+                                                    timeout=0.1))
                                  .decode(self.encoding))
                     else:
-                        ucs += ((await wait_for(self._stdin.get(),
-                                                timeout=timeout))
+                        ucs += ((await aio.wait_for(self._stdin.get(),
+                                                    timeout=timeout))
                                 .decode(self.encoding))
 
                     break
-                except IncompleteReadError:
+                except aio.streams.IncompleteReadError:
                     raise ProcessClosing()
-                except TimeoutError:
+                except aio.futures.TimeoutError:
                     if timeout is not None:
                         break
 
@@ -134,12 +132,12 @@ class TerminalProxy(object):
             # esc was received; let's see if we're getting a key sequence
             while ucs in self._keymap_prefixes:
                 try:
-                    ucs += ((await wait_for(self._stdin.get(),
-                                            timeout=esc_delay))
+                    ucs += ((await aio.wait_for(self._stdin.get(),
+                                                timeout=esc_delay))
                              .decode(self.encoding))
-                except IncompleteReadError:
+                except aio.streams.IncompleteReadError:
                     raise ProcessClosing()
-                except TimeoutError:
+                except aio.futures.TimeoutError:
                     break
 
             ks = self.resolve(text=ucs)
