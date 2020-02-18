@@ -105,11 +105,11 @@ class TerminalProxy(object):
                         # don't actually wait indefinitely; wait in 0.1 second
                         # increments so that the coroutine can be aborted if
                         # the connection is dropped
-                        ucs += ((await wait_for(stdin.readexactly(1),
+                        ucs += ((await wait_for(stdin.get(),
                                                 timeout=0.1))
                                  .decode(self.encoding))
                     else:
-                        ucs += ((await wait_for(stdin.readexactly(1),
+                        ucs += ((await wait_for(stdin.get(),
                                                 timeout=timeout))
                                 .decode(self.encoding))
 
@@ -126,7 +126,7 @@ class TerminalProxy(object):
             # esc was received; let's see if we're getting a key sequence
             while ucs in self._keymap_prefixes:
                 try:
-                    ucs += ((await wait_for(stdin.readexactly(1),
+                    ucs += ((await wait_for(stdin.get(),
                                             timeout=esc_delay))
                              .decode(self.encoding))
                 except IncompleteReadError:

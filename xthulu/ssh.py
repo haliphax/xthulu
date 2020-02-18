@@ -1,7 +1,7 @@
 "SSH server module"
 
 # stdlib
-from asyncio import Queue
+import asyncio as aio
 import crypt
 from multiprocessing import Process, Pipe
 import sys
@@ -11,7 +11,7 @@ import asyncssh
 from . import config, locks, log
 from .events import EventQueues
 from .exceptions import Goto, ProcessClosing
-from .structs import Script
+from .structs import EventData, Script
 from .terminal import Terminal, TerminalProxy
 from .xcontext import XthuluContext
 
@@ -30,7 +30,7 @@ class XthuluSSHServer(asyncssh.SSHServer):
 
         self._peername = conn.get_extra_info('peername')
         self._sid = '{}:{}'.format(*self._peername)
-        EventQueues.q[self._sid] = Queue()
+        EventQueues.q[self._sid] = aio.Queue()
         log.info('{} connecting'.format(self._peername[0]))
 
     def connection_lost(self, exc):
@@ -91,15 +91,30 @@ async def handle_client(proc):
     termtype = xc.proc.get_terminal_type()
     proc.env['TERM'] = termtype
     proxy_in, proxy_out = Pipe()
+    stdin = aio.Queue()
+
+    async def input_loop():
+        while True:
+            try:
+                r = await proc.stdin.readexactly(1)
+                await stdin.put(r)
+            except aio.streams.IncompleteReadError:
+                return
+            except asyncssh.misc.TerminalSizeChanged:
+                await xc.events.put(EventData('resize', None))
 
     def terminal_loop():
         term = Terminal(termtype, proc.stdout)
         debug_proxy = (config['debug']['proxy']
                        if 'debug' in config and 'proxy' in config['debug']
                        else False)
+        inp = None
 
         while True:
-            inp = proxy_out.recv()
+            try:
+                inp = proxy_out.recv()
+            except KeyboardInterrupt:
+                return
 
             if debug_proxy:
                 log.debug('proxy received: {}'.format(inp))
@@ -117,31 +132,33 @@ async def handle_client(proc):
 
                 proxy_out.send(attr)
 
-    pt = Process(target=terminal_loop)
-    pt.start()
-    xc.term = TerminalProxy(proc.stdin, xc.encoding, proxy_in, proxy_out)
-    username = xc.username
-    remote_ip = xc.ip
+    async def main_process():
+        pt = Process(target=terminal_loop)
+        pt.start()
+        xc.term = TerminalProxy(stdin, xc.encoding, proxy_in, proxy_out)
 
-    # prep script stack with top scripts;
-    # since we're treating it as a stack and not a queue, add them in
-    # reverse order so they are executed in the order they were defined
-    for s in reversed(top_names):
-        xc.stack.append(Script(name=s, args=(), kwargs={}))
+        # prep script stack with top scripts;
+        # since we're treating it as a stack and not a queue, add them in
+        # reverse order so they are executed in the order they were defined
+        for s in reversed(top_names):
+            xc.stack.append(Script(name=s, args=(), kwargs={}))
 
-    # main script engine loop
-    try:
-        while len(xc.stack):
-            try:
-                script = xc.stack.pop()
-                await xc.runscript(script)
-            except Goto as goto_script:
-                xc.stack = [goto_script.value]
-            except ProcessClosing:
-                xc.stack = []
-    finally:
-        pt.terminate()
-        proc.close()
+        # main script engine loop
+        try:
+            while len(xc.stack):
+                try:
+                    script = xc.stack.pop()
+                    await xc.runscript(script)
+                except Goto as goto_script:
+                    xc.stack = [goto_script.value]
+                except ProcessClosing:
+                    xc.stack = []
+        finally:
+            pt.terminate()
+            proc.close()
+
+    loop = aio.get_event_loop()
+    aio.wait((loop.create_task(input_loop()), loop.create_task(main_process())))
 
 
 async def start_server():
