@@ -35,10 +35,7 @@ async def main(xc):
                 ev = await xc.events.get()
                 xc.echo(repr(ev) + '\r\n')
 
-            try:
-                ks = await xc.term.inkey(0.1)
-            except TerminalSizeChanged:
-                xc.echo(xc.term.bright_green('RESIZE!\r\n'))
+            ks = await xc.term.inkey(1)
 
         if ks.code == xc.term.KEY_LEFT:
             xc.echo(xc.term.bright_red('LEFT!\r\n'))
