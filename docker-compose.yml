@@ -2,7 +2,12 @@ version: '3.5'
 services:
     ssh:
         build: .
+        depends_on:
+            - db
         image: xthulu
+        networks:
+            - internal
+            - external
         ports:
             - 8022:8022
         restart: unless-stopped
@@ -10,3 +15,15 @@ services:
             - ./data:/app/data
             - ./userland:/app/userland
             - ./xthulu:/app/xthulu
+    db:
+        environment:
+            POSTGRES_USER: xthulu
+            POSTGRES_DB: xthulu
+        image: postgres:12-alpine
+        networks:
+            - internal
+        volumes:
+            - ./db:/var/lib/postgresql/data:z
+networks:
+    external:
+    internal:
