@@ -89,7 +89,10 @@ async def handle_client(proc):
         xc.encoding = 'cp437'
 
     termtype = xc.proc.get_terminal_type()
+    w, h, _, _ = proc.get_terminal_size()
     proc.env['TERM'] = termtype
+    proc.env['COLS'] = w
+    proc.env['LINES'] = h
     proxy_in, proxy_out = Pipe()
     stdin = aio.Queue()
 
@@ -100,8 +103,11 @@ async def handle_client(proc):
                 await stdin.put(r)
             except aio.streams.IncompleteReadError:
                 return
-            except asyncssh.misc.TerminalSizeChanged:
-                await xc.events.put(EventData('resize', None))
+            except asyncssh.misc.TerminalSizeChanged as sz:
+                xc.term._width = sz.width
+                xc.term._height = sz.height
+                await xc.events.put(EventData('resize',
+                                              (sz.width, sz.height,)))
 
     def terminal_loop():
         term = Terminal(termtype, proc.stdout)
@@ -135,7 +141,7 @@ async def handle_client(proc):
     async def main_process():
         pt = Process(target=terminal_loop)
         pt.start()
-        xc.term = TerminalProxy(stdin, xc.encoding, proxy_in, proxy_out)
+        xc.term = TerminalProxy(stdin, xc.encoding, proxy_in, proxy_out, w, h)
 
         # prep script stack with top scripts;
         # since we're treating it as a stack and not a queue, add them in

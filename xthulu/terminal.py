@@ -46,11 +46,14 @@ class TerminalProxy(object):
     # specially, or else they have to be called like term.normal() everywhere
     _fixattrs = ('clear_eol', 'normal',)
 
-    def __init__(self, stdin, encoding, proxy_in, proxy_out):
+    def __init__(self, stdin, encoding, proxy_in, proxy_out, width=0,
+                 height=0):
         self.encoding = encoding
         self._stdin = stdin
         self._in = proxy_in
         self._out = proxy_out
+        self._width = width
+        self._height = height
         # pre-load a few attributes so we don't have to query them from the
         # proxy every single time we use them (i.e., in loops)
         self._keymap = self._keymap()
@@ -81,6 +84,14 @@ class TerminalProxy(object):
             return wrap()
 
         return wrap
+
+    @property
+    def height(self):
+        return self._height
+
+    @property
+    def width(self):
+        return self._width
 
     async def inkey(self, timeout=None, esc_delay=0.35):
         resolve = functools.partial(resolve_sequence,
