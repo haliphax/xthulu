@@ -1,5 +1,7 @@
 "xthulu shared locks"
 
+# stdlib
+from contextlib import contextmanager
 # local
 from . import log
 
@@ -10,7 +12,7 @@ class Locks(object):
 
     @staticmethod
     def get(owner, name):
-        "Acquire and hold lock on behalf of user"
+        "Acquire and hold lock on behalf of user/system"
 
         log.debug('{} getting lock {}'.format(owner, name))
 
@@ -32,7 +34,7 @@ class Locks(object):
 
     @staticmethod
     def release(owner, name):
-        "Release a lock owned by user"
+        "Release a lock owned by user/system"
 
         log.debug('{} releasing lock {}'.format(owner, name))
 
@@ -52,6 +54,16 @@ class Locks(object):
         Locks._owned[owner] = owned
 
         return True
+
+    @staticmethod
+    @contextmanager
+    def hold(owner, name):
+        "Session-agnostic lock context manager"
+
+        try:
+            yield Locks.get(owner, name)
+        finally:
+            Locks.release(owner, name)
 
     @staticmethod
     def expire(owner):
