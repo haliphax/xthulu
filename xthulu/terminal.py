@@ -96,7 +96,6 @@ class TerminalProxy(object):
 
     async def inkey(self, timeout=None, esc_delay=0.35):
         ucs = ''
-        stdin = self._stdin
 
         # get anything currently in kbd buffer
         for c in self._kbdbuf:
@@ -114,11 +113,11 @@ class TerminalProxy(object):
                         # don't actually wait indefinitely; wait in 0.1 second
                         # increments so that the coroutine can be aborted if
                         # the connection is dropped
-                        ucs += ((await wait_for(stdin.get(),
+                        ucs += ((await wait_for(self._stdin.get(),
                                                 timeout=0.1))
                                  .decode(self.encoding))
                     else:
-                        ucs += ((await wait_for(stdin.get(),
+                        ucs += ((await wait_for(self._stdin.get(),
                                                 timeout=timeout))
                                 .decode(self.encoding))
 
@@ -135,7 +134,7 @@ class TerminalProxy(object):
             # esc was received; let's see if we're getting a key sequence
             while ucs in self._keymap_prefixes:
                 try:
-                    ucs += ((await wait_for(stdin.get(),
+                    ucs += ((await wait_for(self._stdin.get(),
                                             timeout=esc_delay))
                              .decode(self.encoding))
                 except IncompleteReadError:
