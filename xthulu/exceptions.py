@@ -14,5 +14,3 @@ class Goto(Exception):
 class ProcessClosing(Exception):
 
     "Thrown when the SSHServerProcess is closing"
-
-    pass
