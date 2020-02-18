@@ -14,7 +14,7 @@ ssh:
             - god
     userland:
         paths:
-            - userland/scripts
+            - userland
         top:
             - top
 debug:
