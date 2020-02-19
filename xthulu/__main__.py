@@ -1,7 +1,7 @@
 "xthulu main entry point"
 
 # stdlib
-from asyncio import get_event_loop, wait
+import asyncio as aio
 import sys
 # 3rd party
 import asyncssh
@@ -10,7 +10,7 @@ import click
 from . import config, db, log
 from .ssh import start_server
 
-loop = get_event_loop()
+loop = aio.get_event_loop()
 
 
 @click.group()
@@ -40,6 +40,17 @@ def db_create():
 
         click.echo('Creating database')
         await db.gino.create_all()
+
+    loop.run_until_complete(f())
+
+
+@cli.command()
+def db_dummy():
+    async def f():
+        from .models import User
+
+        click.echo('Filling with dummy data')
+        await User.create(name='guest')
 
     loop.run_until_complete(f())
 
