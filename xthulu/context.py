@@ -34,7 +34,7 @@ class Context(object):
         #: Remote IP address
         self.ip = _peername[0]
         #: Logging facility
-        self.log = logging.getLogger('xthulu.context')
+        self.log = logging.getLogger('context')
         #: Events queue
         self.events = EventQueues.q[self.sid]
         # set up logging
