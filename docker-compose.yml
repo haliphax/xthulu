@@ -1,15 +1,12 @@
 version: '3.5'
-networks:
-    external:
-    internal:
 services:
     db:
         environment:
             POSTGRES_USER: xthulu
-            POSTGRES_DB: xthulu
+            POSTGRES_PASSWORD: xthulu
         image: postgres:12-alpine
-        networks:
-            - internal
+        ports:
+            - 5433:5432
         restart: unless-stopped
         volumes:
             - ./db:/var/lib/postgresql/data:z
@@ -19,11 +16,9 @@ services:
         depends_on:
             - db
         image: xthulu
-        networks:
-            - internal
-            - external
+        network_mode: host
         ports:
-            - 8022:8022
+            - 8022
         restart: unless-stopped
         volumes:
             - ./data:/app/data
