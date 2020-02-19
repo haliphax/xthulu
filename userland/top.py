@@ -23,10 +23,6 @@ async def main(xc):
     for k in xc.proc.env.keys():
         xc.echo('{} = {}\r\n'.format(k, xc.proc.env[k]))
 
-    # proof that the singleton queue reference works
-    await (EventQueues.q['{}:{}'.format(*xc.proc.get_extra_info('peername'))]
-           .put(EventData('demo', None)))
-
     while True:
         ks = None
 

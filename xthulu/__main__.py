@@ -20,6 +20,8 @@ def cli():
 
 @cli.command()
 def start():
+    'Start SSH server process'
+
     try:
         log.info('Starting SSH server')
         loop.run_until_complete(start_server())
@@ -35,9 +37,11 @@ def start():
 
 @cli.command()
 def db_create():
-    async def f():
-        from . import models
+    'Create database tables'
 
+    from . import models
+
+    async def f():
         click.echo('Creating database')
         await db.gino.create_all()
 
@@ -45,12 +49,16 @@ def db_create():
 
 
 @cli.command()
-def db_dummy():
-    async def f():
-        from .models import User
+def db_init():
+    'Initialize database with starter data'
 
-        click.echo('Filling with dummy data')
-        await User.create(name='guest')
+    from .models.user import User, hash_password
+
+    async def f():
+        click.echo('Creating guest user')
+        pwd, salt = hash_password('guest')
+        await User.create(name='guest', email='root@localhost.localdomain',
+                          password=pwd, salt=salt)
 
     loop.run_until_complete(f())
 

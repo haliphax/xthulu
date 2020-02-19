@@ -7,11 +7,13 @@ from multiprocessing import Process, Pipe
 import sys
 # 3rd party
 import asyncssh
+from sqlalchemy import func
 # local
 from . import config, db, locks, log
 from .context import Context
 from .events import EventQueues
 from .exceptions import Goto, ProcessClosing
+from .models.user import User, hash_password
 from .structs import EventData, Script
 from .terminal import Terminal, TerminalProxy
 
@@ -65,22 +67,31 @@ class SSHServer(asyncssh.SSHServer):
 
         return True
 
-    def validate_password(self, username, password):
+    async def validate_password(self, username, password):
         "Validate provided password"
 
-        pw = passwords.get(username)
+        u = await (User.query.where(func.lower(User.name) == username.lower())
+                   .gino.first())
 
-        if crypt.crypt(password, pw) == pw:
-            log.info('Valid credentials received for {}'.format(username))
+        if u is None:
+            log.warn('User {} does not exist'.format(username))
 
-            return True
+            return False
 
-        log.info('Invalid credentials received for {}'.format(username))
+        expected, _ = hash_password(password, u.salt)
 
-        return False
+        if expected != u.password:
+            log.warn('Invalid credentials received for {}'
+                     .format(username))
+
+            return False
+
+        log.info('Valid credentials received for {}'.format(username))
+
+        return True
 
 
-def handle_client(proc):
+async def handle_client(proc):
     "Client connected"
 
     xc = Context(proc=proc)
@@ -163,9 +174,7 @@ def handle_client(proc):
             pt.terminate()
             proc.close()
 
-    loop = aio.get_event_loop()
-    aio.wait((loop.create_task(input_loop()),
-              loop.create_task(main_process()),))
+    await aio.gather(input_loop(), main_process())
 
 
 async def start_server():
