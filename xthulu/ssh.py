@@ -108,6 +108,8 @@ async def handle_client(proc):
     stdin = aio.Queue()
 
     async def input_loop():
+        "Catch exceptions on stdin and convert to EventData"
+
         while True:
             try:
                 r = await proc.stdin.readexactly(1)
@@ -121,6 +123,11 @@ async def handle_client(proc):
                                               (sz.width, sz.height,)))
 
     def terminal_loop():
+        """
+        Avoid Python curses singleton bug by stuffing Terminal in a subprocess
+        and proxying calls/responses via Pipes
+        """
+
         term = Terminal(termtype, proc.stdout)
         debug_proxy = (config['debug']['proxy']
                        if 'debug' in config and 'proxy' in config['debug']
@@ -150,22 +157,21 @@ async def handle_client(proc):
                 proxy_out.send(attr)
 
     async def main_process():
+        "Userland script stack; main process"
+
         pt = Process(target=terminal_loop)
         pt.start()
         cx.term = TerminalProxy(stdin, cx.encoding, proxy_in, proxy_out, w, h)
-
         # prep script stack with top scripts;
-        # since we're treating it as a stack and not a queue, add them in
-        # reverse order so they are executed in the order they were defined
-        for s in reversed(top_names):
-            cx.stack.append(Script(name=s, args=(), kwargs={}))
+        # since we're treating it as a stack and not a queue, add them reversed
+        # so they are executed in the order they were defined
+        cx.stack = [Script(s, (), {}) for s in reversed(top_names)]
 
         # main script engine loop
         try:
             while len(cx.stack):
                 try:
-                    script = cx.stack.pop()
-                    await cx.runscript(script)
+                    await cx.runscript(cx.stack.pop())
                 except Goto as goto_script:
                     cx.stack = [goto_script.value]
                 except ProcessClosing:
@@ -178,10 +184,9 @@ async def handle_client(proc):
 
 
 async def start_server():
-    "throw SSH server into asyncio event loop"
+    "Run init tasks and throw SSH server into asyncio event loop"
 
     await db.set_bind(config['db']['bind'])
-
     await asyncssh.create_server(SSHServer, config['ssh']['host'],
                                  int(config['ssh']['port']),
                                  server_host_keys=config['ssh']['host_keys'],
