@@ -2,7 +2,6 @@
 
 # stdlib
 import asyncio as aio
-import crypt
 from multiprocessing import Process, Pipe
 import sys
 # 3rd party

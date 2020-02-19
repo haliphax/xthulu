@@ -2,7 +2,6 @@
 
 # stdlib
 from contextlib import contextmanager
-from functools import partial
 # local
 from . import log
 
