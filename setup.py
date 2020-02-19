@@ -1,7 +1,7 @@
 "xthulu installer"
 
 from os.path import realpath, dirname, join
-from setuptools import setup, find_packages
+from setuptools import setup
 
 if __name__ == '__main__':
     extra_packages = []
@@ -37,7 +37,7 @@ if __name__ == '__main__':
             'Topic :: Terminals :: SSH',
         ],
         keywords='terminal server asyncio bbs asyncssh ssh',
-        packages=find_packages(),
+        packages=['xthulu'],
         install_requires=_reqs,
         extras_require=_extras
     )

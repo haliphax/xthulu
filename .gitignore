@@ -1,4 +1,5 @@
 **/__pycache__/
+*.egg-info/
 bin/
 data/*.yml
 data/ssh_host_key*
