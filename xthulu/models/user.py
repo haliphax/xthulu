@@ -13,7 +13,7 @@ class User(db.Model):
 
     __tablename__ = 'user'
     id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(length=24), unique=True)
+    name = db.Column(db.String(24), unique=True)
     email = db.Column(db.String(64), unique=True)
     password = db.Column(db.LargeBinary(64))
     salt = db.Column(db.LargeBinary(32))
