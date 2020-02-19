@@ -22,16 +22,17 @@ class Context(object):
     stack = []
 
     def __init__(self, proc, encoding='utf-8'):
+        _peername = proc.get_extra_info('peername')
         #: SSHServerProcess for session
         self.proc = proc
         #: Session ID (IP:PORT)
-        self.sid = '{}:{}'.format(*proc.get_extra_info('peername'))
+        self.sid = '{}:{}'.format(*_peername)
         #: Encoding for session
         self.encoding = encoding
         #: Username
         self.username = proc.get_extra_info('username')
         #: Remote IP address
-        self.ip = proc.get_extra_info('peername')[0]
+        self.ip = _peername[0]
         #: Logging facility
         self.log = logging.getLogger('xthulu.context')
         #: Events queue
