@@ -33,7 +33,7 @@ class Context(object):
         #: Remote IP address
         self.ip = proc.get_extra_info('peername')[0]
         #: Logging facility
-        self.log = logging.getLogger('xc')
+        self.log = logging.getLogger('xthulu.context')
         #: Events queue
         self.events = EventQueues.q[self.sid]
         # set up logging
