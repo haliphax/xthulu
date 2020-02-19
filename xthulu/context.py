@@ -130,7 +130,7 @@ class Context(object):
         except (ProcessClosing, Goto):
             raise
         except Exception as exc:
-            self.echo(self.term.bright_red_on_black(
+            self.echo(self.term.bold_red_on_black(
                 '\r\nException in {}\r\n'.format(script.name)))
             self.log.exception(exc)
 
