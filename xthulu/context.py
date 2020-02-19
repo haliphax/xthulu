@@ -113,7 +113,6 @@ class Context(object):
         "Run script and return result; used by :meth:`goto` and :meth:`gosub`"
 
         self.log.info('Running {}'.format(script))
-
         split = script.name.split('.')
         found = None
         mod = None
