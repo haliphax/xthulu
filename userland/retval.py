@@ -1,4 +1,4 @@
 "xthulu userland return value test"
 
-async def main(xc):
+async def main(cx):
     return 'testing'

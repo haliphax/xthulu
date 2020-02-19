@@ -1,12 +1,12 @@
 "xthulu gosub example"
 
-async def main(xc, arg1, arg2):
-    xc.echo('gosub example {} {}\r\n'.format(arg1, arg2))
+async def main(cx, arg1, arg2):
+    cx.echo('gosub example {} {}\r\n'.format(arg1, arg2))
 
-    with xc.lock('testing') as l:
+    with cx.lock('testing') as l:
         if not l:
-            xc.echo('Unable to acquire lock\r\n')
+            cx.echo('Unable to acquire lock\r\n')
         else:
-            xc.echo('Got lock\r\n')
-            await xc.term.inkey()
-            xc.echo('Released\r\n')
+            cx.echo('Got lock\r\n')
+            await cx.term.inkey()
+            cx.echo('Released\r\n')

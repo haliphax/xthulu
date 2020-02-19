@@ -94,12 +94,12 @@ class SSHServer(asyncssh.SSHServer):
 async def handle_client(proc):
     "Client connected"
 
-    xc = Context(proc=proc)
+    cx = Context(proc=proc)
 
-    if 'LANG' not in xc.proc.env or 'UTF-8' not in xc.proc.env['LANG']:
-        xc.encoding = 'cp437'
+    if 'LANG' not in cx.proc.env or 'UTF-8' not in cx.proc.env['LANG']:
+        cx.encoding = 'cp437'
 
-    termtype = xc.proc.get_terminal_type()
+    termtype = cx.proc.get_terminal_type()
     w, h, _, _ = proc.get_terminal_size()
     proc.env['TERM'] = termtype
     proc.env['COLS'] = w
@@ -115,9 +115,9 @@ async def handle_client(proc):
             except aio.streams.IncompleteReadError:
                 return
             except asyncssh.misc.TerminalSizeChanged as sz:
-                xc.term._width = sz.width
-                xc.term._height = sz.height
-                await xc.events.put(EventData('resize',
+                cx.term._width = sz.width
+                cx.term._height = sz.height
+                await cx.events.put(EventData('resize',
                                               (sz.width, sz.height,)))
 
     def terminal_loop():
@@ -152,24 +152,24 @@ async def handle_client(proc):
     async def main_process():
         pt = Process(target=terminal_loop)
         pt.start()
-        xc.term = TerminalProxy(stdin, xc.encoding, proxy_in, proxy_out, w, h)
+        cx.term = TerminalProxy(stdin, cx.encoding, proxy_in, proxy_out, w, h)
 
         # prep script stack with top scripts;
         # since we're treating it as a stack and not a queue, add them in
         # reverse order so they are executed in the order they were defined
         for s in reversed(top_names):
-            xc.stack.append(Script(name=s, args=(), kwargs={}))
+            cx.stack.append(Script(name=s, args=(), kwargs={}))
 
         # main script engine loop
         try:
-            while len(xc.stack):
+            while len(cx.stack):
                 try:
-                    script = xc.stack.pop()
-                    await xc.runscript(script)
+                    script = cx.stack.pop()
+                    await cx.runscript(script)
                 except Goto as goto_script:
-                    xc.stack = [goto_script.value]
+                    cx.stack = [goto_script.value]
                 except ProcessClosing:
-                    xc.stack = []
+                    cx.stack = []
         finally:
             pt.terminate()
             proc.close()
