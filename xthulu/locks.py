@@ -2,6 +2,7 @@
 
 # stdlib
 from contextlib import contextmanager
+from functools import partial
 # local
 from . import log
 
@@ -61,23 +62,27 @@ def hold(owner, name):
     "Session-agnostic lock context manager"
 
     try:
-        yield Locks.get(owner, name)
+        yield get(owner, name)
     finally:
-        Locks.release(owner, name)
+        release(owner, name)
 
 
 def expire(owner):
     "Remove all locks owned by user"
 
     log.debug('Releasing locks owned by {}'.format(owner))
+    locks = 0
+    owned = None
 
-    if owner not in Locks.owned or not len(Locks.owned[owner]):
+    if owner in Locks.owned:
+        owned = Locks.owned[owner].copy()
+        locks = len(owned)
+
+    if locks == 0:
         log.debug('No locks for {}'.format(owner))
+    else:
+        for l in owned:
+            release(owner, l)
 
-        return
-
-    locks = [l for l in Locks.owned[owner] if l in Locks.locks]
-
-    for l in locks:
-        log.debug('Releasing lock {}'.format(l))
-        Locks.locks.remove(l)
+    if owned is not None:
+        del Locks.owned[owner]
