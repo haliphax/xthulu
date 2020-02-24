@@ -1,12 +1,5 @@
 "Userland entry point"
 
-# 3rd party
-from asyncssh import TerminalSizeChanged
-# local
-from xthulu import log
-from xthulu.events import EventQueues
-from xthulu.structs import EventData
-
 async def main(cx):
     cx.echo(cx.term.normal)
     cx.echo('Connected: {}@{}\r\n'
