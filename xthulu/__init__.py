@@ -7,7 +7,7 @@ from os.path import dirname, join
 import sys
 # 3rd party
 from gino import Gino
-from yaml import safe_load
+import toml
 
 log = logging.getLogger(__name__)
 streamHandler = logging.StreamHandler(sys.stdout)
@@ -16,14 +16,11 @@ streamHandler.setFormatter(logging.Formatter(
 log.addHandler(streamHandler)
 config = {}
 config_file = (environ['XTHULU_CONFIG'] if 'XTHULU_CONFIG' in environ
-               else join(dirname(__file__), '..', 'data', 'config.yml'))
-
-with open(config_file) as f:
-    config = safe_load(f)
-
+               else join(dirname(__file__), '..', 'data', 'config.toml'))
+config = toml.load(config_file)
 log.setLevel(logging.DEBUG
-             if 'debug' in config
-                and 'main' in config['debug']
-                and config['debug']['main']
+             if ('debug' in config
+                 and 'main' in config['debug']
+                 and config['debug']['main'])
              else logging.INFO)
 db = Gino()

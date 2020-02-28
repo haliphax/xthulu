@@ -1,0 +1,33 @@
+[db]
+bind = "postgres://xthulu:xthulu@localhost:5433/xthulu"
+
+[debug]
+main = false
+proxy = false
+
+[ssh]
+host_keys = [
+	"data/ssh_host_key",
+]
+host = "0.0.0.0"
+port = 8022
+
+	[ssh.auth]
+	no_password = [
+		"guest",
+	]
+	bad_usernames = [
+		"admin",
+		"administrator",
+		"root",
+		"system",
+		"god",
+	]
+
+	[ssh.userland]
+	paths = [
+		"userland",
+	]
+	top = [
+		"top",
+	]
