@@ -34,18 +34,20 @@ class Context(object):
         #: Remote IP address
         self.ip = _peername[0]
         #: Logging facility
-        self.log = logging.getLogger('context')
+        self.log = logging.getLogger(self.sid)
         #: Events queue
         self.events = EventQueues.q[self.sid]
+
         # set up logging
-        self.log.addFilter(ContextLogFilter(self.username, self.ip))
-        streamHandler = logging.StreamHandler(sys.stdout)
-        streamHandler.setFormatter(logging.Formatter(
-            '{asctime} {levelname} {module}.{funcName}: {username}@{ip} '
-            '{message}',
-            style='{'))
-        self.log.addHandler(streamHandler)
-        self.log.setLevel(syslog.getEffectiveLevel())
+        if not self.log.filters:
+            self.log.addFilter(ContextLogFilter(self.username, self.ip))
+            streamHandler = logging.StreamHandler(sys.stdout)
+            streamHandler.setFormatter(logging.Formatter(
+                '{asctime} {levelname} {module}.{funcName}: {username}@{ip} '
+                '{message}',
+                style='{'))
+            self.log.addHandler(streamHandler)
+            self.log.setLevel(syslog.getEffectiveLevel())
 
     def echo(self, text):
         "Echo text to the terminal"
