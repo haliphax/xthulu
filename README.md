@@ -4,14 +4,18 @@
 - [ ] SFTP server
 - [ ] HTTP server
 - [x] Userland script stack with goto, gosub, exception handling
-- [x] Session events queue
-  - [ ] Methods for manipulating queue (querying specific events, etc.)
+- [ ] IPC
+  - [x] Session events queue
+  - [x] Methods for manipulating queue (querying specific events, etc.)
   - [ ] Can target other sessions and send them events (gosub/goto, chat requests, IM, etc.)
-- [ ] Server events queue (locks, IPC coordination, etc.)
-- [ ] External-to-session IPC (CLI, web, etc.) via Redis PubSub
-- [x] PostgreSQL for data
+  - [ ] Server events queue (IPC coordination, etc.)
+  - [x] Locks (IPC semaphore)
+  - [ ] External-to-session IPC (CLI, web, etc.) via Redis PubSub
+- [ ] Data layer
+  - [x] PostgreSQL for data
   - [x] Asynchronous ORM ([GINO])
   - [x] User model
+  - [ ] Message bases
   - [ ] Simple pickle table for things like oneliners, automsg, etc.
 - [ ] Terminal UI package
   - [x] Isolated `blessed.Terminal` process and proxy
