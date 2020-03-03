@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from functools import partial
 # 3rd party
 from blessed import Terminal as BlessedTerminal
-from blessed.keyboard import resolve_sequence
+from blessed.keyboard import Keystroke, resolve_sequence
 # local
 from . import config, log
 from .exceptions import ProcessClosing
@@ -99,7 +99,7 @@ class TerminalProxy(object):
             ucs += c
 
         self._kbdbuf = []
-        ks = self.resolve(text=ucs)
+        ks = self.resolve(text=ucs) if len(ucs) else Keystroke()
 
         # either buffer was empty or we don't have enough for a keystroke;
         # wait for input from kbd
@@ -125,7 +125,7 @@ class TerminalProxy(object):
                     if timeout is not None:
                         break
 
-            ks = self.resolve(text=ucs)
+            ks = self.resolve(text=ucs) if len(ucs) else Keystroke()
 
         if ks.code == self.KEY_ESCAPE:
             # esc was received; let's see if we're getting a key sequence
@@ -139,7 +139,7 @@ class TerminalProxy(object):
                 except aio.futures.TimeoutError:
                     break
 
-            ks = self.resolve(text=ucs)
+            ks = self.resolve(text=ucs) if len(ucs) else Keystroke()
 
         # append any remaining input back into the kbd buffer
         for c in ucs[len(ks):]:

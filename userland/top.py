@@ -39,4 +39,5 @@ async def main(cx):
             await cx.gosub('down', 1, arg2='adsf')
         elif ks.code == cx.term.KEY_ESCAPE:
             cx.echo(cx.term.bold_red('ESCAPE!\r\n'))
-            cx.proc.exit(0)
+
+            return

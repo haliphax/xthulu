@@ -177,6 +177,7 @@ async def handle_client(proc):
                     cx.stack = []
         finally:
             pt.terminate()
+            log.debug('Terminated')
             proc.close()
 
     await aio.gather(input_loop(), main_process())
