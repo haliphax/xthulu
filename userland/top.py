@@ -13,8 +13,8 @@ async def main(cx):
 
     cx.echo(cx.term.move_x(0) + cx.term.clear_eol)
 
-    for k in cx.proc.env.keys():
-        cx.echo('{} = {}\r\n'.format(k, cx.proc.env[k]))
+    for k in cx.env.keys():
+        cx.echo('{} = {}\r\n'.format(k, cx.env[k]))
 
     while True:
         ks = None

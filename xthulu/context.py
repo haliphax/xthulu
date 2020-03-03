@@ -37,6 +37,8 @@ class Context(object):
         self.log = logging.getLogger(self.sid)
         #: Events queue
         self.events = EventQueues.q[self.sid]
+        #: Environment variables
+        self.env = proc.env
 
         # set up logging
         if not self.log.filters:
