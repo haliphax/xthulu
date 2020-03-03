@@ -20,8 +20,9 @@ async def main(cx):
         ks = None
 
         while not ks:
-            while not cx.events.empty():
-                ev = await cx.events.get()
+            ev = await cx.events.poll('resize')
+
+            if ev:
                 cx.echo(repr(ev) + '\r\n')
 
             ks = await cx.term.inkey(1)

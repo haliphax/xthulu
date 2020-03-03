@@ -9,7 +9,7 @@ import subprocess
 import sys
 # local
 from . import config, locks, log as syslog
-from .events import EventQueues
+from .events import EventQueue
 from .exceptions import Goto, ProcessClosing
 from .structs import Script
 
@@ -36,7 +36,7 @@ class Context(object):
         #: Logging facility
         self.log = logging.getLogger(self.sid)
         #: Events queue
-        self.events = EventQueues.q[self.sid]
+        self.events = EventQueue(self.sid)
         #: Environment variables
         self.env = proc.env
 
