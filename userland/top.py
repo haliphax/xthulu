@@ -1,17 +1,16 @@
 "Userland entry point"
 
 async def main(cx):
-    cx.echo(cx.term.normal)
-    cx.echo('Connected: {}@{}\r\n'
-            .format(cx.term.bold_blue(cx.username),
-                    cx.term.bold_blue(cx.ip)))
-
     if cx.encoding == 'utf-8':
         cx.echo('\x1b%G')
     else:
         cx.echo('\x1b%@\x1b(U')
 
+    cx.echo(cx.term.normal)
     cx.echo(cx.term.move_x(0) + cx.term.clear_eol)
+    cx.echo('Connected: {}@{}\r\n'
+            .format(cx.term.bold_blue(cx.username),
+                    cx.term.bold_blue(cx.ip)))
 
     for k in cx.env.keys():
         cx.echo('{} = {}\r\n'.format(k, cx.env[k]))
