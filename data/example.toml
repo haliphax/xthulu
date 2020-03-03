@@ -6,16 +6,12 @@ main = false
 proxy = false
 
 [ssh]
-host_keys = [
-	"data/ssh_host_key",
-]
+host_keys = [ "data/ssh_host_key", ]
 host = "0.0.0.0"
 port = 8022
 
 	[ssh.auth]
-	no_password = [
-		"guest",
-	]
+	no_password = [ "guest", ]
 	bad_usernames = [
 		"admin",
 		"administrator",
@@ -25,9 +21,5 @@ port = 8022
 	]
 
 	[ssh.userland]
-	paths = [
-		"userland",
-	]
-	top = [
-		"top",
-	]
+	paths = [ "userland", ]
+	top = [ "top", ]
