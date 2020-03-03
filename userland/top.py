@@ -24,6 +24,7 @@ async def main(cx):
 
             if ev:
                 cx.echo(repr(ev) + '\r\n')
+                await cx.events.flush('resize')
 
             ks = await cx.term.inkey(1)
 
