@@ -8,8 +8,10 @@ services:
         ports:
             - 5433:5432
         restart: unless-stopped
+        user: 1000:1000
         volumes:
-            - ./db:/var/lib/postgresql/data:z
+            - /etc/passwd:/etc/passwd:ro
+            - ./db:/var/lib/postgresql/data
     ssh:
         build: .
         command: start
