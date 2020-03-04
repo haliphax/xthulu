@@ -13,6 +13,8 @@ class BlockEditor(object):
     limit = 0
     #: Text
     text = ''
+    #: Cursor position
+    pos = (0, 0)
 
     def __init__(self, term, rows, width, **kwargs):
         #: Terminal to use for sequences
@@ -27,21 +29,29 @@ class BlockEditor(object):
 
     def refresh(self):
         out = ''
+        split = self.text.split('\r\n')
+        txtlen = len(split)
 
-        if self.x is not None and self.y is not None:
-            out += self.term.move(self.x, self.y)
-        elif self.x is not None:
-            out += self.term.move_x(self.x)
-        elif self.y is not None:
-            out += self.term.move_y(self.y)
+        for i in range(max(txtlen, self.rows)):
+            if i > 0:
+                out += '\r\n'
 
-        out += (self.term.on_blue(' ' * (self.width))
-                + self.term.move_left(self.width)
-                + self.term.bold_white_on_blue(self.text))
+            out += self.term.on_blue(' ' * self.width)
+
+            if i < txtlen:
+                out += self.term.move_left() * self.width
+                out += self.term.bold_white_on_blue(
+                        split[i][-self.width:])
 
         return out
 
     def process_keystroke(self, ks):
+        if ks.code == self.term.KEY_BACKSPACE and len(self.text):
+            self.text = self.text[:-1]
+
+            return (self.term.move_left() + self.term.bold_white_on_blue(' ')
+                    + self.term.move_left())
+
         if ks.is_sequence:
             return
 
