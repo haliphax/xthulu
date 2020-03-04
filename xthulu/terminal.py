@@ -13,9 +13,7 @@ from .exceptions import ProcessClosing
 
 # TODO tty methods (at least height, width), get size from asyncssh
 
-debug_proxy = (config['debug']['proxy'] if 'debug' in config
-               and 'proxy' in config['debug']
-               else False)
+debug_term = config.get('debug', {}).get('term', False)
 
 
 class Terminal(BlessedTerminal):
@@ -46,12 +44,10 @@ class TerminalProxy(object):
     # specially, or else they have to be called like term.normal() everywhere
     _fixattrs = ('clear_eol', 'normal',)
 
-    def __init__(self, stdin, encoding, proxy_in, proxy_out, width=0,
-                 height=0):
+    def __init__(self, stdin, encoding, proxy_pipe, width=0, height=0):
         self.encoding = encoding
         self._stdin = stdin
-        self._in = proxy_in
-        self._out = proxy_out
+        self._proxy = proxy_pipe
         self._width = width
         self._height = height
         # pre-load a few attributes so we don't have to query them from the
@@ -60,15 +56,15 @@ class TerminalProxy(object):
 
     def __getattr__(self, attr):
         def wrap(*args, **kwargs):
-            self._in.send((attr, args, kwargs))
-            out = self._in.recv()
+            self._proxy.send((attr, args, kwargs))
+            out = self._proxy.recv()
 
-            if debug_proxy:
+            if debug_term:
                 log.debug('proxy result {}: {}'.format(attr, out))
 
             return out
 
-        if debug_proxy:
+        if debug_term:
             log.debug('wrapping {} for proxy'.format(attr))
 
         a = None

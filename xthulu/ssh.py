@@ -103,7 +103,7 @@ async def handle_client(proc):
     proc.env['TERM'] = termtype
     proc.env['COLS'] = w
     proc.env['LINES'] = h
-    proxy_in, proxy_out = Pipe()
+    proxy_pipe, term_pipe = Pipe()
     stdin = aio.Queue()
 
     async def input_loop():
@@ -133,7 +133,7 @@ async def handle_client(proc):
 
         while True:
             try:
-                inp = proxy_out.recv()
+                inp = term_pipe.recv()
             except KeyboardInterrupt:
                 return
 
@@ -146,19 +146,19 @@ async def handle_client(proc):
                 if debug_term:
                     log.debug('{} callable'.format(inp[0]))
 
-                proxy_out.send(attr(*inp[1], **inp[2]))
+                term_pipe.send(attr(*inp[1], **inp[2]))
             else:
                 if debug_term:
                     log.debug('{} not callable'.format(inp[0]))
 
-                proxy_out.send(attr)
+                term_pipe.send(attr)
 
     async def main_process():
         "Userland script stack; main process"
 
         pt = Process(target=terminal_process)
         pt.start()
-        cx.term = TerminalProxy(stdin, cx.encoding, proxy_in, proxy_out, w, h)
+        cx.term = TerminalProxy(stdin, cx.encoding, proxy_pipe, w, h)
         # prep script stack with top scripts;
         # since we're treating it as a stack and not a queue, add them reversed
         # so they are executed in the order they were defined
