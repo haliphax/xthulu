@@ -5,10 +5,6 @@ class BlockEditor(object):
 
     "Block editor (multiple lines)"
 
-    #: X coordinate
-    x = None
-    #: Y coordinate
-    y = None
     #: Text length limit
     limit = 0
     #: Text
