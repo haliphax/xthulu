@@ -19,8 +19,6 @@ config_file = (environ['XTHULU_CONFIG'] if 'XTHULU_CONFIG' in environ
                else join(dirname(__file__), '..', 'data', 'config.toml'))
 config = toml.load(config_file)
 log.setLevel(logging.DEBUG
-             if ('debug' in config
-                 and 'main' in config['debug']
-                 and config['debug']['main'])
+             if config.get('debug', { 'main': False })['main']
              else logging.INFO)
 db = Gino()
