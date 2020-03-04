@@ -54,6 +54,9 @@ class Context(object):
     def echo(self, text):
         "Echo text to the terminal"
 
+        if text is None:
+            return
+
         self.proc.stdout.write(text.encode(self.encoding))
 
     async def gosub(self, script, *args, **kwargs):
