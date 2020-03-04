@@ -24,6 +24,8 @@ class BlockEditor(object):
             setattr(self, k, kwargs[k])
 
     def refresh(self):
+        "Output sequence to redraw editor"
+
         out = ''
         split = self.text.split('\r\n')
         txtlen = len(split)
@@ -42,6 +44,8 @@ class BlockEditor(object):
         return out
 
     def process_keystroke(self, ks):
+        "Process keystroke and produce output (if any)"
+
         if ks.code == self.term.KEY_BACKSPACE and len(self.text):
             self.text = self.text[:-1]
 
@@ -66,8 +70,12 @@ class LineEditor(BlockEditor):
 
     @property
     def rows(self):
+        # always 1 row
         return 1
 
     @rows.setter
     def rows(self, val):
+        # immutable
         pass
+
+    rows.__doc__ = BlockEditor.rows.__doc__
