@@ -1,5 +1,9 @@
 "Userland entry point"
 
+# local
+from xthulu.ui.editors import LineEditor
+
+
 async def main(cx):
     if cx.encoding == 'utf-8':
         cx.echo('\x1b%G')
@@ -12,10 +16,13 @@ async def main(cx):
             .format(cx.term.bold_blue(cx.username),
                     cx.term.bold_blue(cx.ip)))
 
+    led = LineEditor(cx.term, cx.term.width - 1, x=cx.term.height, y=0)
+
     for k in cx.env.keys():
         cx.echo('{} = {}\r\n'.format(k, cx.env[k]))
 
     while True:
+        cx.echo(led.refresh())
         ks = None
 
         while not ks:
@@ -41,3 +48,5 @@ async def main(cx):
             cx.echo(cx.term.bold_red('ESCAPE!\r\n'))
 
             return
+        else:
+            cx.echo(led.process_keystroke(ks))
