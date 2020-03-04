@@ -28,7 +28,7 @@ class BlockEditor(object):
         split = self.text.split('\r\n')
         txtlen = len(split)
 
-        for i in range(max(txtlen, self.rows)):
+        for i in range(self.rows):
             if i > 0:
                 out += '\r\n'
 
