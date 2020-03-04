@@ -121,16 +121,14 @@ async def handle_client(proc):
                 await cx.events.put(EventData('resize',
                                               (sz.width, sz.height,)))
 
-    def terminal_loop():
+    def terminal_process():
         """
         Avoid Python curses singleton bug by stuffing Terminal in a subprocess
         and proxying calls/responses via Pipes
         """
 
         term = Terminal(termtype, proc.stdout)
-        debug_proxy = (config['debug']['proxy']
-                       if 'debug' in config and 'proxy' in config['debug']
-                       else False)
+        debug_term = config.get('debug', {}).get('term', False)
         inp = None
 
         while True:
@@ -139,18 +137,18 @@ async def handle_client(proc):
             except KeyboardInterrupt:
                 return
 
-            if debug_proxy:
+            if debug_term:
                 log.debug('proxy received: {}'.format(inp))
 
             attr = getattr(term, inp[0])
 
             if callable(attr) or len(inp[1]) or inp[2]:
-                if debug_proxy:
+                if debug_term:
                     log.debug('{} callable'.format(inp[0]))
 
                 proxy_out.send(attr(*inp[1], **inp[2]))
             else:
-                if debug_proxy:
+                if debug_term:
                     log.debug('{} not callable'.format(inp[0]))
 
                 proxy_out.send(attr)
@@ -158,7 +156,7 @@ async def handle_client(proc):
     async def main_process():
         "Userland script stack; main process"
 
-        pt = Process(target=terminal_loop)
+        pt = Process(target=terminal_process)
         pt.start()
         cx.term = TerminalProxy(stdin, cx.encoding, proxy_in, proxy_out, w, h)
         # prep script stack with top scripts;
