@@ -1,7 +1,7 @@
 "Userland entry point"
 
 # local
-from xthulu.ui.editors import LineEditor
+from xthulu.ui import LineEditor
 
 
 async def main(cx):
