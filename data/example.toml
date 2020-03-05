@@ -2,7 +2,7 @@
 bind = "postgres://xthulu:xthulu@localhost:5433/xthulu"
 
 [debug]
-main = false
+enabled = false
 proxy = false
 
 [ssh]
