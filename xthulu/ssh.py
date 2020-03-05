@@ -93,7 +93,9 @@ class SSHServer(asyncssh.SSHServer):
 async def handle_client(proc):
     "Client connected"
 
+    loop = aio.get_event_loop()
     cx = Context(proc=proc)
+    await cx._init()
 
     if 'LANG' not in cx.proc.env or 'UTF-8' not in cx.proc.env['LANG']:
         cx.encoding = 'cp437'

@@ -7,10 +7,13 @@ from imp import find_module, load_module
 import logging
 import subprocess
 import sys
+# 3rd party
+from sqlalchemy import func
 # local
-from . import config, locks, log as syslog
+from . import config, db, locks, log as syslog
 from .events import EventQueue
 from .exceptions import Goto, ProcessClosing
+from .models import User
 from .structs import Script
 
 
@@ -20,17 +23,18 @@ class Context(object):
 
     #: Script stack
     stack = []
+    #: User object (assigned at _init)
+    user = None
 
     def __init__(self, proc, encoding='utf-8'):
         _peername = proc.get_extra_info('peername')
+        _username = proc.get_extra_info('username')
         #: SSHServerProcess for session
         self.proc = proc
         #: Session ID (IP:PORT)
         self.sid = '{}:{}'.format(*_peername)
         #: Encoding for session
         self.encoding = encoding
-        #: Username
-        self.username = proc.get_extra_info('username')
         #: Remote IP address
         self.ip = _peername[0]
         #: Logging facility
@@ -42,7 +46,7 @@ class Context(object):
 
         # set up logging
         if not self.log.filters:
-            self.log.addFilter(ContextLogFilter(self.username, self.ip))
+            self.log.addFilter(ContextLogFilter(_username, self.ip))
             streamHandler = logging.StreamHandler(sys.stdout)
             streamHandler.setFormatter(logging.Formatter(
                 '{asctime} {levelname} {module}.{funcName}: {username}@{ip} '
@@ -50,6 +54,14 @@ class Context(object):
                 style='{'))
             self.log.addHandler(streamHandler)
             self.log.setLevel(syslog.getEffectiveLevel())
+
+    async def _init(self):
+        "Asynchronous initialization routine"
+
+        _username = self.proc.get_extra_info('username')
+        self.user = await (User.query.where(func.lower(User.name) ==
+            _username.lower()).gino.first())
+        self.log.debug(repr(self.user))
 
     def echo(self, text):
         "Echo text to the terminal"
@@ -140,6 +152,7 @@ class Context(object):
             self.echo(self.term.bold_red_on_black(
                 '\r\nException in {}\r\n'.format(script.name)))
             self.log.exception(exc)
+            await aio.sleep(3)
 
 
 class ContextLogFilter(logging.Filter):
