@@ -60,3 +60,14 @@ class EventQueue(object):
 
         # put back any events that were skipped
         map(self._q.put_nowait, popped)
+
+
+async def put_global(event):
+    """
+    Put an event in every connected session's event queue
+
+    :param :class:`xthulu.structs.EventData` event: The event to replicate
+    """
+
+    for q in EventQueues.q:
+        await q.put(event)
