@@ -1,6 +1,7 @@
 "xthulu context class module"
 
 # stdlib
+import asyncio as aio
 from contextlib import contextmanager
 from functools import singledispatch
 from imp import find_module, load_module
@@ -149,9 +150,9 @@ class Context(object):
         except (ProcessClosing, Goto):
             raise
         except Exception as exc:
+            self.log.exception(exc)
             self.echo(self.term.bold_red_on_black(
                 '\r\nException in {}\r\n'.format(script.name)))
-            self.log.exception(exc)
             await aio.sleep(3)
 
 
