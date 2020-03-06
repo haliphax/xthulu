@@ -11,8 +11,6 @@ from blessed.keyboard import Keystroke, resolve_sequence
 from . import config, log
 from .exceptions import ProcessClosing
 
-# TODO tty methods (at least height, width), get size from asyncssh
-
 debug_term = config.get('debug', {}).get('term', False)
 
 
