@@ -41,8 +41,8 @@ class TerminalProxy(object):
 
     _kbdbuf = []
     # Terminal attributes that do not accept paramters must be treated
-    # specially, or else they have to be called like term.normal() everywhere
-    _fixattrs = ('clear_eol', 'normal',)
+    # specially, or else they have to be called like term.clear() everywhere
+    _fixattrs = ('clear', 'clear_bol', 'clear_eol', 'clear_eos', 'normal',)
 
     def __init__(self, stdin, encoding, proxy_pipe, width=0, height=0):
         self.encoding = encoding
@@ -52,32 +52,35 @@ class TerminalProxy(object):
         self._height = height
         # pre-load a few attributes so we don't have to query them from the
         # proxy every single time we use them (i.e., in loops)
-        self._keymap_prefixes = self._keymap_prefixes()
+        self._keymap_prefixes = self._wrap('_keymap_prefixes')
 
     def __getattr__(self, attr):
         def wrap(*args, **kwargs):
-            self._proxy.send((attr, args, kwargs))
-            out = self._proxy.recv()
-
-            if debug_term:
-                log.debug('proxy result {}: {}'.format(attr, out))
-
-            return out
+            return self._wrap(attr, *args, **kwargs)
 
         if debug_term:
             log.debug('wrapping {} for proxy'.format(attr))
 
-        a = None
+        isfunc = True
 
         try:
-            a = getattr(AsyncTerminal, attr)
-        except:
+            isfunc = callable(getattr(BlessedTerminal, attr))
+        except AttributeError:
             pass
 
-        if callable(a) or attr.startswith('KEY_') or attr in self._fixattrs:
+        if attr.startswith('KEY_') or attr in self._fixattrs or not isfunc:
             return wrap()
 
         return wrap
+
+    def _wrap(self, attr, *args, **kwargs):
+        self._proxy.send((attr, args, kwargs))
+        out = self._proxy.recv()
+
+        if debug_term:
+            log.debug('{} => {}'.format(attr, out))
+
+        return out
 
     @property
     def height(self):

@@ -126,7 +126,7 @@ async def handle_client(proc):
     def terminal_process():
         """
         Avoid Python curses singleton bug by stuffing Terminal in a subprocess
-        and proxying calls/responses via Pipes
+        and proxying calls/responses via Pipe
         """
 
         term = Terminal(termtype, proc.stdout)
@@ -144,7 +144,7 @@ async def handle_client(proc):
 
             attr = getattr(term, inp[0])
 
-            if callable(attr) or len(inp[1]) or inp[2]:
+            if callable(attr) or len(inp[1]) or len(inp[2]):
                 if debug_term:
                     log.debug('{} callable'.format(inp[0]))
 
