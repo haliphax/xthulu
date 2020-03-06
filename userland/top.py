@@ -17,7 +17,7 @@ async def main(cx):
                     cx.term.bold_blue(cx.ip)))
 
     led = LineEditor(cx.term, cx.term.width - 1, color='bold_white_on_green',
-                     value='testing this thing')
+                     value=['testing this thing'])
 
     for k in cx.env.keys():
         cx.echo('{} = {}\r\n'.format(k, cx.env[k]))
@@ -40,13 +40,7 @@ async def main(cx):
 
             ks = await cx.term.inkey(1)
 
-        if ks.code == cx.term.KEY_LEFT:
-            dirty = True
-            cx.echo(cx.term.bold_red('LEFT!\r\n'))
-        elif ks.code == cx.term.KEY_RIGHT:
-            dirty = True
-            cx.echo(cx.term.bold_red('RIGHT!\r\n'))
-        elif ks.code == cx.term.KEY_UP:
+        if ks.code == cx.term.KEY_UP:
             dirty = True
             cx.echo(cx.term.bold_red('UP!\r\n'))
             cx.echo('{}\r\n'.format(await cx.gosub('retval')))

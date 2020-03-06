@@ -6,11 +6,11 @@ class BlockEditor(object):
     "Block editor (multiple lines)"
 
     #: Editor text
-    value = ''
+    value = []
     #: Text length limit
     limit = 0
     #: Cursor position
-    pos = (0, 0)
+    pos = [0, 0]
 
     # internals
     _color_str = 'bold_white_on_blue'
@@ -24,10 +24,20 @@ class BlockEditor(object):
         #: Width of editor field
         self.width = width
 
-        for k in kwargs.keys():
+        if 'value' not in kwargs:
+            for i in range(rows):
+                self.value.append('')
+
+        for k in kwargs:
             setattr(self, k, kwargs[k])
 
         self._color = getattr(term, self._color_str)
+
+        for i in range(len(self.value)):
+            if len(self.value[i]) == 0:
+                self.pos[0] = i
+
+        self.pos[1] = len(self.value[self.pos[0]])
 
     @property
     def color(self):
@@ -44,8 +54,7 @@ class BlockEditor(object):
         "Output sequence to redraw editor"
 
         out = ''
-        split = self.value.split('\r\n')
-        txtlen = len(split)
+        lenval = len(self.value)
 
         for i in range(self.rows):
             if i > 0:
@@ -53,9 +62,9 @@ class BlockEditor(object):
 
             out += self._color(' ' * self.width)
 
-            if i < txtlen:
+            if i < lenval:
                 out += self.term.move_left() * self.width
-                out += self._color(split[i][-self.width:])
+                out += self._color(self.value[i][-self.width:])
 
         return out
 
@@ -71,19 +80,48 @@ class BlockEditor(object):
     def process_keystroke(self, ks):
         "Process keystroke and produce output (if any)"
 
-        if ks.code == self.term.KEY_BACKSPACE and len(self.value):
-            self.value = self.value[:-1]
+        row = self.value[self.pos[0]]
+        before = row[:self.pos[1]]
+        after = row[self.pos[1]:]
 
-            return (self.term.move_left() + self._color(' ')
-                    + self.term.move_left())
+        # TODO wrap text, wrap cursor, up/down nav
+        if ks.code == self.term.KEY_BACKSPACE:
+            self.value[self.pos[0]] = before[:-1] + after
 
-        if ks.is_sequence:
+            if self.pos[1] > 0:
+                self.pos[1] -= 1
+
+                return self._color(self.term.move_left() + after + ' ' +
+                                   (self.term.move_left() * (len(after) + 1)))
+        elif ks.code == self.term.KEY_DELETE:
+            after = after[1:]
+            self.value[self.pos[0]] = before + after
+
+            return self._color(after + ' ' +
+                               (self.term.move_left() * (len(after) + 1)))
+        elif ks.code == self.term.KEY_LEFT:
+            if self.pos[1] > 0:
+                self.pos[1] -= 1
+
+                return self.term.move_left()
+        elif ks.code == self.term.KEY_RIGHT:
+            if self.pos[1] < len(self.value[self.pos[0]]) - 1:
+                self.pos[1] += 1
+
+                return self.term.move_right()
+        elif ks.is_sequence:
             return
 
         ucs = str(ks)
-        self.value += ucs
 
-        return self._color(ucs)
+        # TODO handle tab
+        if not self.term.length(ucs):
+            return ''
+
+        self.value[self.pos[0]] = before + ucs + after
+        self.pos[1] += 1
+
+        return self._color(ucs + after + (self.term.move_left() * len(after)))
 
 
 class LineEditor(BlockEditor):
@@ -95,10 +133,9 @@ class LineEditor(BlockEditor):
 
     @property
     def rows(self):
-        # always 1 row
+        "Always 1 row"
         return 1
 
     @rows.setter
     def rows(self, val):
-        # immutable
         pass
