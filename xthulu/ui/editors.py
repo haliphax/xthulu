@@ -50,11 +50,16 @@ class BlockEditor(object):
         self._color_str = val
         self._color = getattr(self.term, val)
 
-    def redraw(self):
-        "Output sequence to redraw editor"
+    def redraw(self, redraw_cursor=True):
+        """
+        Output sequence to redraw editor
+
+        :param bool redraw_cursor: Redraw cursor position as well
+        """
 
         out = ''
         lenval = len(self.value)
+        longest = 0
 
         for i in range(self.rows):
             if i > 0:
@@ -64,7 +69,21 @@ class BlockEditor(object):
 
             if i < lenval:
                 out += self.term.move_left() * self.width
-                out += self._color(self.value[i][-self.width:])
+                text = self.value[i][-self.width:]
+                textlen = len(text)
+                out += self._color(text)
+
+                if textlen > longest:
+                    longest = textlen
+
+        if redraw_cursor:
+            if self.rows > 1:
+                out += self.term.move_up() * self.rows
+
+            if longest > 0:
+                out += self.term.move_left() * (longest + 1)
+
+            out += self.redraw_cursor()
 
         return out
 
@@ -74,8 +93,15 @@ class BlockEditor(object):
         located at top-left of editor
         """
 
-        return (self.term.move_down(self.pos[0]) +
-                self.term.move_right(self.pos[1]))
+        out = ''
+
+        if self.pos[0] > 0:
+            out += self.term.move_down() * self.pos[0]
+
+        if self.pos[1] > 0:
+            out += self.term.move_right() * self.pos[1]
+
+        return out
 
     def process_keystroke(self, ks):
         "Process keystroke and produce output (if any)"
@@ -84,37 +110,49 @@ class BlockEditor(object):
         before = row[:self.pos[1]]
         after = row[self.pos[1]:]
 
-        # TODO wrap text, wrap cursor, up/down nav
+        # TODO wrap text/cursor, overflow, up/down, home, end, insert mode,
+        # tab, length limit enforcement
         if ks.code == self.term.KEY_BACKSPACE:
+            if self.pos[1] == 0:
+                return ''
+
             self.value[self.pos[0]] = before[:-1] + after
+            self.pos[1] -= 1
 
-            if self.pos[1] > 0:
-                self.pos[1] -= 1
+            return self._color(self.term.move_left() + after + ' ' +
+                               (self.term.move_left() * (len(after) + 1)))
 
-                return self._color(self.term.move_left() + after + ' ' +
-                                   (self.term.move_left() * (len(after) + 1)))
         elif ks.code == self.term.KEY_DELETE:
+            if self.pos[1] >= len(self.value[self.pos[0]]):
+                return ''
+
             after = after[1:]
             self.value[self.pos[0]] = before + after
 
             return self._color(after + ' ' +
                                (self.term.move_left() * (len(after) + 1)))
+
         elif ks.code == self.term.KEY_LEFT:
-            if self.pos[1] > 0:
-                self.pos[1] -= 1
+            if self.pos[1] == 0:
+                return ''
 
-                return self.term.move_left()
+            self.pos[1] -= 1
+
+            return self.term.move_left()
+
         elif ks.code == self.term.KEY_RIGHT:
-            if self.pos[1] < len(self.value[self.pos[0]]) - 1:
-                self.pos[1] += 1
+            if self.pos[1] >= len(self.value[self.pos[0]]):
+                return ''
 
-                return self.term.move_right()
+            self.pos[1] += 1
+
+            return self.term.move_right()
+
         elif ks.is_sequence:
-            return
+            return ''
 
         ucs = str(ks)
 
-        # TODO handle tab
         if not self.term.length(ucs):
             return ''
 

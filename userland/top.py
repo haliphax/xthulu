@@ -35,23 +35,31 @@ async def main(cx):
             ev = await cx.events.poll('resize')
 
             if ev:
-                cx.echo(repr(ev) + '\r\n')
+                cx.echo('\r\n{}\r\n'.format(ev))
                 await cx.events.flush('resize')
 
             ks = await cx.term.inkey(1)
 
         if ks.code == cx.term.KEY_UP:
             dirty = True
-            cx.echo(cx.term.bold_red('UP!\r\n'))
+            cx.echo(cx.term.bold_red('\r\nUP!\r\n'))
             cx.echo('{}\r\n'.format(await cx.gosub('retval')))
+
         elif ks.code == cx.term.KEY_DOWN:
             dirty = True
-            cx.echo(cx.term.bold_red('DOWN!\r\n'))
+            cx.echo(cx.term.bold_red('\r\nDOWN!\r\n'))
             await cx.gosub('down', 1, arg2='adsf')
+
         elif ks.code == cx.term.KEY_ESCAPE:
             dirty = True
-            cx.echo(cx.term.bold_red('ESCAPE!\r\n'))
+            cx.echo(cx.term.bold_red('\r\nESCAPE!\r\n'))
 
             return
+
+        elif ks.code == cx.term.KEY_ENTER:
+            dirty = True
+            cx.echo('\r\n{}\r\n'.format(led.value[0]))
+
         else:
-            cx.echo(led.process_keystroke(ks))
+            cx.echo(led.process_keystroke(ks) + cx.term.move_x(0) +
+                    led.redraw_cursor())
