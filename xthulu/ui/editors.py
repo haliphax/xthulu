@@ -114,8 +114,9 @@ class BlockEditor(object):
         """
         Process keystroke and produce output (if any)
 
-        :param blessed.keyboard.Keystroke ks: Keystroke object
-            (e.g. from :meth:`inkey`)
+        :param :class:`blessed.keyboard.Keystroke` ks: Keystroke object
+            (e.g. from `inkey`)
+        :returns: Updated output for the editor display
         :rtype: str
         """
 
