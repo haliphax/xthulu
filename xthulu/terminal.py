@@ -16,6 +16,8 @@ debug_term = config.get('debug', {}).get('term', False)
 
 class Terminal(BlessedTerminal):
 
+    "Custom-tailored :class:`blessed.Terminal` implementation"
+
     def __init__(self, kind, stream):
         super().__init__(kind, stream, force_styling=True)
         self._keyboard_fd = 'defunc'
@@ -24,18 +26,32 @@ class Terminal(BlessedTerminal):
 
     @contextmanager
     def raw(self):
+        "Dummy method for compatibility"
+
         yield
 
     @contextmanager
     def cbreak(self):
+        "Dummy method for compatibility"
+
         yield
 
     @property
     def is_a_tty(self):
+        "Dummy method for compatibility"
+
         return True
 
 
 class TerminalProxy(object):
+
+    """
+    Asynchronous terminal proxy object; provides an asyncio interface to
+    :class:`blessed.Terminal`; also shuttles calls to the
+    :class:`xthulu.terminal.Terminal` object via IPC to avoid a bug in
+    Python's curses implementation that only allows one terminal type per
+    process to be registered
+    """
 
     _kbdbuf = []
     # Terminal attributes that do not accept paramters must be treated
@@ -57,7 +73,7 @@ class TerminalProxy(object):
             return self._wrap(attr, *args, **kwargs)
 
         if debug_term:
-            log.debug('wrapping {} for proxy'.format(attr))
+            log.debug(f'wrapping {attr} for proxy')
 
         isfunc = True
 
@@ -72,20 +88,26 @@ class TerminalProxy(object):
         return wrap
 
     def _wrap(self, attr, *args, **kwargs):
+        "Convenience method for wrapping specific calls"
+
         self._proxy.send((attr, args, kwargs))
         out = self._proxy.recv()
 
         if debug_term:
-            log.debug('{} => {}'.format(attr, out))
+            log.debug(f'{attr} => {out}')
 
         return out
 
     @property
     def height(self):
+        "Use private height variable instead of WINSZ"
+
         return self._height
 
     @property
     def width(self):
+        "Use private width variable instead of WINSZ"
+
         return self._width
 
     async def inkey(self, timeout=None, esc_delay=0.35):
@@ -143,3 +165,5 @@ class TerminalProxy(object):
             self._kbdbuf.append(c)
 
         return ks
+
+    inkey.__doc__ = f'(asyncio) {BlessedTerminal.inkey.__doc__}'

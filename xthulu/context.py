@@ -65,7 +65,11 @@ class Context(object):
         self.log.debug(repr(self.user))
 
     def echo(self, text):
-        "Echo text to the terminal"
+        """
+        Echo text to the terminal
+
+        :param str text: The text to echo
+        """
 
         if text is None:
             return
@@ -73,20 +77,38 @@ class Context(object):
         self.proc.stdout.write(text.encode(self.encoding))
 
     async def gosub(self, script, *args, **kwargs):
-        "Execute script and return result"
+        """
+        Execute script and return result
+
+        :param :class:`xthulu.structs.Script` script: The userland script to
+            execute
+        :returns: The return value from the script (if any)
+        :rtype: mixed
+        """
 
         script = Script(script, args, kwargs)
 
         return await self.runscript(script)
 
     def goto(self, script, *args, **kwargs):
-        "Switch to script and clear stack"
+        """
+        Switch to script and clear stack
+
+        :param :class:`xthulu.structs.Script` script: The userland script to
+            execute
+        """
 
         raise Goto(script, *args, **kwargs)
 
     @contextmanager
     def lock(self, name):
-        "Session lock context manager"
+        """
+        Session lock context manager
+
+        :param str name: The name of the lock to attempt
+        :returns: Whether or not the lock was granted
+        :rtype: bool
+        """
 
         try:
             yield locks.get(self.sid, name)
@@ -94,17 +116,35 @@ class Context(object):
             locks.release(self.sid, name)
 
     def get_lock(self, name):
-        "Acquire lock on behalf of session user"
+        """
+        Acquire lock on behalf of session user
+
+        :param str name: The name of the lock to attempt
+        :returns: Whether or not the lock was granted
+        :rtype: bool
+        """
 
         return locks.get(self.sid, name)
 
     def release_lock(self, name):
-        "Release lock on behalf of session user"
+        """
+        Release lock on behalf of session user
+
+        :param str name: The name of the lock to attempt
+        :returns: Whether or not the lock was granted
+        :rtype: bool
+        """
 
         return locks.release(self.sid, name)
 
     async def redirect(self, proc):
-        "Redirect context IO to other process"
+        """
+        Redirect context IO to other process; convenience method which wraps
+        AsyncSSH's redirection routine
+
+        :param mixed proc: The process to redirect to; can be tuple, list,
+            str, or :class:`multiprocessing.Popen`
+        """
 
         @singledispatch
         async def f(proc):
@@ -130,9 +170,15 @@ class Context(object):
         return await f(proc)
 
     async def runscript(self, script):
-        "Run script and return result; used by :meth:`goto` and :meth:`gosub`"
+        """
+        Run script and return result; used by :meth:`goto` and :meth:`gosub`
 
-        self.log.info('Running {}'.format(script))
+        :param `xthulu.structs.Script` script: The userland script to run
+        :returns: The return value of the script (if any)
+        :rtype: mixed
+        """
+
+        self.log.info(f'Running {script}')
         split = script.name.split('.')
         found = None
         mod = None
@@ -152,7 +198,7 @@ class Context(object):
         except Exception as exc:
             self.log.exception(exc)
             self.echo(self.term.bold_red_on_black(
-                '\r\nException in {}\r\n'.format(script.name)))
+                '\r\nException in {script.name}\r\n'))
             await aio.sleep(3)
 
 

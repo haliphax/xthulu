@@ -1,7 +1,7 @@
 "xthulu gosub example"
 
 async def main(cx, arg1, arg2):
-    cx.echo('gosub example {} {}\r\n'.format(arg1, arg2))
+    cx.echo(f'gosub example {arg1} {arg2}\r\n')
 
     with cx.lock('testing') as l:
         if not l:

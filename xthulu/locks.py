@@ -7,17 +7,27 @@ from . import log
 
 
 class Locks(object):
+
+    "Lock storage singleton"
+
     locks = set([])
     owned = {}
 
 
 def get(owner, name):
-    "Acquire and hold lock on behalf of user/system"
+    """
+    Acquire and hold lock on behalf of user/system
 
-    log.debug('{} getting lock {}'.format(owner, name))
+    :param str owner: The name of the owner
+    :param str name: The name of the lock
+    :returns: Whether or not the lock was granted
+    :rtype: bool
+    """
+
+    log.debug(f'{owner} getting lock {name}')
 
     if name in Locks.locks:
-        log.debug('{} lock already exists'.format(name))
+        log.debug(f'{name} lock already exists')
 
         return False
 
@@ -34,17 +44,24 @@ def get(owner, name):
 
 
 def release(owner, name):
-    "Release a lock owned by user/system"
+    """
+    Release a lock owned by user/system
 
-    log.debug('{} releasing lock {}'.format(owner, name))
+    :param str owner: The name of the owner
+    :param str name: The name of the lock
+    :returns: Whether or not the lock was valid to begin with
+    :rtype: bool
+    """
+
+    log.debug(f'{owner} releasing lock {name}')
 
     if name not in Locks.locks:
-        log.debug('{} lock does not exist'.format(name))
+        log.debug(f'{name} lock does not exist')
 
         return False
 
     if owner not in Locks.owned or name not in Locks.owned[owner]:
-        log.debug('{} does not own lock {}'.format(owner, name))
+        log.debug(f'{owner} does not own lock {name}')
 
         return False
 
@@ -58,7 +75,14 @@ def release(owner, name):
 
 @contextmanager
 def hold(owner, name):
-    "Session-agnostic lock context manager"
+    """
+    Session-agnostic lock context manager
+
+    :param str owner: The name of the owner
+    :param str name: The name of the lock
+    :returns: Whether or not the lock was granted
+    :rtype: bool
+    """
 
     try:
         yield get(owner, name)
@@ -67,9 +91,13 @@ def hold(owner, name):
 
 
 def expire(owner):
-    "Remove all locks owned by user"
+    """
+    Remove all locks owned by user
 
-    log.debug('Releasing locks owned by {}'.format(owner))
+    :param str owner: The name of the owner
+    """
+
+    log.debug(f'Releasing locks owned by {owner}')
     locks = 0
     owned = None
 
@@ -78,7 +106,7 @@ def expire(owner):
         locks = len(owned)
 
     if locks == 0:
-        log.debug('No locks for {}'.format(owner))
+        log.debug(f'No locks for {owner}')
     else:
         for l in owned:
             release(owner, l)

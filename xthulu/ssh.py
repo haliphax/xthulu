@@ -32,7 +32,7 @@ class SSHServer(asyncssh.SSHServer):
         self._peername = conn.get_extra_info('peername')
         self._sid = '{}:{}'.format(*self._peername)
         EventQueues.q[self._sid] = aio.Queue()
-        log.info('{} connecting'.format(self._peername[0]))
+        log.info(f'{self._peername[0]} connecting')
 
     def connection_lost(self, exc):
         "Connection closed"
@@ -41,10 +41,9 @@ class SSHServer(asyncssh.SSHServer):
         locks.expire(self._sid)
 
         if exc:
-            log.error('Error: {}'.format(exc))
+            log.error(f'Error: {exc}')
 
-        log.info('{}@{} disconnected'.format(self._username,
-                                             self._peername[0]))
+        log.info(f'{self._username}@{self._peername[0]} disconnected')
 
     def begin_auth(self, username):
         "Check for auth bypass"
@@ -54,10 +53,10 @@ class SSHServer(asyncssh.SSHServer):
 
         if ('no_password' in config['ssh']['auth'] and
                 username in config['ssh']['auth']['no_password']):
-            log.info('No password required for {}'.format(username))
+            log.info(f'No password required for {username}')
             pwd_required = False
 
-        log.info('{}@{} connected'.format(username, self._peername[0]))
+        log.info(f'{username}@{self._peername[0]} connected')
 
         return pwd_required
 
@@ -73,19 +72,18 @@ class SSHServer(asyncssh.SSHServer):
                    .gino.first())
 
         if u is None:
-            log.warn('User {} does not exist'.format(username))
+            log.warn(f'User {username} does not exist')
 
             return False
 
         expected, _ = hash_password(password, u.salt)
 
         if expected != u.password:
-            log.warn('Invalid credentials received for {}'
-                     .format(username))
+            log.warn(f'Invalid credentials received for {username}')
 
             return False
 
-        log.info('Valid credentials received for {}'.format(username))
+        log.info(f'Valid credentials received for {username}')
 
         return True
 
@@ -140,18 +138,18 @@ async def handle_client(proc):
                 return
 
             if debug_term:
-                log.debug('proxy received: {}'.format(inp))
+                log.debug(f'proxy received: {inp}')
 
             attr = getattr(term, inp[0])
 
             if callable(attr) or len(inp[1]) or len(inp[2]):
                 if debug_term:
-                    log.debug('{} callable'.format(inp[0]))
+                    log.debug(f'{inp[0]} callable')
 
                 term_pipe.send(attr(*inp[1], **inp[2]))
             else:
                 if debug_term:
-                    log.debug('{} not callable'.format(inp[0]))
+                    log.debug('{inp[0]} not callable')
 
                 term_pipe.send(attr)
 

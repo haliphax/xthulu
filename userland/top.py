@@ -20,7 +20,7 @@ async def main(cx):
                      value=['testing this thing'])
 
     for k in cx.env.keys():
-        cx.echo('{} = {}\r\n'.format(k, cx.env[k]))
+        cx.echo(f'{k} = {cx.env[k]}\r\n')
 
     dirty = True
 
@@ -35,7 +35,7 @@ async def main(cx):
             ev = await cx.events.poll('resize')
 
             if ev:
-                cx.echo('\r\n{}\r\n'.format(ev))
+                cx.echo(f'\r\n{ev}\r\n')
                 await cx.events.flush('resize')
 
             ks = await cx.term.inkey(1)
@@ -58,7 +58,7 @@ async def main(cx):
 
         elif ks.code == cx.term.KEY_ENTER:
             dirty = True
-            cx.echo('\r\n{}\r\n'.format(led.value[0]))
+            cx.echo(f'\r\n{led.value[0]}\r\n')
 
         else:
             cx.echo(led.process_keystroke(ks) + cx.term.move_x(0) +

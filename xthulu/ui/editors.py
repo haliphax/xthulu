@@ -41,7 +41,11 @@ class BlockEditor(object):
 
     @property
     def color(self):
-        "Color property; setting it also sets the internal Terminal callable"
+        """
+        Color property; setting it also sets the internal Terminal callable
+
+        :rtype: callable
+        """
 
         return getattr(self.term, self._color_str)
 
@@ -55,6 +59,7 @@ class BlockEditor(object):
         Output sequence to redraw editor
 
         :param bool redraw_cursor: Redraw cursor position as well
+        :rtype: str
         """
 
         out = ''
@@ -91,6 +96,8 @@ class BlockEditor(object):
         """
         Output sequence to restore cursor position; assumes cursor is already
         located at top-left of editor
+
+        :rtype: str
         """
 
         out = ''
@@ -104,7 +111,13 @@ class BlockEditor(object):
         return out
 
     def process_keystroke(self, ks):
-        "Process keystroke and produce output (if any)"
+        """
+        Process keystroke and produce output (if any)
+
+        :param blessed.keyboard.Keystroke ks: Keystroke object
+            (e.g. from :meth:`inkey`)
+        :rtype: str
+        """
 
         row = self.value[self.pos[0]]
         before = row[:self.pos[1]]
@@ -171,7 +184,12 @@ class LineEditor(BlockEditor):
 
     @property
     def rows(self):
-        "Always 1 row"
+        """
+        A line editor only has a single row
+
+        :rtype: int
+        """
+
         return 1
 
     @rows.setter

@@ -15,18 +15,18 @@ loop = aio.get_event_loop()
 
 @click.group()
 def cli():
-    pass
+    "xthulu terminal server command line utility"
 
 
 @cli.command()
 def start():
-    'Start SSH server process'
+    "Start SSH server process"
 
     try:
         log.info('Starting SSH server')
         loop.run_until_complete(start_server())
     except (OSError, asyncssh.Error) as exc:
-        sys.exit('Error: {}'.format(exc))
+        sys.exit(f'Error: {exc}')
 
     try:
         log.info('SSH server is listening')
@@ -37,7 +37,7 @@ def start():
 
 @cli.command()
 def db_create():
-    'Create database tables'
+    "Create database tables"
 
     from . import models
 
@@ -50,7 +50,7 @@ def db_create():
 
 @cli.command()
 def db_init():
-    'Initialize database with starter data'
+    "Initialize database with starter data"
 
     from .models.user import User, hash_password
 

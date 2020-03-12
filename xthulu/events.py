@@ -47,7 +47,7 @@ class EventQueue(object):
         """
         Flush the event queue
 
-        :param str event_name: (Optional) The event name to filter
+        :param str event_name: The event name to filter (if any)
         """
 
         popped = []

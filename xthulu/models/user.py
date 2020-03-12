@@ -21,7 +21,7 @@ class User(db.Model):
     def __repr__(self):
         'Represent as str'
 
-        return 'User({}#{})'.format(self.name, self.id)
+        return f'User({self.name}#{self.id})'
 
 
 idx_name_lower = db.Index('idx_user_name_lower', func.lower(User.name))
