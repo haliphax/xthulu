@@ -13,7 +13,7 @@ if __name__ == '__main__':
         _reqs = reqfile.readlines()
 
     for extra in extra_packages:
-        filename = 'requirements_{extra}.txt'.format(extra=extra)
+        filename = f'requirements_{extra}.txt'
 
         with open(join(abspath, filename)) as reqfile:
             _extras[extra] = reqfile.readlines()
