@@ -130,8 +130,8 @@ class Context(object):
         """
         Release lock on behalf of session user
 
-        :param str name: The name of the lock to attempt
-        :returns: Whether or not the lock was granted
+        :param str name: The name of the lock to release
+        :returns: Whether or not the lock was valid to begin with
         :rtype: bool
         """
 
