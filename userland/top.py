@@ -43,7 +43,7 @@ async def main(cx):
         if ks.code == cx.term.KEY_UP:
             dirty = True
             cx.echo(cx.term.bold_red('\r\nUP!\r\n'))
-            cx.echo('{}\r\n'.format(await cx.gosub('retval')))
+            cx.echo(f'{await cx.gosub("retval")}\r\n')
 
         elif ks.code == cx.term.KEY_DOWN:
             dirty = True
