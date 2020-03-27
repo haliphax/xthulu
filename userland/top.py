@@ -10,12 +10,10 @@ async def main(cx):
     else:
         cx.echo('\x1b%@\x1b(U')
 
-    cx.echo(cx.term.normal)
-    cx.echo(cx.term.move_x(0) + cx.term.clear_eol)
-    cx.echo('Connected: {}@{}\r\n'
+    cx.echo(cx.term.normal +
+            '\r\nConnected: {}@{}\r\n'
             .format(cx.term.bold_blue(cx.user.name),
                     cx.term.bold_blue(cx.ip)))
-
     led = LineEditor(cx.term, cx.term.width - 1, color='bold_white_on_green',
                      value=['testing this thing'])
 
@@ -61,5 +59,4 @@ async def main(cx):
             cx.echo(f'\r\n{led.value[0]}\r\n')
 
         else:
-            cx.echo(led.process_keystroke(ks) + cx.term.move_x(0) +
-                    led.redraw_cursor())
+            cx.echo(led.process_keystroke(ks))
