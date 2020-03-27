@@ -3,7 +3,7 @@ bind = "postgres://xthulu:xthulu@localhost:5433/xthulu"
 
 [debug]
 enabled = false
-proxy = false
+term = false
 
 [ssh]
 host_keys = [ "data/ssh_host_key", ]
