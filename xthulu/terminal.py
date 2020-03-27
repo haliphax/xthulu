@@ -219,7 +219,6 @@ def terminal_process(termtype, w, h, pw, ph, pipe_slave):
     """
 
     subproc_term = SlaveProxyTerminal(termtype, w, h, pw, ph)
-    debug_term = config.get('debug', {}).get('term', False)
     inp = None
 
     while True:
