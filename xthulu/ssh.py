@@ -14,7 +14,7 @@ from .events import EventQueues
 from .exceptions import Goto, ProcessClosing
 from .models.user import User, hash_password
 from .structs import EventData, Script
-from .terminal import SlaveProxyTerminal, MasterProxyTerminal
+from .terminal import MasterProxyTerminal, SlaveProxyTerminal, terminal_process
 
 
 class SSHServer(asyncssh.SSHServer):
@@ -134,83 +134,12 @@ async def handle_client(proc):
                 await cx.events.put(EventData('resize',
                                               (sz.width, sz.height,)))
 
-    def terminal_process():
-        """
-        Avoid Python curses singleton bug by stuffing Terminal in a subprocess
-        and proxying calls/responses via Pipe
-        """
-
-        subproc_term = SlaveProxyTerminal(termtype, w, h, pw, ph)
-        debug_term = config.get('debug', {}).get('term', False)
-        inp = None
-
-        while True:
-            try:
-                given_attr, args, kwargs = pipe_slave.recv()
-            except KeyboardInterrupt:
-                return
-
-            if debug_term:
-                log.debug(f'proxy received: {given_attr}, {args!r}, '
-                          f'{kwargs!r}')
-
-            # exit sentinel
-            if given_attr is None:
-                if debug_term:
-                    log.debug(f'term={subproc_term}/pid={os.getpid()} exit')
-
-                break
-
-            # special attribute -- a context manager, enter it naturally, exit
-            # unnaturally (even, prematurely), with the exit value ready for
-            # our client side, this is only possible because blessed doesn't
-            # use any state or time-sensitive values, only terminal sequences,
-            # and these CM's are the only ones without side-effects.
-            if given_attr.startswith('!CTX'):
-                # here, we feel the real punishment of side-effects...
-                sideeffect_stream = subproc_term.stream.getvalue()
-                assert not sideeffect_stream, ('should be empty',
-                                               sideeffect_stream)
-
-                given_attr = given_attr[len('!CTX'):]
-                if debug_term: log.debug(f'context attr: {given_attr}')
-
-                with getattr(subproc_term, given_attr)(*args, **kwargs) \
-                        as enter_result:
-                    enter_side_effect = subproc_term.stream.getvalue()
-                    subproc_term.stream.truncate(0)
-                    subproc_term.stream.seek(0)
-
-                    if debug_term:
-                        log.debug('enter_result, enter_side_effect = '
-                                  f'{enter_result!r}, {enter_side_effect!r}')
-
-                    pipe_slave.send((enter_result, enter_side_effect))
-
-                exit_side_effect = subproc_term.stream.getvalue()
-                subproc_term.stream.truncate(0)
-                subproc_term.stream.seek(0)
-                pipe_slave.send(exit_side_effect)
-
-            elif given_attr.startswith('!CALL'):
-                given_attr = given_attr[len('!CALL'):]
-                matching_attr = getattr(subproc_term, given_attr)
-                if debug_term: log.debug(f'callable attr: {given_attr}')
-                pipe_slave.send(matching_attr(*args, **kwargs))
-
-            else:
-                if debug_term: log.debug(f'attr: {given_attr}')
-                assert len(args) == len(kwargs) == 0, (args, kwargs)
-                matching_attr = getattr(subproc_term, given_attr)
-                if debug_term: log.debug(f'value: {matching_attr!r}')
-                pipe_slave.send(matching_attr)
-
-
     async def main_process():
         "Userland script stack; main process"
 
-        pt = Process(target=terminal_process)
-        pt.start()
+        tp = Process(target=terminal_process,
+                     args=(termtype, w, h, pw, ph, pipe_slave))
+        tp.start()
         cx.term = MasterProxyTerminal(session_stdin, proc.stdout, cx.encoding,
                                       pipe_master, w, h, pw, ph)
         # prep script stack with top scripts;
