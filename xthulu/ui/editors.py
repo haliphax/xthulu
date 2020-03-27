@@ -136,8 +136,8 @@ class BlockEditor(object):
 
             self.value[self.pos[0]] = before[:-1] + after
             self.pos[1] -= 1
-            log.debug(f'backspace "{self.value[self.pos[0]]} '
-                      f'{self.pos[0]},{self.pos[1]}"')
+            log.debug(f'backspace "{self.value[self.pos[0]]}" '
+                      f'{self.pos[0]},{self.pos[1]}')
 
             return self._color(self.term.move_left + after + ' ' +
                                self.term.move_left(len(after) + 1))
