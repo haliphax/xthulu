@@ -1,5 +1,8 @@
 "editors module"
 
+# local
+from .. import log
+
 
 class BlockEditor(object):
 
@@ -73,7 +76,7 @@ class BlockEditor(object):
             out += self._color(' ' * self.width)
 
             if i < lenval:
-                out += self.term.move_left() * self.width
+                out += self.term.move_left(self.width)
                 text = self.value[i][-self.width:]
                 textlen = len(text)
                 out += self._color(text)
@@ -82,11 +85,12 @@ class BlockEditor(object):
                     longest = textlen
 
         if redraw_cursor:
+            # move cursor back to top left before adjusting to self.pos offset
             if self.rows > 1:
-                out += self.term.move_up() * self.rows
+                out += self.term.move_up(self.rows)
 
             if longest > 0:
-                out += self.term.move_left() * (longest + 1)
+                out += self.term.move_left(longest)
 
             out += self.redraw_cursor()
 
@@ -103,10 +107,10 @@ class BlockEditor(object):
         out = ''
 
         if self.pos[0] > 0:
-            out += self.term.move_down() * self.pos[0]
+            out += self.term.move_down(self.pos[0])
 
         if self.pos[1] > 0:
-            out += self.term.move_right() * self.pos[1]
+            out += self.term.move_right(self.pos[1])
 
         return out
 
@@ -134,7 +138,7 @@ class BlockEditor(object):
             self.pos[1] -= 1
 
             return self._color(self.term.move_left() + after + ' ' +
-                               (self.term.move_left() * (len(after) + 1)))
+                               self.term.move_left(len(after) + 1))
 
         elif ks.code == self.term.KEY_DELETE:
             if self.pos[1] >= len(self.value[self.pos[0]]):
@@ -144,9 +148,11 @@ class BlockEditor(object):
             self.value[self.pos[0]] = before + after
 
             return self._color(after + ' ' +
-                               (self.term.move_left() * (len(after) + 1)))
+                               self.term.move_left(len(after) + 1))
 
         elif ks.code == self.term.KEY_LEFT:
+            log.debug(f'left {self.pos[0]},{self.pos[1]}')
+
             if self.pos[1] == 0:
                 return ''
 
@@ -173,7 +179,7 @@ class BlockEditor(object):
         self.value[self.pos[0]] = before + ucs + after
         self.pos[1] += 1
 
-        return self._color(ucs + after + (self.term.move_left() * len(after)))
+        return self._color(ucs + after + self.term.move_left(len(after)))
 
 
 class LineEditor(BlockEditor):

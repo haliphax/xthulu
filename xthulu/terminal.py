@@ -1,113 +1,155 @@
 "Asyncio blessed.Terminal implementation"
 
+# significant rewrites for blessed functionality thanks to
+# https://github.com/jquast
+
 # stdlib
+import io
 import asyncio as aio
-from contextlib import contextmanager
+import contextlib
 from functools import partial
 # 3rd party
-from blessed import Terminal as BlessedTerminal
-from blessed.keyboard import Keystroke, resolve_sequence
+import blessed
+import wrapt
 # local
 from . import config, log
 from .exceptions import ProcessClosing
 
-debug_term = config.get('debug', {}).get('term', False)
+debug_term = bool(config.get('debug', {}).get('term', False))
 
 
-class Terminal(BlessedTerminal):
+class SlaveProxyTerminal(blessed.Terminal):
 
-    "Custom-tailored :class:`blessed.Terminal` implementation"
-
-    def __init__(self, kind, stream):
+    def __init__(self, kind, height=0, width=0, pixel_height=0, pixel_width=0):
+        stream = io.StringIO()
         super().__init__(kind, stream, force_styling=True)
+        log.debug(f'Terminal.errors: {self.errors}')
         self._keyboard_fd = 'defunc'
-        self.resolve = partial(resolve_sequence, mapper=self._keymap,
+        self._height = height
+        self._width = width
+        self.resolve = partial(blessed.keyboard.resolve_sequence,
+                               mapper=self._keymap,
                                codes=self._keycodes)
 
-    @contextmanager
+    @contextlib.contextmanager
     def raw(self):
-        "Dummy method for compatibility"
-
         yield
 
-    @contextmanager
+    @contextlib.contextmanager
     def cbreak(self):
-        "Dummy method for compatibility"
-
         yield
 
     @property
     def is_a_tty(self):
-        "Dummy method for compatibility"
-
         return True
 
 
-class TerminalProxy(object):
+class TerminalProxyCall(wrapt.ObjectProxy):
+    def __init__(self, wrapped, attr, pipe_master):
+        super().__init__(wrapped)
+        self.pipe_master = pipe_master
+        self.attr = attr
 
-    """
-    Asynchronous terminal proxy object; provides an asyncio interface to
-    :class:`blessed.Terminal`; also shuttles calls to the
-    :class:`xthulu.terminal.Terminal` object via IPC to avoid a bug in
-    Python's curses implementation that only allows one terminal type per
-    process to be registered
-    """
+    def __call__(self, *args, **kwargs):
+        self.pipe_master.send((f'!CALL{self.attr}', args, kwargs))
 
+        return self.pipe_master.recv()
+
+
+class MasterProxyTerminal(object):
     _kbdbuf = []
-    # Terminal attributes that do not accept paramters must be treated
-    # specially, or else they have to be called like term.clear() everywhere
-    _fixattrs = ('clear', 'clear_bol', 'clear_eol', 'clear_eos', 'normal',)
 
-    def __init__(self, stdin, encoding, proxy_pipe, width=0, height=0):
+    # context manager attribs
+    _ctxattrs = ('location', 'keypad', 'raw', 'cbreak', 'hidden_cursor',
+                 'fullscreen')
+
+    def __init__(self, stdin, stdout, encoding, pipe_master, width=0, height=0,
+                 pixel_width=0, pixel_height=0):
+        self.stdin, self.stdout = stdin, stdout
         self.encoding = encoding
-        self._stdin = stdin
-        self._proxy = proxy_pipe
+        self.pipe_master = pipe_master
         self._width = width
         self._height = height
-        # pre-load a few attributes so we don't have to query them from the
-        # proxy every single time we use them (i.e., in loops)
-        self._keymap_prefixes = self._wrap('_keymap_prefixes')
+        self._pixel_width = pixel_width
+        self._pixel_height = pixel_height
 
     def __getattr__(self, attr):
-        def wrap(*args, **kwargs):
-            return self._wrap(attr, *args, **kwargs)
 
-        if debug_term:
-            log.debug(f'wrapping {attr} for proxy')
+        @contextlib.contextmanager
+        def proxy_contextmanager(*args, **kwargs):
+            # we send special '!CTX' header, which means we
+            # expect two replies, the __enter__ and __exit__. because
+            # context managers can be wrapped, and entry/exit can happen
+            # in like entry/entry/entry/exit/exit/exit order, we *prefetch*
+            # any exit value and return code -- woah! not a problem because
+            # the things we wrap are pretty basic
+            self.pipe_master.send((f'!CTX{attr}', args, kwargs))
 
-        isfunc = True
+            # one of two items, the '__enter__' context,
+            enter_side_effect, enter_value = self.pipe_master.recv()
+            exit_side_effect = self.pipe_master.recv()
 
-        try:
-            isfunc = callable(getattr(BlessedTerminal, attr))
-        except AttributeError:
-            pass
+            if debug_term:
+                log.debug(f'wrap_ctx_manager({attr}, *{args}, **{kwargs}) '
+                          f'=> entry: {enter_side_effect}, {enter_value})')
+                log.debug(f'wrap_ctx_manager({attr}, *{args}, **{kwargs}) '
+                          f'=> exit: {exit_side_effect}')
 
-        if attr.startswith('KEY_') or attr in self._fixattrs or not isfunc:
-            return wrap()
+            if enter_side_effect:
+                self.stdout.write(enter_side_effect)
 
-        return wrap
+            yield enter_value
 
-    def _wrap(self, attr, *args, **kwargs):
-        "Convenience method for wrapping specific calls"
+            if exit_side_effect:
+                self.stdout.write(exit_side_effect)
 
-        self._proxy.send((attr, args, kwargs))
-        out = self._proxy.recv()
+        if attr in self._ctxattrs:
+            return proxy_contextmanager
 
-        if debug_term:
-            log.debug(f'{attr} => {out}')
+        blessed_attr = getattr(blessed.Terminal, attr, None)
 
-        return out
+        if callable(blessed_attr):
+            if debug_term:
+                log.debug(f'{attr} callable')
+
+            resolved_value = TerminalProxyCall(blessed_attr, attr,
+                                               self.pipe_master)
+            if debug_term: log.debug(f'value: {resolved_value!r}')
+        else:
+            if debug_term: log.debug(f'{attr} not callable')
+            self.pipe_master.send((attr, (), {}))
+            resolved_value = self.pipe_master.recv()
+            if debug_term: log.debug(f'value: {resolved_value!r}')
+
+            if isinstance(resolved_value,
+                          (blessed.formatters.ParameterizingString,
+                           blessed.formatters.FormattingOtherString)):
+                resolved_value = TerminalProxyCall(resolved_value, attr,
+                                                   self.pipe_master)
+                if debug_term: log.debug(repr(resolved_value))
+
+        if debug_term: log.debug(f'setattr {attr}')
+        setattr(self, attr, resolved_value)
+
+        return resolved_value
+
+    def does_styling(self):
+        return True
+
+    @property
+    def pixel_width(self):
+        return self._pixel_width
+
+    @property
+    def pixel_height(self):
+        return self._pixel_height
 
     @property
     def height(self):
-        "Use private height variable instead of WINSZ"
-
         return self._height
 
     @property
     def width(self):
-        "Use private width variable instead of WINSZ"
-
         return self._width
 
     async def inkey(self, timeout=None, esc_delay=0.35):
@@ -118,7 +160,8 @@ class TerminalProxy(object):
             ucs += c
 
         self._kbdbuf = []
-        ks = self.resolve(text=ucs) if len(ucs) else Keystroke()
+        ks = (self.resolve(text=ucs) if len(ucs)
+              else blessed.keyboard.Keystroke())
 
         # either buffer was empty or we don't have enough for a keystroke;
         # wait for input from kbd
@@ -129,41 +172,41 @@ class TerminalProxy(object):
                         # don't actually wait indefinitely; wait in 0.1 second
                         # increments so that the coroutine can be aborted if
                         # the connection is dropped
-                        ucs += ((await aio.wait_for(self._stdin.get(),
-                                                    timeout=0.1))
-                                 .decode(self.encoding))
+                        inp = await aio.wait_for(self.stdin.get(), 0.1)
+                        ucs += inp.decode(self.encoding)
                     else:
-                        ucs += ((await aio.wait_for(self._stdin.get(),
-                                                    timeout=timeout))
-                                .decode(self.encoding))
+                        inp = await aio.wait_for(self.stdin.get(), timeout)
+                        ucs += inp.decode(self.encoding)
 
                     break
+
                 except aio.streams.IncompleteReadError:
                     raise ProcessClosing()
+
                 except aio.futures.TimeoutError:
                     if timeout is not None:
                         break
 
-            ks = self.resolve(text=ucs) if len(ucs) else Keystroke()
+            ks = (self.resolve(text=ucs) if len(ucs)
+                  else blessed.keyboard.Keystroke())
 
         if ks.code == self.KEY_ESCAPE:
             # esc was received; let's see if we're getting a key sequence
             while ucs in self._keymap_prefixes:
                 try:
-                    ucs += ((await aio.wait_for(self._stdin.get(),
-                                                timeout=esc_delay))
-                             .decode(self.encoding))
+                    inp = await aio.wait_for(self.stdin.get(), esc_delay)
+                    ucs += inp.decode(self.encoding)
+
                 except aio.streams.IncompleteReadError:
                     raise ProcessClosing()
+
                 except aio.futures.TimeoutError:
                     break
 
-            ks = self.resolve(text=ucs) if len(ucs) else Keystroke()
+            ks = self.resolve(text=ucs) if len(ucs) else blessed.Keystroke()
 
         # append any remaining input back into the kbd buffer
         for c in ucs[len(ks):]:
             self._kbdbuf.append(c)
 
         return ks
-
-    inkey.__doc__ = f'(asyncio) {BlessedTerminal.inkey.__doc__}'

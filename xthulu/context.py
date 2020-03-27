@@ -26,14 +26,14 @@ class Context(object):
     stack = []
     #: User object (assigned at _init)
     user = None
+    _sid = None
 
     def __init__(self, proc, encoding='utf-8'):
         _peername = proc.get_extra_info('peername')
         _username = proc.get_extra_info('username')
         #: SSHServerProcess for session
         self.proc = proc
-        #: Session ID (IP:PORT)
-        self.sid = '{}:{}'.format(*_peername)
+        self._sid = '{}:{}'.format(*_peername)
         #: Encoding for session
         self.encoding = encoding
         #: Remote IP address
@@ -63,6 +63,13 @@ class Context(object):
         self.user = await (User.query.where(func.lower(User.name) ==
             _username.lower()).gino.first())
         self.log.debug(repr(self.user))
+
+    # read-only
+    @property
+    def sid(self):
+        "Session ID (IP:PORT)"
+
+        return self._sid
 
     def echo(self, text):
         """
@@ -198,7 +205,7 @@ class Context(object):
         except Exception as exc:
             self.log.exception(exc)
             self.echo(self.term.bold_red_on_black(
-                '\r\nException in {script.name}\r\n'))
+                f'\r\nException in {script.name}\r\n'))
             await aio.sleep(3)
 
 

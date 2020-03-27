@@ -3,7 +3,7 @@
 # stdlib
 import asyncio as aio
 from multiprocessing import Process, Pipe
-import sys
+import os
 # 3rd party
 import asyncssh
 from sqlalchemy import func
@@ -14,10 +14,7 @@ from .events import EventQueues
 from .exceptions import Goto, ProcessClosing
 from .models.user import User, hash_password
 from .structs import EventData, Script
-from .terminal import Terminal, TerminalProxy
-
-top_names = (config['ssh']['userland']['top']
-             if 'top' in config['ssh']['userland'] else ('top',))
+from .terminal import SlaveProxyTerminal, MasterProxyTerminal
 
 
 class SSHServer(asyncssh.SSHServer):
@@ -99,25 +96,41 @@ async def handle_client(proc):
         cx.encoding = 'cp437'
 
     termtype = cx.proc.get_terminal_type()
-    w, h, _, _ = proc.get_terminal_size()
+    w, h, pw, ph = proc.get_terminal_size()
     proc.env['TERM'] = termtype
     proc.env['COLS'] = w
     proc.env['LINES'] = h
-    proxy_pipe, term_pipe = Pipe()
-    stdin = aio.Queue()
+    pipe_master, pipe_slave = Pipe()
+    session_stdin = aio.Queue()
+    timeout = int(config.get('ssh', {}).get('session', {}).get('timeout', 120))
 
     async def input_loop():
         "Catch exceptions on stdin and convert to EventData"
 
         while True:
             try:
-                r = await proc.stdin.readexactly(1)
-                await stdin.put(r)
+                if timeout > 0:
+                    r = await aio.wait_for(proc.stdin.readexactly(1), timeout)
+                else:
+                    r = await proc.stdin.readexactly(1)
+
+                await session_stdin.put(r)
+
             except aio.streams.IncompleteReadError:
                 return
+
+            except aio.futures.TimeoutError:
+                cx.echo(cx.term.bold_red_on_black('\r\nTimed out.\r\n'))
+                log.warning(f'{cx.user.name}@{cx.sid} timed out')
+                proc.close()
+
+                return
+
             except asyncssh.misc.TerminalSizeChanged as sz:
-                cx.term._width = sz.width
-                cx.term._height = sz.height
+                cx.term.width = sz.width
+                cx.term.height = sz.height
+                cx.term.pixel_width = sz.pixwidth
+                cx.term.pixel_height = sz.pixheight
                 await cx.events.put(EventData('resize',
                                               (sz.width, sz.height,)))
 
@@ -127,41 +140,84 @@ async def handle_client(proc):
         and proxying calls/responses via Pipe
         """
 
-        term = Terminal(termtype, proc.stdout)
+        subproc_term = SlaveProxyTerminal(termtype, w, h, pw, ph)
         debug_term = config.get('debug', {}).get('term', False)
         inp = None
 
         while True:
             try:
-                inp = term_pipe.recv()
+                given_attr, args, kwargs = pipe_slave.recv()
             except KeyboardInterrupt:
                 return
 
             if debug_term:
-                log.debug(f'proxy received: {inp}')
+                log.debug(f'proxy received: {given_attr}, {args!r}, '
+                          f'{kwargs!r}')
 
-            attr = getattr(term, inp[0])
-
-            if callable(attr) or len(inp[1]) or len(inp[2]):
+            # exit sentinel
+            if given_attr is None:
                 if debug_term:
-                    log.debug(f'{inp[0]} callable')
+                    log.debug(f'term={subproc_term}/pid={os.getpid()} exit')
 
-                term_pipe.send(attr(*inp[1], **inp[2]))
+                break
+
+            # special attribute -- a context manager, enter it naturally, exit
+            # unnaturally (even, prematurely), with the exit value ready for
+            # our client side, this is only possible because blessed doesn't
+            # use any state or time-sensitive values, only terminal sequences,
+            # and these CM's are the only ones without side-effects.
+            if given_attr.startswith('!CTX'):
+                # here, we feel the real punishment of side-effects...
+                sideeffect_stream = subproc_term.stream.getvalue()
+                assert not sideeffect_stream, ('should be empty',
+                                               sideeffect_stream)
+
+                given_attr = given_attr[len('!CTX'):]
+                if debug_term: log.debug(f'context attr: {given_attr}')
+
+                with getattr(subproc_term, given_attr)(*args, **kwargs) \
+                        as enter_result:
+                    enter_side_effect = subproc_term.stream.getvalue()
+                    subproc_term.stream.truncate(0)
+                    subproc_term.stream.seek(0)
+
+                    if debug_term:
+                        log.debug('enter_result, enter_side_effect = '
+                                  f'{enter_result!r}, {enter_side_effect!r}')
+
+                    pipe_slave.send((enter_result, enter_side_effect))
+
+                exit_side_effect = subproc_term.stream.getvalue()
+                subproc_term.stream.truncate(0)
+                subproc_term.stream.seek(0)
+                pipe_slave.send(exit_side_effect)
+
+            elif given_attr.startswith('!CALL'):
+                given_attr = given_attr[len('!CALL'):]
+                matching_attr = getattr(subproc_term, given_attr)
+                if debug_term: log.debug(f'callable attr: {given_attr}')
+                pipe_slave.send(matching_attr(*args, **kwargs))
+
             else:
-                if debug_term:
-                    log.debug('{inp[0]} not callable')
+                if debug_term: log.debug(f'attr: {given_attr}')
+                assert len(args) == len(kwargs) == 0, (args, kwargs)
+                matching_attr = getattr(subproc_term, given_attr)
+                if debug_term: log.debug(f'value: {matching_attr!r}')
+                pipe_slave.send(matching_attr)
 
-                term_pipe.send(attr)
 
     async def main_process():
         "Userland script stack; main process"
 
         pt = Process(target=terminal_process)
         pt.start()
-        cx.term = TerminalProxy(stdin, cx.encoding, proxy_pipe, w, h)
+        cx.term = MasterProxyTerminal(session_stdin, proc.stdout, cx.encoding,
+                                      pipe_master, w, h, pw, ph)
         # prep script stack with top scripts;
         # since we're treating it as a stack and not a queue, add them reversed
         # so they are executed in the order they were defined
+        top_names = (config.get('ssh', {}).get('userland', {})
+                     .get('top', ('top',)))
         cx.stack = [Script(s, (), {}) for s in reversed(top_names)]
 
         # main script engine loop
@@ -174,8 +230,8 @@ async def handle_client(proc):
                 except ProcessClosing:
                     cx.stack = []
         finally:
-            pt.terminate()
-            log.debug('Terminal proxy terminated')
+            # send sentinel to close child 'term_pipe' process
+            pipe_master.send((None, (), {}))
             proc.close()
 
     await aio.gather(input_loop(), main_process())
@@ -185,6 +241,8 @@ async def start_server():
     "Run init tasks and throw SSH server into asyncio event loop"
 
     await db.set_bind(config['db']['bind'])
+    log.info('SSH listening on '
+             f"{config['ssh']['host']}:{config['ssh']['port']}")
     await asyncssh.create_server(SSHServer, config['ssh']['host'],
                                  int(config['ssh']['port']),
                                  server_host_keys=config['ssh']['host_keys'],
