@@ -136,8 +136,10 @@ class BlockEditor(object):
 
             self.value[self.pos[0]] = before[:-1] + after
             self.pos[1] -= 1
+            log.debug(f'backspace "{self.value[self.pos[0]]} '
+                      f'{self.pos[0]},{self.pos[1]}"')
 
-            return self._color(self.term.move_left() + after + ' ' +
+            return self._color(self.term.move_left + after + ' ' +
                                self.term.move_left(len(after) + 1))
 
         elif ks.code == self.term.KEY_DELETE:
@@ -146,34 +148,37 @@ class BlockEditor(object):
 
             after = after[1:]
             self.value[self.pos[0]] = before + after
+            log.debug(f'delete "{self.value[self.pos[0]]}"')
 
             return self._color(after + ' ' +
                                self.term.move_left(len(after) + 1))
 
         elif ks.code == self.term.KEY_LEFT:
-            log.debug(f'left {self.pos[0]},{self.pos[1]}')
-
             if self.pos[1] == 0:
                 return ''
 
             self.pos[1] -= 1
+            log.debug(f'left {self.pos[0]},{self.pos[1]}')
 
-            return self.term.move_left()
+            return self.term.move_left
 
         elif ks.code == self.term.KEY_RIGHT:
             if self.pos[1] >= len(self.value[self.pos[0]]):
                 return ''
 
             self.pos[1] += 1
+            log.debug(f'right {self.pos[0]},{self.pos[1]}')
 
-            return self.term.move_right()
+            return self.term.move_right
 
         elif ks.is_sequence:
+            log.debug(f'swallowing sequence {ks}')
             return ''
 
         ucs = str(ks)
 
         if not self.term.length(ucs):
+            log.debug('zero length ucs')
             return ''
 
         self.value[self.pos[0]] = before + ucs + after
