@@ -30,7 +30,7 @@ async def main(cx):
         ks = None
 
         while not ks:
-            ev = await cx.events.poll('resize', flush=True)
+            ev = await cx.events.poll('resize', flush=True, keep_last=True)
 
             if ev:
                 dirty = True
