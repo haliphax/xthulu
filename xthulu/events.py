@@ -18,7 +18,7 @@ class EventQueue(object):
     def __getattr__(self, attr):
         return getattr(self._q, attr)
 
-    async def poll(self, event_name=None):
+    async def poll(self, event_name=None, flush=False):
         """
         Check for event
 
@@ -30,11 +30,14 @@ class EventQueue(object):
         popped = []
         found = None
 
-        while not self._q.empty() and found is None:
+        while not self._q.empty() and (found is None or flush):
             recv = await self._q.get()
 
             if recv.name == event_name or event_name is None:
-                found = recv
+                if found is None:
+                    found = recv
+                elif not flush:
+                    popped.append(recv)
             else:
                 popped.append(recv)
 
@@ -50,16 +53,7 @@ class EventQueue(object):
         :param str event_name: The event name to filter (if any)
         """
 
-        popped = []
-
-        while not self._q.empty():
-            recv = await self._q.get()
-
-            if event_name is not None and recv.name != event_name:
-                popped.append(recv)
-
-        # put back any events that were skipped
-        map(self._q.put_nowait, popped)
+        await self.poll(event_name=event_name, flush=True)
 
 
 async def put_global(event):

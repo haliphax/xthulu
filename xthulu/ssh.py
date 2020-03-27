@@ -123,14 +123,13 @@ async def handle_client(proc):
                 cx.echo(cx.term.bold_red_on_black('\r\nTimed out.\r\n'))
                 log.warning(f'{cx.user.name}@{cx.sid} timed out')
                 proc.close()
-
                 return
 
             except asyncssh.misc.TerminalSizeChanged as sz:
-                cx.term.width = sz.width
-                cx.term.height = sz.height
-                cx.term.pixel_width = sz.pixwidth
-                cx.term.pixel_height = sz.pixheight
+                cx.term._width = sz.width
+                cx.term._height = sz.height
+                cx.term._pixel_width = sz.pixwidth
+                cx.term._pixel_height = sz.pixheight
                 await cx.events.put(EventData('resize',
                                               (sz.width, sz.height,)))
 

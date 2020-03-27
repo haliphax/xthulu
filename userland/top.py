@@ -30,13 +30,14 @@ async def main(cx):
         ks = None
 
         while not ks:
-            ev = await cx.events.poll('resize')
+            ev = await cx.events.poll('resize', flush=True)
 
             if ev:
+                dirty = True
                 cx.echo(f'\r\n{ev}\r\n')
-                await cx.events.flush('resize')
-
-            ks = await cx.term.inkey(1)
+                break
+            else:
+                ks = await cx.term.inkey(3)
 
         if ks.code == cx.term.KEY_UP:
             dirty = True
