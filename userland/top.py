@@ -35,9 +35,10 @@ async def main(cx):
             if ev:
                 dirty = True
                 cx.echo(f'\r\n{ev}\r\n')
+                led.width = cx.term.width - 1
                 break
             else:
-                ks = await cx.term.inkey(3)
+                ks = await cx.term.inkey(1)
 
         if ks.code == cx.term.KEY_UP:
             dirty = True
