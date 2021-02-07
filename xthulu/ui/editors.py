@@ -171,6 +171,26 @@ class BlockEditor(object):
 
             return self.term.move_right
 
+        elif ks.code == self.term.KEY_HOME:
+            if self.pos[1] == 0:
+                return ''
+
+            diff = self.pos[1]
+            self.pos[1] = 0
+
+            return self.term.move_left(diff)
+
+        elif ks.code == self.term.KEY_END:
+            strlen = len(self.value[self.pos[0]])
+
+            if self.pos[1] >= strlen:
+                return ''
+
+            diff = strlen - self.pos[1]
+            self.pos[1] = len(self.value[self.pos[0]])
+
+            return self.term.move_right(diff)
+
         elif ks.is_sequence:
             log.debug(f'swallowing sequence {ks}')
             return ''
