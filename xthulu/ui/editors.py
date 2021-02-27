@@ -131,18 +131,19 @@ class BlockEditor(object):
         # TODO wrap text/cursor, overflow, up/down, tab
         if ks.code == self.term.KEY_BACKSPACE:
             if self.pos[1] == 0:
+                log.debug('at start of line, nothing to backspace')
                 return ''
 
             self.value[self.pos[0]] = before[:-1] + after
             self.pos[1] -= 1
-            log.debug(f'backspace "{self.value[self.pos[0]]}" '
-                      f'{self.pos[0]},{self.pos[1]}')
+            log.debug(f'backspace "{self.value[self.pos[0]]}" {self.pos}')
 
             return self._color(self.term.move_left + after + ' ' +
                                self.term.move_left(len(after) + 1))
 
         elif ks.code == self.term.KEY_DELETE:
             if self.pos[1] >= len(self.value[self.pos[0]]):
+                log.debug('at end of line, nothing to delete')
                 return ''
 
             after = after[1:]
@@ -154,28 +155,32 @@ class BlockEditor(object):
 
         elif ks.code == self.term.KEY_LEFT:
             if self.pos[1] == 0:
+                log.debug('already at start of line')
                 return ''
 
             self.pos[1] -= 1
-            log.debug(f'left {self.pos[0]},{self.pos[1]}')
+            log.debug(f'left {self.pos}')
 
             return self.term.move_left
 
         elif ks.code == self.term.KEY_RIGHT:
             if self.pos[1] >= len(self.value[self.pos[0]]):
+                log.debug('already at end of line')
                 return ''
 
             self.pos[1] += 1
-            log.debug(f'right {self.pos[0]},{self.pos[1]}')
+            log.debug(f'right {self.pos}')
 
             return self.term.move_right
 
         elif ks.code == self.term.KEY_HOME:
             if self.pos[1] == 0:
+                log.debug('already at start of line')
                 return ''
 
             diff = self.pos[1]
             self.pos[1] = 0
+            log.debuf(f'home {self.pos}')
 
             return self.term.move_left(diff)
 
@@ -183,10 +188,12 @@ class BlockEditor(object):
             strlen = len(self.value[self.pos[0]])
 
             if self.pos[1] >= strlen:
+                log.debug('already at end of line')
                 return ''
 
             diff = strlen - self.pos[1]
             self.pos[1] = len(self.value[self.pos[0]])
+            log.debug(f'end {self.pos}')
 
             return self.term.move_right(diff)
 
@@ -208,6 +215,7 @@ class BlockEditor(object):
         self.pos[1] += 1
         move_left = len(after) if self.pos[1] < len(self.value[self.pos[0]]) \
             else len(after) - 1
+        log.debug(f"{self.pos}\n{self.value}")
 
         return self._color(ucs + after + self.term.move_left(move_left))
 
