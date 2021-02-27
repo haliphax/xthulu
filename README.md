@@ -20,7 +20,7 @@
 - [ ] Terminal UI package
   - [x] Isolated `blessed.Terminal` process and proxy
   - [ ] Block editor
-  - [ ] Line editor (block editor with a single line)
+  - [x] Line editor (block editor with a single line)
   - [ ] Lightbar
   - [ ] Vertical lightbar
   - [ ] Matrix (vertical/horizontal lightbar)
