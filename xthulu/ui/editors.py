@@ -11,21 +11,23 @@ class BlockEditor(object):
     #: Editor text
     value = []
     #: Text length limit
-    limit = 0
-    #: Cursor position
+    limit = [0, 0]
+    #: Top-left corner of editor
+    corner = [None, None]
+    #: Cursor position within corpus (not screen position)
     pos = [0, 0]
 
     # internals
     _color_str = 'bold_white_on_blue'
     _color = None
 
-    def __init__(self, term, rows, width, **kwargs):
+    def __init__(self, term, rows, columns, **kwargs):
         #: Terminal to use for sequences
         self.term = term
         #: Height in rows
         self.rows = rows
-        #: Width of editor field
-        self.width = width
+        #: Width in columns
+        self.columns = columns
 
         if 'value' not in kwargs:
             for i in range(rows):
@@ -69,15 +71,21 @@ class BlockEditor(object):
         lenval = len(self.value)
         longest = 0
 
+        if (self.corner[0] is not None):
+            out += self.term.move_y(self.corner[0])
+
         for i in range(self.rows):
             if i > 0:
                 out += '\r\n'
 
-            out += self._color(' ' * self.width)
+            if (self.corner[1] is not None):
+                out += self.term.move_x(self.corner[1])
+
+            out += self._color(' ' * self.columns)
 
             if i < lenval:
-                out += self.term.move_left(self.width)
-                text = self.value[i][-self.width:]
+                out += self.term.move_left(self.columns)
+                text = self.value[i][-self.columns:]
                 textlen = len(text)
                 out += self._color(text)
 
@@ -85,12 +93,8 @@ class BlockEditor(object):
                     longest = textlen
 
         if redraw_cursor:
-            # move cursor back to top left before adjusting to self.pos offset
-            if self.rows > 1:
-                out += self.term.move_up(self.rows)
-
-            if longest > 0:
-                out += self.term.move_left(longest)
+            if self.corner[1] is None:
+                out += self.term.move_left(len(self.value[self.pos[0]]))
 
             out += self.redraw_cursor()
 
@@ -99,13 +103,21 @@ class BlockEditor(object):
     def redraw_cursor(self):
         """
         Output sequence to restore cursor position; assumes cursor is already
-        located at top-left of editor
+        located at top-left of editor if self.corner is unset
 
         :rtype: str
         """
 
         out = ''
 
+        # move cursor back to top left before adjusting to self.pos offset
+        if self.corner[0] is not None:
+            out += self.term.move_y(self.corner[0])
+
+        if self.corner[1] is not None:
+            out += self.term.move_x(self.corner[1])
+
+        # adjust offset
         if self.pos[0] > 0:
             out += self.term.move_down(self.pos[0])
 
@@ -180,7 +192,7 @@ class BlockEditor(object):
 
             diff = self.pos[1]
             self.pos[1] = 0
-            log.debuf(f'home {self.pos}')
+            log.debug(f'home {self.pos}')
 
             return self.term.move_left(diff)
 
@@ -201,7 +213,7 @@ class BlockEditor(object):
             log.debug(f'swallowing sequence {ks}')
             return ''
 
-        elif self.pos[1] >= self.limit:
+        elif self.pos[1] >= self.limit[1]:
             log.debug(f'reached text limit, discarding {ks}')
             return ''
 
@@ -224,8 +236,8 @@ class LineEditor(BlockEditor):
 
     "Line editor (single line)"
 
-    def __init__(self, term, width, *args, **kwargs):
-        super().__init__(term, 1, width, *args, **kwargs)
+    def __init__(self, term, columns, *args, **kwargs):
+        super().__init__(term, 1, columns, *args, **kwargs)
 
     @property
     def rows(self):

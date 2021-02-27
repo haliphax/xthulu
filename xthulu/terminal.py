@@ -8,6 +8,7 @@ import io
 import asyncio as aio
 import contextlib
 from functools import partial
+import os
 # 3rd party
 import blessed
 import wrapt

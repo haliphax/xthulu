@@ -15,7 +15,7 @@ async def main(cx):
             .format(cx.term.bold_blue(cx.user.name),
                     cx.term.bold_blue(cx.ip)))
     led = LineEditor(cx.term, cx.term.width - 1, color='bold_white_on_green',
-                     value=['testing this thing'], limit=40)
+                     value=['testing this thing'], limit=(1, 40))
 
     for k in cx.env.keys():
         cx.echo(f'{k} = {cx.env[k]}\r\n')
