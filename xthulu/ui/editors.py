@@ -218,10 +218,13 @@ class BlockEditor(object):
             after = after[1:]
             self.value[self.pos[1]] = before + after
             after = after[:min(len(after), self.columns - self.cursor[0])]
+
+            if self.cursor[0] + len(after) <= self.columns - 1:
+                after += ' '
+
             log.debug(f'delete "{self.value[self.pos[1]]}"')
 
-            return self._color(after + ' ' +
-                               self.term.move_x(self.cursor[0] + 1))
+            return self._color(after + self.term.move_left(len(after)))
 
         elif ks.code == self.term.KEY_LEFT:
             if self.cursor[0] <= 0 and self.pos[0] <= 0:
@@ -293,7 +296,7 @@ class BlockEditor(object):
                 log.debug('shifting visible area right')
 
             prev = self.cursor[0]
-            self.cursor[0] = min(strlen, self.columns - 1)
+            self.cursor[0] = min(strlen - self.pos[0], self.columns - 1)
             log.debug(f'end {self.pos}')
 
             return self.redraw(anchor=True) if shift \
