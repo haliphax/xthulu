@@ -128,7 +128,7 @@ class BlockEditor(object):
         before = row[:self.pos[1]]
         after = row[self.pos[1]:]
 
-        # TODO wrap text/cursor, overflow, up/down, tab, length limit
+        # TODO wrap text/cursor, overflow, up/down, tab
         if ks.code == self.term.KEY_BACKSPACE:
             if self.pos[1] == 0:
                 return ''
@@ -192,6 +192,10 @@ class BlockEditor(object):
 
         elif ks.is_sequence:
             log.debug(f'swallowing sequence {ks}')
+            return ''
+
+        elif self.pos[1] >= self.limit:
+            log.debug(f'reached text limit, discarding {ks}')
             return ''
 
         ucs = str(ks)
