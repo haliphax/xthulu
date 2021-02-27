@@ -128,8 +128,7 @@ class BlockEditor(object):
         before = row[:self.pos[1]]
         after = row[self.pos[1]:]
 
-        # TODO wrap text/cursor, overflow, up/down, home, end, insert mode,
-        # tab, length limit enforcement
+        # TODO wrap text/cursor, overflow, up/down, tab, length limit
         if ks.code == self.term.KEY_BACKSPACE:
             if self.pos[1] == 0:
                 return ''
@@ -204,7 +203,7 @@ class BlockEditor(object):
         self.value[self.pos[0]] = before + ucs + after
         self.pos[1] += 1
         move_left = len(after) if self.pos[1] < len(self.value[self.pos[0]]) \
-                else len(after) - 1
+            else len(after) - 1
 
         return self._color(ucs + after + self.term.move_left(move_left))
 
