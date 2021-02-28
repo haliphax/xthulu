@@ -12,7 +12,7 @@ services:
         volumes:
             - /etc/passwd:/etc/passwd:ro
             - ./db:/var/lib/postgresql/data
-    ssh:
+    app:
         build: .
         command: start
         depends_on:
