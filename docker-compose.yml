@@ -1,17 +1,5 @@
 version: '3.5'
 services:
-    db:
-        environment:
-            POSTGRES_USER: xthulu
-            POSTGRES_PASSWORD: xthulu
-        image: postgres:12-alpine
-        ports:
-            - 5433:5432
-        restart: unless-stopped
-        user: 1000:1000
-        volumes:
-            - /etc/passwd:/etc/passwd:ro
-            - ./db:/var/lib/postgresql/data
     app:
         build: .
         command: start
@@ -26,3 +14,15 @@ services:
             - ./data:/app/data
             - ./userland:/app/userland
             - ./xthulu:/app/xthulu
+    db:
+        environment:
+            POSTGRES_USER: xthulu
+            POSTGRES_PASSWORD: xthulu
+        image: postgres:12-alpine
+        ports:
+            - 5433:5432
+        restart: unless-stopped
+        user: 1000:1000
+        volumes:
+            - /etc/passwd:/etc/passwd:ro
+            - ./db:/var/lib/postgresql/data
