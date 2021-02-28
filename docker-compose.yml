@@ -20,7 +20,7 @@ services:
             POSTGRES_PASSWORD: xthulu
         image: postgres:12-alpine
         ports:
-            - 5433:5432
+            - 127.0.0.1:5433:5432
         restart: unless-stopped
         user: 1000:1000
         volumes:
