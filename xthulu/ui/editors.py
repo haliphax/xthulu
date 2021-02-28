@@ -168,6 +168,146 @@ class BlockEditor(object):
 
         return out
 
+    @property
+    def _row_vars(self):
+        row = self.value[self.pos[1] + self.cursor[1]]
+        before = row[:self.pos[0] + self.cursor[0]]
+        after = row[self.pos[0] + self.cursor[0]:]
+
+        return row, before, after
+
+    def kp_backspace(self):
+        "Handle KEY_BACKSPACE."
+
+        _, before, after = self._row_vars
+
+        if self.pos[0] <= 0 and self.cursor[0] == 0:
+            log.debug('at start of line, nothing to backspace')
+            return ''
+
+        if self.cursor[0] <= 0:
+            self.pos[0] = max(0, self.pos[0] - 1)
+
+        self.value[self.pos[1]] = before[:-1] + after
+        out = ''
+
+        after = after[:min(len(after), self.columns - self.cursor[0])]
+
+        if self.cursor[0] > 0:
+            after += ' '
+            out += self.term.move_left
+            self.cursor[0] -= 1
+
+        out += self._color(after + self.term.move_left(len(after)))
+        log.debug(f'backspace {self.pos} {self.cursor} '
+                    f'{self.value[self.pos[1]]!r}')
+
+        return out
+
+    def kp_delete(self):
+        "Handle KEY_DELETE."
+
+        _, before, after = self._row_vars
+
+        if self.pos[0] >= len(self.value[self.pos[1]]):
+            log.debug('at end of line, nothing to delete')
+            return ''
+
+        after = after[1:]
+        self.value[self.pos[1]] = before + after
+        after = after[:min(len(after), self.columns - self.cursor[0])]
+
+        if self.cursor[0] + len(after) <= self.columns - 1:
+            after += ' '
+
+        log.debug(f'delete "{self.value[self.pos[1]]}"')
+
+        return self._color(after + self.term.move_left(len(after)))
+
+    def kp_left(self):
+        "Handle KEY_LEFT."
+
+        if self.cursor[0] <= 0 and self.pos[0] <= 0:
+            log.debug('already at start of line')
+            return ''
+
+        shift = False
+
+        if self.cursor[0] <= 0:
+            shift = True
+            self.pos[0] -= 1
+            log.debug('shifting visible area left')
+
+        self.cursor[0] = max(0, self.cursor[0] - 1)
+        log.debug(f'left {self.pos} {self.cursor}')
+
+        return self.redraw(anchor=True) if shift else self.term.move_left
+
+    def kp_right(self):
+        "Handle KEY_RIGHT."
+
+        if self.pos[0] + self.cursor[0] >= len(self.value[self.pos[1]]):
+            log.debug('already at end of line')
+            return ''
+
+        shift = False
+        
+        if self.cursor[0] >= self.columns - 1:
+            shift = True
+            self.pos[0] += 1
+            log.debug('shifting visible area right')
+
+        self.cursor[0] = min(self.columns - 1, self.cursor[0] + 1)
+        log.debug(f'right {self.pos} {self.cursor}')
+
+        return self.redraw(anchor=True) if shift else self.term.move_right
+
+    def kp_home(self):
+        "Handle KEY_HOME."
+
+        if self.cursor[0] == 0:
+            log.debug('already at start of line')
+            return ''
+
+        shift = False
+
+        if self.pos[0] > 0:
+            shift = True
+            log.debug('shifting visible area left')
+
+        lastpos = self.pos.copy()
+        lastcurs = self.cursor.copy()
+        out = self.term.move_left(self.cursor[0])
+        self.pos[0] = 0
+        self.cursor[0] = 0
+        out += self.redraw() if shift else ''
+        log.debug(f'home {lastpos} {lastcurs} => {self.pos} {self.cursor}')
+
+        return out
+
+    def kp_end(self):
+        "Handle KEY_END."
+
+        strlen = len(self.value[self.pos[1]])
+
+        if self.pos[0] + self.cursor[0] >= strlen:
+            log.debug('already at end of line')
+            return ''
+
+        shift = False
+
+        if strlen - self.pos[0] > self.columns:
+            shift = True
+            self.pos[0] = max(0, strlen - self.columns + 1)
+            log.debug('shifting visible area right')
+
+        prev = self.cursor[0]
+        self.cursor[0] = min(strlen - self.pos[0], self.columns - 1)
+        log.debug(f'end {self.pos}')
+
+        return self.redraw(anchor=True) if shift \
+            else self.term.move_right(self.cursor[0] - prev)
+
     def process_keystroke(self, ks):
         """
         Process keystroke and produce output (if any)
@@ -178,135 +318,26 @@ class BlockEditor(object):
         :rtype: str
         """
 
-        row = self.value[self.pos[1] + self.cursor[1]]
-        before = row[:self.pos[0] + self.cursor[0]]
-        after = row[self.pos[0] + self.cursor[0]:]
+        handlers = {
+            self.term.KEY_BACKSPACE: self.kp_backspace,
+            self.term.KEY_DELETE: self.kp_delete,
+            self.term.KEY_LEFT: self.kp_left,
+            self.term.KEY_RIGHT: self.kp_right,
+            self.term.KEY_HOME: self.kp_home,
+            self.term.KEY_END: self.kp_end,
+        }
 
-        # TODO split handlers into own functions (self.home, self.end, etc.)
         # TODO general: tab
         # TODO multiline: up/down, under/overflow, enter
 
-        if ks.code == self.term.KEY_BACKSPACE:
-            if self.pos[0] <= 0 and self.cursor[0] == 0:
-                log.debug('at start of line, nothing to backspace')
-                return ''
+        if ks.code in handlers:
+            return handlers[ks.code]()
 
-            if self.cursor[0] <= 0:
-                self.pos[0] = max(0, self.pos[0] - 1)
-
-            self.value[self.pos[1]] = before[:-1] + after
-            out = ''
-
-            after = after[:min(len(after), self.columns - self.cursor[0])]
-
-            if self.cursor[0] > 0:
-                after += ' '
-                out += self.term.move_left
-                self.cursor[0] -= 1
-
-            out += self._color(after + self.term.move_left(len(after)))
-            log.debug(f'backspace {self.pos} {self.cursor} '
-                      f'{self.value[self.pos[1]]!r}')
-
-            return out
-
-        elif ks.code == self.term.KEY_DELETE:
-            if self.pos[0] >= len(self.value[self.pos[1]]):
-                log.debug('at end of line, nothing to delete')
-                return ''
-
-            after = after[1:]
-            self.value[self.pos[1]] = before + after
-            after = after[:min(len(after), self.columns - self.cursor[0])]
-
-            if self.cursor[0] + len(after) <= self.columns - 1:
-                after += ' '
-
-            log.debug(f'delete "{self.value[self.pos[1]]}"')
-
-            return self._color(after + self.term.move_left(len(after)))
-
-        elif ks.code == self.term.KEY_LEFT:
-            if self.cursor[0] <= 0 and self.pos[0] <= 0:
-                log.debug('already at start of line')
-                return ''
-
-            shift = False
-
-            if self.cursor[0] <= 0:
-                shift = True
-                self.pos[0] -= 1
-                log.debug('shifting visible area left')
-
-            self.cursor[0] = max(0, self.cursor[0] - 1)
-            log.debug(f'left {self.pos} {self.cursor}')
-
-            return self.redraw(anchor=True) if shift else self.term.move_left
-
-        elif ks.code == self.term.KEY_RIGHT:
-            if self.pos[0] + self.cursor[0] >= len(self.value[self.pos[1]]):
-                log.debug('already at end of line')
-                return ''
-
-            shift = False
-            
-            if self.cursor[0] >= self.columns - 1:
-                shift = True
-                self.pos[0] += 1
-                log.debug('shifting visible area right')
-
-            self.cursor[0] = min(self.columns - 1, self.cursor[0] + 1)
-            log.debug(f'right {self.pos} {self.cursor}')
-
-            return self.redraw(anchor=True) if shift else self.term.move_right
-
-        elif ks.code == self.term.KEY_HOME:
-            if self.cursor[0] == 0:
-                log.debug('already at start of line')
-                return ''
-
-            shift = False
-
-            if self.pos[0] > 0:
-                shift = True
-                log.debug('shifting visible area left')
-
-            lastpos = self.pos.copy()
-            lastcurs = self.cursor.copy()
-            out = self.term.move_left(self.cursor[0])
-            self.pos[0] = 0
-            self.cursor[0] = 0
-            out += self.redraw() if shift else ''
-            log.debug(f'home {lastpos} {lastcurs} => {self.pos} {self.cursor}')
-
-            return out
-
-        elif ks.code == self.term.KEY_END:
-            strlen = len(self.value[self.pos[1]])
-
-            if self.pos[0] + self.cursor[0] >= strlen:
-                log.debug('already at end of line')
-                return ''
-
-            shift = False
-
-            if strlen - self.pos[0] > self.columns:
-                shift = True
-                self.pos[0] = max(0, strlen - self.columns + 1)
-                log.debug('shifting visible area right')
-
-            prev = self.cursor[0]
-            self.cursor[0] = min(strlen - self.pos[0], self.columns - 1)
-            log.debug(f'end {self.pos}')
-
-            return self.redraw(anchor=True) if shift \
-                else self.term.move_right(self.cursor[0] - prev)
-
-        elif ks.is_sequence:
+        if ks.is_sequence:
             log.debug(f'swallowing sequence {ks!r}')
             return ''
 
-        elif self.limit[0] > 0 and self.pos[0] >= self.limit[0]:
+        if self.limit[0] > 0 and self.pos[0] >= self.limit[0]:
             log.debug(f'reached text limit, discarding {ks!r}')
             return ''
 
@@ -316,6 +347,9 @@ class BlockEditor(object):
             log.debug('zero length ucs')
             return ''
 
+        # handle typed character
+
+        _, before, after = self._row_vars
         self.value[self.pos[1]] = before + ucs + after
         self.cursor[0] += 1
         log.debug(f"{self.pos} {self.value}")
