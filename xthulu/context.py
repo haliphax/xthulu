@@ -11,7 +11,7 @@ import sys
 # 3rd party
 from sqlalchemy import func
 # local
-from . import config, db, locks, log as syslog
+from . import config, locks, log as syslog
 from .events import EventQueue
 from .exceptions import Goto, ProcessClosing
 from .models import User
@@ -61,7 +61,7 @@ class Context(object):
 
         _username = self.proc.get_extra_info('username')
         self.user = await (User.query.where(func.lower(User.name) ==
-            _username.lower()).gino.first())
+                                            _username.lower()).gino.first())
         self.log.debug(repr(self.user))
 
     # read-only
