@@ -19,8 +19,6 @@ class User(db.Model):
     salt = db.Column(db.LargeBinary(32))
 
     def __repr__(self):
-        'Represent as str'
-
         return f'User({self.name}#{self.id})'
 
 
