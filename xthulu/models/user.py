@@ -1,5 +1,7 @@
 "User model and helper functions"
 
+# stdlib
+from typing import Tuple
 # 3rd party
 import bcrypt
 # local
@@ -26,8 +28,14 @@ class User(db.Model):
         return f'User({self.name}#{self.id})'
 
     @staticmethod
-    def hash_password(pwd, salt=None):
-        'Generate a hash for the given password and salt; return (hash, salt)'
+    def hash_password(pwd: str, salt: bytes = None) -> Tuple[bytes, bytes]:
+        """
+        Generate a hash for the given password and salt.
+
+        :param pwd: The plain text password to encrypt
+        :param salt: The salt to use (will be generated if None)
+        :returns: hash, salt
+        """
 
         if salt is None:
             salt = bcrypt.gensalt()
