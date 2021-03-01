@@ -5,7 +5,6 @@ from datetime import datetime
 from typing import Tuple
 # 3rd party
 import bcrypt
-from sqlalchemy import func
 # local
 from .. import db
 
@@ -16,8 +15,8 @@ class User(db.Model):
 
     __tablename__ = 'user'
     __table_args__ = (
-        db.Index('idx_user_name_lower', func.lower('name')),
-        db.Index('idx_user_email_lower', func.lower('email')),
+        db.Index('idx_user_name_lower', db.func.lower('name')),
+        db.Index('idx_user_email_lower', db.func.lower('email')),
     )
 
     #: Unique ID
