@@ -32,8 +32,7 @@ class BlockEditor(object):
         self.columns = columns
 
         if 'value' not in kwargs:
-            for i in range(rows):
-                self.value.append('')
+            self.value = ['',] * rows
 
         if 'color' in kwargs:
             self._color_str = kwargs['color']
@@ -251,7 +250,7 @@ class BlockEditor(object):
             return ''
 
         shift = False
-        
+
         if self.cursor[0] >= self.columns - 1:
             shift = True
             self.pos[0] += 1
