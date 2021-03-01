@@ -10,8 +10,8 @@ import asyncio as aio
 import contextlib
 from functools import partial
 import os
-from subprocess import PIPE
-from typing import Callable
+from typing import Callable, Union
+from subprocess import IO
 # 3rd party
 import blessed
 import wrapt
@@ -50,7 +50,8 @@ class SubprocessTerminal(blessed.Terminal):
 
 
 class TerminalProxyCall(wrapt.ObjectProxy):
-    def __init__(self, wrapped: Callable, attr: str, pipe_master: PIPE):
+    def __init__(self, wrapped: Callable, attr: str,
+                 pipe_master: Union[int, IO]):
         super().__init__(wrapped)
         self.pipe_master = pipe_master
         self.attr = attr
@@ -69,7 +70,7 @@ class ProxyTerminal(object):
                  'fullscreen')
 
     def __init__(self, stdin: Queue, stdout: Queue, encoding: str,
-                 pipe_master: PIPE, width: int = 0, height: int = 0,
+                 pipe_master: Union[int, IO], width: int = 0, height: int = 0,
                  pixel_width: int = 0, pixel_height: int = 0):
         self.stdin, self.stdout = stdin, stdout
         self.encoding = encoding
@@ -227,7 +228,7 @@ class ProxyTerminal(object):
 
 
 def terminal_process(termtype: str, w: int, h: int, pw: int, ph: int,
-                     pipe_slave: PIPE):
+                     pipe_slave: Union[int, IO]):
     """
     Avoid Python curses singleton bug by stuffing Terminal in a subprocess
     and proxying calls/responses via Pipe
