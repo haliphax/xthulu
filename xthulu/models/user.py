@@ -28,8 +28,6 @@ class User(db.Model):
     last = db.Column(db.DateTime(), default=datetime.utcnow)
 
     def __repr__(self):
-        'Represent as str'
-
         return f'User({self.name}#{self.id})'
 
     @staticmethod
