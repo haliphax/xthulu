@@ -29,9 +29,10 @@ async def main(cx: Context):
             if ev:
                 dirty = True
                 led.columns = cx.term.width - 1
+
                 break
-            else:
-                ks = await cx.term.inkey(1)
+
+            ks = await cx.term.inkey(1)
 
         if ks.code == cx.term.KEY_ESCAPE:
             return
@@ -43,6 +44,7 @@ async def main(cx: Context):
                 return
 
             await Oneliner.create(user_id=cx.user.id, message=val)
+
             return
 
         else:
