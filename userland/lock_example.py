@@ -1,8 +1,6 @@
-"xthulu gosub example"
+"xthulu lock example"
 
-async def main(cx, arg1, arg2):
-    cx.echo(f'gosub example {arg1} {arg2}\r\n')
-
+async def main(cx):
     with cx.lock('testing') as l:
         if not l:
             cx.echo('Unable to acquire lock\r\n')
