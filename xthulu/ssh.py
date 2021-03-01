@@ -2,6 +2,7 @@
 
 # stdlib
 import asyncio as aio
+from datetime import datetime
 from multiprocessing import Process, Pipe
 import os
 # 3rd party
@@ -81,6 +82,7 @@ class SSHServer(asyncssh.SSHServer):
             return False
 
         log.info(f'Valid credentials received for {username}')
+        await u.update(last=datetime.utcnow).apply()
 
         return True
 
