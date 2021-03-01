@@ -19,7 +19,7 @@ from .exceptions import ProcessClosing
 debug_term = bool(config.get('debug', {}).get('term', False))
 
 
-class SlaveProxyTerminal(blessed.Terminal):
+class SubprocessTerminal(blessed.Terminal):
 
     def __init__(self, kind, height=0, width=0, pixel_height=0, pixel_width=0):
         stream = io.StringIO()
@@ -57,7 +57,7 @@ class TerminalProxyCall(wrapt.ObjectProxy):
         return self.pipe_master.recv()
 
 
-class MasterProxyTerminal(object):
+class ProxyTerminal(object):
     _kbdbuf = []
 
     # context manager attribs
@@ -115,21 +115,29 @@ class MasterProxyTerminal(object):
 
             resolved_value = TerminalProxyCall(blessed_attr, attr,
                                                self.pipe_master)
-            if debug_term: log.debug(f'value: {resolved_value!r}')
+
+            if debug_term:
+                log.debug(f'value: {resolved_value!r}')
         else:
-            if debug_term: log.debug(f'{attr} not callable')
+            if debug_term:
+                log.debug(f'{attr} not callable')
+
             self.pipe_master.send((attr, (), {}))
             resolved_value = self.pipe_master.recv()
-            if debug_term: log.debug(f'value: {resolved_value!r}')
+
+            if debug_term:
+                log.debug(f'value: {resolved_value!r}')
 
             if isinstance(resolved_value,
                           (blessed.formatters.ParameterizingString,
                            blessed.formatters.FormattingOtherString)):
                 resolved_value = TerminalProxyCall(resolved_value, attr,
                                                    self.pipe_master)
-                if debug_term: log.debug(repr(resolved_value))
+                if debug_term:
+                    log.debug(repr(resolved_value))
 
-        if debug_term: log.debug(f'setattr {attr}')
+        if debug_term:
+            log.debug(f'setattr {attr}')
         setattr(self, attr, resolved_value)
 
         return resolved_value
@@ -219,7 +227,7 @@ def terminal_process(termtype, w, h, pw, ph, pipe_slave):
     and proxying calls/responses via Pipe
     """
 
-    subproc_term = SlaveProxyTerminal(termtype, w, h, pw, ph)
+    subproc_term = SubprocessTerminal(termtype, w, h, pw, ph)
     inp = None
 
     while True:
@@ -251,7 +259,9 @@ def terminal_process(termtype, w, h, pw, ph, pipe_slave):
                                            sideeffect_stream)
 
             given_attr = given_attr[len('!CTX'):]
-            if debug_term: log.debug(f'context attr: {given_attr}')
+
+            if debug_term:
+                log.debug(f'context attr: {given_attr}')
 
             with getattr(subproc_term, given_attr)(*args, **kwargs) \
                     as enter_result:
@@ -273,12 +283,20 @@ def terminal_process(termtype, w, h, pw, ph, pipe_slave):
         elif given_attr.startswith('!CALL'):
             given_attr = given_attr[len('!CALL'):]
             matching_attr = getattr(subproc_term, given_attr)
-            if debug_term: log.debug(f'callable attr: {given_attr}')
+
+            if debug_term:
+                log.debug(f'callable attr: {given_attr}')
+
             pipe_slave.send(matching_attr(*args, **kwargs))
 
         else:
-            if debug_term: log.debug(f'attr: {given_attr}')
+            if debug_term:
+                log.debug(f'attr: {given_attr}')
+
             assert len(args) == len(kwargs) == 0, (args, kwargs)
             matching_attr = getattr(subproc_term, given_attr)
-            if debug_term: log.debug(f'value: {matching_attr!r}')
+
+            if debug_term:
+                log.debug(f'value: {matching_attr!r}')
+
             pipe_slave.send(matching_attr)

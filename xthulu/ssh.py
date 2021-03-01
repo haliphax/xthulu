@@ -14,7 +14,7 @@ from .events import EventQueues
 from .exceptions import Goto, ProcessClosing
 from .models.user import User, hash_password
 from .structs import EventData, Script
-from .terminal import MasterProxyTerminal, SlaveProxyTerminal, terminal_process
+from .terminal import ProxyTerminal, SubprocessTerminal, terminal_process
 
 
 class SSHServer(asyncssh.SSHServer):
@@ -139,8 +139,8 @@ async def handle_client(proc):
         tp = Process(target=terminal_process,
                      args=(termtype, w, h, pw, ph, pipe_slave))
         tp.start()
-        cx.term = MasterProxyTerminal(session_stdin, proc.stdout, cx.encoding,
-                                      pipe_master, w, h, pw, ph)
+        cx.term = ProxyTerminal(session_stdin, proc.stdout, cx.encoding,
+                                pipe_master, w, h, pw, ph)
         # prep script stack with top scripts;
         # since we're treating it as a stack and not a queue, add them reversed
         # so they are executed in the order they were defined
