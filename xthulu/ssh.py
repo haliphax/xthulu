@@ -14,7 +14,7 @@ from .events import EventQueues
 from .exceptions import Goto, ProcessClosing
 from .models.user import User, hash_password
 from .structs import EventData, Script
-from .terminal import ProxyTerminal, SubprocessTerminal, terminal_process
+from .terminal import ProxyTerminal, terminal_process
 
 
 class SSHServer(asyncssh.SSHServer):
@@ -23,7 +23,7 @@ class SSHServer(asyncssh.SSHServer):
 
     _username = None
 
-    def connection_made(self, conn):
+    def connection_made(self, conn: asyncssh.SSHServerConnection):
         "Connection opened"
 
         self._peername = conn.get_extra_info('peername')
@@ -31,7 +31,7 @@ class SSHServer(asyncssh.SSHServer):
         EventQueues.q[self._sid] = aio.Queue()
         log.info(f'{self._peername[0]} connecting')
 
-    def connection_lost(self, exc):
+    def connection_lost(self, exc: Exception):
         "Connection closed"
 
         del EventQueues.q[self._sid]
@@ -42,7 +42,7 @@ class SSHServer(asyncssh.SSHServer):
 
         log.info(f'{self._username}@{self._peername[0]} disconnected')
 
-    def begin_auth(self, username):
+    def begin_auth(self, username: str):
         "Check for auth bypass"
 
         self._username = username
@@ -62,7 +62,7 @@ class SSHServer(asyncssh.SSHServer):
 
         return True
 
-    async def validate_password(self, username, password):
+    async def validate_password(self, username: str, password: str):
         "Validate provided password"
 
         u = await (User.query.where(func.lower(User.name) == username.lower())
@@ -85,10 +85,9 @@ class SSHServer(asyncssh.SSHServer):
         return True
 
 
-async def handle_client(proc):
+async def handle_client(proc: asyncssh.SSHServerProcess):
     "Client connected"
 
-    loop = aio.get_event_loop()
     cx = Context(proc=proc)
     await cx._init()
 

@@ -1,5 +1,9 @@
 "editors module"
 
+# stdlib
+from typing import Callable
+# 3rd party
+from blessed import Terminal
 # local
 from .. import log
 
@@ -23,7 +27,7 @@ class BlockEditor(object):
     _color_str = 'bold_white_on_blue'
     _color = None
 
-    def __init__(self, term, rows, columns, **kwargs):
+    def __init__(self, term: Terminal, rows: int, columns: int, **kwargs):
         #: Terminal to use for sequences
         self.term = term
         #: Height in rows
@@ -60,11 +64,9 @@ class BlockEditor(object):
         log.debug(f'cursor = {self.cursor}')
 
     @property
-    def color(self):
+    def color(self) -> Callable:
         """
         Color property; setting it also sets the internal Terminal callable
-
-        :rtype: callable
         """
 
         return getattr(self.term, self._color_str)
@@ -74,13 +76,12 @@ class BlockEditor(object):
         self._color_str = val
         self._color = getattr(self.term, val)
 
-    def redraw(self, redraw_cursor=True, anchor=False):
+    def redraw(self, redraw_cursor=True, anchor=False) -> str:
         """
         Output sequence to redraw editor
 
-        :param bool redraw_cursor: Redraw cursor position as well
-        :param bool anchor: Reset anchor position as well
-        :rtype: str
+        :param redraw_cursor: Redraw cursor position as well
+        :param anchor: Reset anchor position as well
         """
 
         out = ''
@@ -120,12 +121,10 @@ class BlockEditor(object):
 
         return out
 
-    def redraw_cursor(self):
+    def redraw_cursor(self) -> str:
         """
         Output sequence to restore cursor position; assumes cursor is already
         located at top-left of editor if self.corner is unset
-
-        :rtype: str
         """
 
         out = ''
@@ -148,7 +147,7 @@ class BlockEditor(object):
 
         return out
 
-    def reset_anchor(self):
+    def reset_anchor(self) -> str:
         """
         Assuming the cursor has not moved since the editor was responsible for
         it, this will reset the on-screen cursor to the top-left corner of the
@@ -175,7 +174,7 @@ class BlockEditor(object):
 
         return row, before, after
 
-    def kp_backspace(self):
+    def kp_backspace(self) -> str:
         "Handle KEY_BACKSPACE."
 
         _, before, after = self._row_vars
@@ -203,7 +202,7 @@ class BlockEditor(object):
 
         return out
 
-    def kp_delete(self):
+    def kp_delete(self) -> str:
         "Handle KEY_DELETE."
 
         _, before, after = self._row_vars
@@ -223,7 +222,7 @@ class BlockEditor(object):
 
         return self._color(after + self.term.move_left(len(after)))
 
-    def kp_left(self):
+    def kp_left(self) -> str:
         "Handle KEY_LEFT."
 
         if self.cursor[0] <= 0 and self.pos[0] <= 0:
@@ -242,7 +241,7 @@ class BlockEditor(object):
 
         return self.redraw(anchor=True) if shift else self.term.move_left
 
-    def kp_right(self):
+    def kp_right(self) -> str:
         "Handle KEY_RIGHT."
 
         if self.pos[0] + self.cursor[0] >= len(self.value[self.pos[1]]):
@@ -261,7 +260,7 @@ class BlockEditor(object):
 
         return self.redraw(anchor=True) if shift else self.term.move_right
 
-    def kp_home(self):
+    def kp_home(self) -> str:
         "Handle KEY_HOME."
 
         if self.cursor[0] == 0:
@@ -284,7 +283,7 @@ class BlockEditor(object):
 
         return out
 
-    def kp_end(self):
+    def kp_end(self) -> str:
         "Handle KEY_END."
 
         strlen = len(self.value[self.pos[1]])
@@ -307,7 +306,7 @@ class BlockEditor(object):
         return self.redraw(anchor=True) if shift \
             else self.term.move_right(self.cursor[0] - prev)
 
-    def process_keystroke(self, ks):
+    def process_keystroke(self, ks) -> str:
         """
         Process keystroke and produce output (if any)
 
@@ -376,15 +375,11 @@ class LineEditor(BlockEditor):
         super().__init__(term, 1, columns, *args, **kwargs)
 
     @property
-    def rows(self):
-        """
-        A line editor only has a single row
-
-        :rtype: int
-        """
+    def rows(self) -> int:
+        "A line editor only has a single row"
 
         return 1
 
     @rows.setter
-    def rows(self, val):
+    def rows(self, val: int):
         pass

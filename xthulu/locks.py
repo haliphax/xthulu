@@ -14,14 +14,13 @@ class Locks(object):
     owned = {}
 
 
-def get(owner, name):
+def get(owner: str, name: str) -> bool:
     """
     Acquire and hold lock on behalf of user/system
 
-    :param str owner: The name of the owner
-    :param str name: The name of the lock
+    :param owner: The name of the owner
+    :param name: The name of the lock
     :returns: Whether or not the lock was granted
-    :rtype: bool
     """
 
     log.debug(f'{owner} getting lock {name}')
@@ -43,14 +42,13 @@ def get(owner, name):
     return True
 
 
-def release(owner, name):
+def release(owner: str, name: str) -> bool:
     """
     Release a lock owned by user/system
 
-    :param str owner: The name of the owner
-    :param str name: The name of the lock
+    :param owner: The name of the owner
+    :param name: The name of the lock
     :returns: Whether or not the lock was valid to begin with
-    :rtype: bool
     """
 
     log.debug(f'{owner} releasing lock {name}')
@@ -74,14 +72,13 @@ def release(owner, name):
 
 
 @contextmanager
-def hold(owner, name):
+def hold(owner: str, name: str):
     """
     Session-agnostic lock context manager
 
-    :param str owner: The name of the owner
-    :param str name: The name of the lock
+    :param owner: The name of the owner
+    :param name: The name of the lock
     :returns: Whether or not the lock was granted
-    :rtype: bool
     """
 
     try:
@@ -90,11 +87,11 @@ def hold(owner, name):
         release(owner, name)
 
 
-def expire(owner):
+def expire(owner: str):
     """
     Remove all locks owned by user
 
-    :param str owner: The name of the owner
+    :param owner: The name of the owner
     """
 
     log.debug(f'Releasing locks owned by {owner}')

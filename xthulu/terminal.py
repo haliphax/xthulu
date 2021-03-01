@@ -4,11 +4,14 @@
 # https://github.com/jquast
 
 # stdlib
+from asyncio.queues import Queue
 import io
 import asyncio as aio
 import contextlib
 from functools import partial
 import os
+from subprocess import PIPE
+from typing import Callable
 # 3rd party
 import blessed
 import wrapt
@@ -21,7 +24,8 @@ debug_term = bool(config.get('debug', {}).get('term', False))
 
 class SubprocessTerminal(blessed.Terminal):
 
-    def __init__(self, kind, height=0, width=0, pixel_height=0, pixel_width=0):
+    def __init__(self, kind: str, height: int = 0, width: int = 0,
+                 pixel_height: int = 0, pixel_width: int = 0):
         stream = io.StringIO()
         super().__init__(kind, stream, force_styling=True)
         log.debug(f'Terminal.errors: {self.errors}')
@@ -46,7 +50,7 @@ class SubprocessTerminal(blessed.Terminal):
 
 
 class TerminalProxyCall(wrapt.ObjectProxy):
-    def __init__(self, wrapped, attr, pipe_master):
+    def __init__(self, wrapped: Callable, attr: str, pipe_master: PIPE):
         super().__init__(wrapped)
         self.pipe_master = pipe_master
         self.attr = attr
@@ -64,8 +68,9 @@ class ProxyTerminal(object):
     _ctxattrs = ('location', 'keypad', 'raw', 'cbreak', 'hidden_cursor',
                  'fullscreen')
 
-    def __init__(self, stdin, stdout, encoding, pipe_master, width=0, height=0,
-                 pixel_width=0, pixel_height=0):
+    def __init__(self, stdin: Queue, stdout: Queue, encoding: str,
+                 pipe_master: PIPE, width: int = 0, height: int = 0,
+                 pixel_width: int = 0, pixel_height: int = 0):
         self.stdin, self.stdout = stdin, stdout
         self.encoding = encoding
         self.pipe_master = pipe_master
@@ -74,7 +79,7 @@ class ProxyTerminal(object):
         self._pixel_width = pixel_width
         self._pixel_height = pixel_height
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str):
 
         @contextlib.contextmanager
         def proxy_contextmanager(*args, **kwargs):
@@ -161,7 +166,7 @@ class ProxyTerminal(object):
     def width(self):
         return self._width
 
-    async def inkey(self, timeout=None, esc_delay=0.35):
+    async def inkey(self, timeout: float = None, esc_delay: float = 0.35):
         ucs = ''
 
         # get anything currently in kbd buffer
@@ -221,7 +226,8 @@ class ProxyTerminal(object):
         return ks
 
 
-def terminal_process(termtype, w, h, pw, ph, pipe_slave):
+def terminal_process(termtype: str, w: int, h: int, pw: int, ph: int,
+                     pipe_slave: PIPE):
     """
     Avoid Python curses singleton bug by stuffing Terminal in a subprocess
     and proxying calls/responses via Pipe
