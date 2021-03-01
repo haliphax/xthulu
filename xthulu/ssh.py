@@ -101,7 +101,7 @@ async def handle_client(proc: asyncssh.SSHServerProcess):
     proc.env['TERM'] = termtype
     proc.env['COLS'] = w
     proc.env['LINES'] = h
-    pipe_master, pipe_slave = Pipe()
+    proxy_pipe, subproc_pipe = Pipe()
     session_stdin = aio.Queue()
     timeout = int(config.get('ssh', {}).get('session', {}).get('timeout', 120))
 
@@ -138,10 +138,10 @@ async def handle_client(proc: asyncssh.SSHServerProcess):
         "Userland script stack; main process"
 
         tp = Process(target=terminal_process,
-                     args=(termtype, w, h, pw, ph, pipe_slave))
+                     args=(termtype, w, h, pw, ph, subproc_pipe))
         tp.start()
         cx.term = ProxyTerminal(session_stdin, proc.stdout, cx.encoding,
-                                pipe_master, w, h, pw, ph)
+                                proxy_pipe, w, h, pw, ph)
         # prep script stack with top scripts;
         # since we're treating it as a stack and not a queue, add them reversed
         # so they are executed in the order they were defined
@@ -160,7 +160,7 @@ async def handle_client(proc: asyncssh.SSHServerProcess):
                     cx.stack = []
         finally:
             # send sentinel to close child 'term_pipe' process
-            pipe_master.send((None, (), {}))
+            proxy_pipe.send((None, (), {}))
             proc.close()
 
     await aio.gather(input_loop(), main_process())

@@ -9,9 +9,9 @@ import io
 import asyncio as aio
 import contextlib
 from functools import partial
+from multiprocessing.connection import Connection
 import os
-from typing import Callable, Union
-from subprocess import IO
+from typing import Callable
 # 3rd party
 import blessed
 import wrapt
@@ -50,8 +50,7 @@ class SubprocessTerminal(blessed.Terminal):
 
 
 class TerminalProxyCall(wrapt.ObjectProxy):
-    def __init__(self, wrapped: Callable, attr: str,
-                 pipe_master: Union[int, IO]):
+    def __init__(self, wrapped: Callable, attr: str, pipe_master: Connection):
         super().__init__(wrapped)
         self.pipe_master = pipe_master
         self.attr = attr
@@ -70,7 +69,7 @@ class ProxyTerminal(object):
                  'fullscreen')
 
     def __init__(self, stdin: Queue, stdout: Queue, encoding: str,
-                 pipe_master: Union[int, IO], width: int = 0, height: int = 0,
+                 pipe_master: Connection, width: int = 0, height: int = 0,
                  pixel_width: int = 0, pixel_height: int = 0):
         self.stdin, self.stdout = stdin, stdout
         self.encoding = encoding
@@ -228,18 +227,17 @@ class ProxyTerminal(object):
 
 
 def terminal_process(termtype: str, w: int, h: int, pw: int, ph: int,
-                     pipe_slave: Union[int, IO]):
+                     subproc_pipe: Connection):
     """
     Avoid Python curses singleton bug by stuffing Terminal in a subprocess
     and proxying calls/responses via Pipe
     """
 
     subproc_term = SubprocessTerminal(termtype, w, h, pw, ph)
-    inp = None
 
     while True:
         try:
-            given_attr, args, kwargs = pipe_slave.recv()
+            given_attr, args, kwargs = subproc_pipe.recv()
         except KeyboardInterrupt:
             return
 
@@ -280,12 +278,12 @@ def terminal_process(termtype: str, w: int, h: int, pw: int, ph: int,
                     log.debug('enter_result, enter_side_effect = '
                               f'{enter_result!r}, {enter_side_effect!r}')
 
-                pipe_slave.send((enter_result, enter_side_effect))
+                subproc_pipe.send((enter_result, enter_side_effect))
 
             exit_side_effect = subproc_term.stream.getvalue()
             subproc_term.stream.truncate(0)
             subproc_term.stream.seek(0)
-            pipe_slave.send(exit_side_effect)
+            subproc_pipe.send(exit_side_effect)
 
         elif given_attr.startswith('!CALL'):
             given_attr = given_attr[len('!CALL'):]
@@ -294,7 +292,7 @@ def terminal_process(termtype: str, w: int, h: int, pw: int, ph: int,
             if debug_term:
                 log.debug(f'callable attr: {given_attr}')
 
-            pipe_slave.send(matching_attr(*args, **kwargs))
+            subproc_pipe.send(matching_attr(*args, **kwargs))
 
         else:
             if debug_term:
@@ -306,4 +304,4 @@ def terminal_process(termtype: str, w: int, h: int, pw: int, ph: int,
             if debug_term:
                 log.debug(f'value: {matching_attr!r}')
 
-            pipe_slave.send(matching_attr)
+            subproc_pipe.send(matching_attr)
