@@ -14,8 +14,5 @@ async def main(cx):
             f'{cx.term.bold_blue(cx.user.name)}@'
             f'{cx.term.bold_blue(cx.ip)}\r\n')
 
-    for k in cx.env.keys():
-        cx.echo(f'{k} = {cx.env[k]}\r\n')
-
     await show_art(cx, 'userland/artwork/login.ans')
     await cx.gosub('oneliners')
