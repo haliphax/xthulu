@@ -58,4 +58,4 @@ async def show_art(cx: Context, filename: str, delay=0.2,
                 else:
                     await aio.sleep(delay)
 
-    cx.echo('\r\n')
+    cx.echo(f'\r\n{cx.term.normal}')
