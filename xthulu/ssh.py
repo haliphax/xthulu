@@ -82,7 +82,6 @@ class SSHServer(asyncssh.SSHServer):
             return False
 
         log.info(f'Valid credentials received for {username}')
-        await u.update(last=datetime.utcnow).apply()
 
         return True
 
@@ -104,6 +103,7 @@ async def handle_client(proc: asyncssh.SSHServerProcess):
     proxy_pipe, subproc_pipe = Pipe()
     session_stdin = aio.Queue()
     timeout = int(config.get('ssh', {}).get('session', {}).get('timeout', 120))
+    await cx.user.update(last=datetime.utcnow()).apply()
 
     async def input_loop():
         "Catch exceptions on stdin and convert to EventData"
