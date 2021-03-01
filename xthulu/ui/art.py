@@ -6,7 +6,7 @@ from os.path import exists, isfile
 from re import sub
 from typing import Union
 # 3rd party
-import aiofiles as aiof
+import aiofiles
 from blessed.keyboard import Keystroke
 # local
 from ..context import Context
@@ -36,7 +36,7 @@ async def show_art(cx: Context, filename: str, delay=0.2,
     first = True
     count = 0
 
-    async with aiof.open(filename, 'r') as f:
+    async with aiofiles.open(filename, 'r') as f:
         for line in await f.readlines():
             if not first:
                 cx.echo('\r\n')
