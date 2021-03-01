@@ -30,7 +30,7 @@ async def show_art(cx: Context, filename: str, delay=0.2,
     if not (exists(filename) and isfile(filename)):
         raise FileNotFoundError(f'Could not find {filename}')
 
-    if preload <= 0:
+    if preload is not None and preload <= 0:
         preload = cx.term.height - 1
 
     first = True
