@@ -2,6 +2,7 @@
 
 # stdlib
 import asyncio as aio
+from signal import SIGTERM
 import sys
 # 3rd party
 import asyncssh
@@ -22,8 +23,14 @@ def cli():
 def start():
     "Start SSH server process"
 
+    def shutdown():
+        log.info('Shutting down')
+        loop.stop()
+
+    loop.add_signal_handler(SIGTERM, shutdown)
+    log.info('Starting SSH server')
+
     try:
-        log.info('Starting SSH server')
         loop.run_until_complete(start_server())
     except (OSError, asyncssh.Error) as exc:
         sys.exit(f'Error: {exc}')
@@ -32,8 +39,9 @@ def start():
         log.info('SSH server is listening')
         loop.run_forever()
     except KeyboardInterrupt:
-        log.info('Shutting down')
+        pass
 
+    shutdown()
 
 @cli.command()
 def db_create():
