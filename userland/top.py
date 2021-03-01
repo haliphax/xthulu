@@ -10,10 +10,9 @@ async def main(cx):
     else:
         cx.echo('\x1b%@\x1b(U')
 
-    cx.echo(cx.term.normal +
-            '\r\nConnected: {}@{}\r\n'
-            .format(cx.term.bold_blue(cx.user.name),
-                    cx.term.bold_blue(cx.ip)))
+    cx.echo(f'{cx.term.normal}\r\nConnected: '
+            f'{cx.term.bold_blue(cx.user.name)}@'
+            f'{cx.term.bold_blue(cx.ip)}\r\n')
 
     for k in cx.env.keys():
         cx.echo(f'{k} = {cx.env[k]}\r\n')

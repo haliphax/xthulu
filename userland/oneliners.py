@@ -7,15 +7,15 @@ from xthulu.ui.editors import LineEditor
 # local
 from userland.models import Oneliner
 
+LIMIT = 200
 
 async def main(cx: Context):
-    limit = max(4, cx.term.height - len(cx.env.keys()) - 1)
-    recent = (Oneliner.select('id').order_by(Oneliner.id.desc()).limit(limit)
+    recent = (Oneliner.select('id').order_by(Oneliner.id.desc()).limit(LIMIT)
               .alias('recent').select())
     oneliners = await Oneliner.query.where(Oneliner.id.in_(recent)).gino.all()
 
     for ol in oneliners:
-        cx.echo(f'{ol.message}\r\n')
+        cx.echo(f'{ol.message[:cx.term.width - 1]}\r\n')
 
     led = LineEditor(cx.term, cx.term.width - 1, color='bold_white_on_green')
     dirty = True
@@ -39,17 +39,19 @@ async def main(cx: Context):
             ks = await cx.term.inkey(1)
 
         if ks.code == cx.term.KEY_ESCAPE:
-            return
+            break
 
         elif ks.code == cx.term.KEY_ENTER:
             val = led.value[0].strip()
 
             if len(val) == 0:
-                return
+                break
 
             await Oneliner.create(user_id=cx.user.id, message=val)
 
-            return
+            break
 
         else:
             cx.echo(led.process_keystroke(ks))
+
+    cx.echo('\r\n')
