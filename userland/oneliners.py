@@ -1,6 +1,7 @@
 "oneliners script"
 
 # api
+from xthulu import db
 from xthulu.context import Context
 from xthulu.ui.editors import LineEditor
 # local
@@ -8,7 +9,10 @@ from userland.models import Oneliner
 
 
 async def main(cx: Context):
-    oneliners = await Oneliner.query.gino.all()
+    limit = max(4, cx.term.height - len(cx.env.keys()) - 1)
+    recent = (Oneliner.select('id').order_by(Oneliner.id.desc()).limit(limit)
+              .alias('recent').select())
+    oneliners = await Oneliner.query.where(Oneliner.id.in_(recent)).gino.all()
 
     for ol in oneliners:
         cx.echo(f'{ol.message}\r\n')
