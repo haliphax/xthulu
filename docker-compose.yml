@@ -7,9 +7,8 @@ services:
             - db
         image: xthulu
         network_mode: host
-        ports:
-            - 8022
         restart: unless-stopped
+        tty: true
         volumes:
             - ./data:/app/data
             - ./userland:/app/userland
