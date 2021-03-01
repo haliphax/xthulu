@@ -2,7 +2,7 @@
 
 # stdlib
 from datetime import datetime
-# local
+# api
 from xthulu import db
 from xthulu.models import User
 
