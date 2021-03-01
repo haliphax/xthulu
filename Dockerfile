@@ -8,9 +8,9 @@ ADD ./setup.py /app/
 ADD ./requirements.txt /app/
 ADD ./xthulu /app/xthulu
 RUN sh -c "\
-	apk add -U gcc libffi libffi-dev musl-dev openssl openssl-dev; \
+	apk add -U gcc libffi libffi-dev musl-dev openssl openssl-dev cargo; \
 	pip install -e .; \
-	apk del gcc libffi-dev musl-dev openssl-dev; \
+	apk del gcc libffi-dev musl-dev openssl-dev cargo; \
 	printf 'from xthulu.__main__ import main; main()' > /app/entrypoint.py; \
 	printf '#!/bin/ash\n/usr/local/bin/python3 /app/entrypoint.py \$@' \
 		> /usr/local/bin/xt; \
