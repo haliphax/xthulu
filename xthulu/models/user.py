@@ -19,12 +19,19 @@ class User(db.Model):
         db.Index('idx_user_email_lower', func.lower('email')),
     )
 
+    #: Unique ID
     id = db.Column(db.Integer(), primary_key=True)
+    #: User name
     name = db.Column(db.String(24), unique=True)
+    #: Email address
     email = db.Column(db.String(64), unique=True)
+    #: Encrypted password
     password = db.Column(db.LargeBinary(64))
+    #: Password salt
     salt = db.Column(db.LargeBinary(32))
+    #: Creation time
     created = db.Column(db.DateTime(), default=datetime.utcnow)
+    #: Last login
     last = db.Column(db.DateTime(), default=datetime.utcnow)
 
     def __repr__(self):
