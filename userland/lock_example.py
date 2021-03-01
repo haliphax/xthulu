@@ -1,6 +1,10 @@
 "xthulu lock example"
 
-async def main(cx):
+# api
+from xthulu.context import Context
+
+
+async def main(cx: Context):
     with cx.lock('testing') as l:
         if not l:
             cx.echo('Unable to acquire lock\r\n')
