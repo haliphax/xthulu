@@ -14,12 +14,15 @@ async def main(cx):
             '\r\nConnected: {}@{}\r\n'
             .format(cx.term.bold_blue(cx.user.name),
                     cx.term.bold_blue(cx.ip)))
-    led = LineEditor(cx.term, 20, color='bold_white_on_green',
-                     value=['testing this thing'])
 
     for k in cx.env.keys():
         cx.echo(f'{k} = {cx.env[k]}\r\n')
 
+    await cx.gosub('oneliners')
+    return
+
+    led = LineEditor(cx.term, 20, color='bold_white_on_green',
+                     value=['testing this thing'])
     dirty = True
 
     while True:
@@ -35,7 +38,7 @@ async def main(cx):
             if ev:
                 dirty = True
                 cx.echo(f'\r\n{ev}\r\n')
-                led.width = cx.term.width - 1
+                led.columns = cx.term.width - 1
                 break
             else:
                 ks = await cx.term.inkey(1)
