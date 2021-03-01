@@ -1,10 +1,11 @@
 "Userland entry point"
 
 # local
+from xthulu.context import Context
 from xthulu.ui import show_art
 
 
-async def main(cx):
+async def main(cx: Context):
     if cx.encoding == 'utf-8':
         cx.echo('\x1b%G')
     else:
