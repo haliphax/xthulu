@@ -17,7 +17,8 @@ async def main(cx: Context):
     for ol in oneliners:
         cx.echo(f'{ol.message[:cx.term.width - 1]}\r\n')
 
-    led = LineEditor(cx.term, cx.term.width - 1, color='bold_white_on_green')
+    led = LineEditor(cx.term, cx.term.width - 1, color='bold_white_on_green',
+                     limit=78)
     dirty = True
 
     while True:

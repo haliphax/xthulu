@@ -76,6 +76,12 @@ class BlockEditor(object):
         self._color_str = val
         self._color = getattr(self.term, val)
 
+    @property
+    def at_end(self):
+        return (self.cursor[0] >= self.columns - 1
+                and self.pos[0] + self.cursor[0]
+                    >= len(self.value[self.pos[1]]) - 1)
+
     def redraw(self, redraw_cursor=True, anchor=False) -> str:
         """
         Output sequence to redraw editor
@@ -335,7 +341,7 @@ class BlockEditor(object):
             log.debug(f'swallowing sequence {ks!r}')
             return ''
 
-        if self.limit[0] > 0 and self.pos[0] >= self.limit[0]:
+        if self.limit[0] > 0 and self.pos[0] + self.cursor[0] >= self.limit[0]:
             log.debug(f'reached text limit, discarding {ks!r}')
             return ''
 
@@ -352,7 +358,7 @@ class BlockEditor(object):
         self.cursor[0] += 1
         log.debug(f"{self.pos} {self.value}")
 
-        if self.cursor[0] >= self.columns:
+        if not self.at_end and self.cursor[0] >= self.columns:
             self.cursor[0] -= 1
             self.pos[0] += 1
             log.debug('shifting visible area to right')
@@ -371,8 +377,8 @@ class LineEditor(BlockEditor):
 
     "Line editor (single line)"
 
-    def __init__(self, term, columns, *args, **kwargs):
-        super().__init__(term, 1, columns, *args, **kwargs)
+    def __init__(self, term, columns, limit=0, *args, **kwargs):
+        super().__init__(term, 1, columns, limit=(limit, 1), *args, **kwargs)
 
     @property
     def rows(self) -> int:
