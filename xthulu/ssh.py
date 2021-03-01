@@ -96,7 +96,7 @@ async def handle_client(proc: asyncssh.SSHServerProcess):
     if 'LANG' not in cx.proc.env or 'UTF-8' not in cx.proc.env['LANG']:
         cx.encoding = 'cp437'
 
-    termtype = cx.proc.get_terminal_type()
+    termtype = proc.get_terminal_type()
     w, h, pw, ph = proc.get_terminal_size()
     proc.env['TERM'] = termtype
     proc.env['COLS'] = w
@@ -124,6 +124,7 @@ async def handle_client(proc: asyncssh.SSHServerProcess):
                 cx.echo(cx.term.bold_red_on_black('\r\nTimed out.\r\n'))
                 log.warning(f'{cx.user.name}@{cx.sid} timed out')
                 proc.close()
+
                 return
 
             except asyncssh.misc.TerminalSizeChanged as sz:
