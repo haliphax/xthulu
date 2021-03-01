@@ -12,7 +12,7 @@ import toml
 log = logging.getLogger(__name__)
 streamHandler = logging.StreamHandler(sys.stdout)
 streamHandler.setFormatter(logging.Formatter(
-    '{asctime} {levelname} {module}.{funcName}: {message}', style='{'))
+    '{asctime} {levelname:<7} {module}.{funcName}: {message}', style='{'))
 log.addHandler(streamHandler)
 config = {}
 config_file = (environ['XTHULU_CONFIG'] if 'XTHULU_CONFIG' in environ
