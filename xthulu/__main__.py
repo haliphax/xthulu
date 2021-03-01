@@ -52,15 +52,15 @@ def db_create():
 def db_init():
     "Initialize database with starter data"
 
-    from .models.user import User, hash_password
+    from .models.user import User
 
     async def f():
         click.echo('Creating guest user')
-        pwd, salt = hash_password('guest')
+        pwd, salt = User.hash_password('guest')
         await User.create(name='guest', email='guest@localhost.localdomain',
                           password=pwd, salt=salt)
         click.echo('Creating user with password')
-        pwd, salt = hash_password('user')
+        pwd, salt = User.hash_password('user')
         await User.create(name='user', email='user@localhost.localdomain',
                           password=pwd, salt=salt)
 

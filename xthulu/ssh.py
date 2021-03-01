@@ -12,7 +12,7 @@ from . import config, db, locks, log
 from .context import Context
 from .events import EventQueues
 from .exceptions import Goto, ProcessClosing
-from .models.user import User, hash_password
+from .models.user import User
 from .structs import EventData, Script
 from .terminal import ProxyTerminal, terminal_process
 
@@ -73,7 +73,7 @@ class SSHServer(asyncssh.SSHServer):
 
             return False
 
-        expected, _ = hash_password(password, u.salt)
+        expected, _ = User.hash_password(password, u.salt)
 
         if expected != u.password:
             log.warn(f'Invalid credentials received for {username}')
