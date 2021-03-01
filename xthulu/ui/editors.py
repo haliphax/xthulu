@@ -78,9 +78,11 @@ class BlockEditor(object):
 
     @property
     def at_end(self):
+        if self.limit[0] == 0:
+            return False
+
         return (self.cursor[0] >= self.columns - 1
-                and self.pos[0] + self.cursor[0]
-                    >= len(self.value[self.pos[1]]) - 1)
+                and len(self.value[self.pos[1]]) >= self.limit[0])
 
     def redraw(self, redraw_cursor=True, anchor=False) -> str:
         """
