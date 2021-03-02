@@ -2,8 +2,7 @@
 
 # stdlib
 import asyncio as aio
-from contextlib import contextmanager
-from functools import singledispatch
+from functools import partial, singledispatch
 from imp import find_module, load_module
 import logging
 import subprocess
@@ -17,6 +16,19 @@ from .events import EventQueue
 from .exceptions import Goto, ProcessClosing
 from .models import User
 from .structs import Script
+
+
+class _LockManager(object):
+
+    def __init__(self, sid: str, name: str):
+        self.sid = sid
+        self.name = name
+
+    def __enter__(self, *args, **kwargs):
+        return locks.get(self.sid, self.name)
+
+    def __exit__(self, *args, **kwargs):
+        return locks.release(self.sid, self.name)
 
 
 class Context(object):
@@ -105,8 +117,8 @@ class Context(object):
 
         raise Goto(script, *args, **kwargs)
 
-    @contextmanager
-    def lock(self, name: str) -> bool:
+    @property
+    def lock(self) -> bool:
         """
         Session lock context manager
 
@@ -114,10 +126,7 @@ class Context(object):
         :returns: Whether or not the lock was granted
         """
 
-        try:
-            yield locks.get(self.sid, name)
-        finally:
-            locks.release(self.sid, name)
+        return partial(_LockManager, self.sid)
 
     def get_lock(self, name: str) -> bool:
         """
