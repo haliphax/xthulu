@@ -8,13 +8,15 @@ from xthulu.ui.editors import LineEditor
 from userland.models import Oneliner
 
 LIMIT = 200
+DISPLAY_LIMIT = 10
 
 async def main(cx: Context):
     recent = (Oneliner.select('id').order_by(Oneliner.id.desc()).limit(LIMIT)
               .alias('recent').select())
     oneliners = await Oneliner.query.where(Oneliner.id.in_(recent)).gino.all()
+    offset = max(0, len(oneliners) - DISPLAY_LIMIT)
 
-    for ol in oneliners:
+    for ol in oneliners[offset:offset + DISPLAY_LIMIT]:
         cx.echo(f'{ol.message[:cx.term.width - 1]}\r\n')
 
     led = LineEditor(cx.term, min(78, cx.term.width - 1), limit=78)
