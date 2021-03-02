@@ -36,7 +36,7 @@ class BlockEditor(object):
         self.columns = columns
 
         if 'value' not in kwargs:
-            self.value = ['',] * rows
+            self.value = [''] * rows
 
         if 'color' in kwargs:
             self._color_str = kwargs['color']
@@ -173,6 +173,13 @@ class BlockEditor(object):
         log.debug('resetting anchor')
 
         return out
+
+    def reset(self):
+        "Reset the editor's value, cursor, and offset position."
+
+        self.cursor = [0, 0]
+        self.pos = [0, 0]
+        self.value = [''] * self.rows
 
     @property
     def _row_vars(self):
