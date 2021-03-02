@@ -397,4 +397,5 @@ class LineEditor(BlockEditor):
 
     @rows.setter
     def rows(self, val: int):
-        pass
+        if val != 1:
+            raise ValueError('LineEditor must have exactly 1 row')
