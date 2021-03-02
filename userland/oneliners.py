@@ -75,7 +75,7 @@ async def main(cx: Context):
 
                 continue
 
-            elif ks.code == cx.term.KEY_DOWN:
+            if ks.code == cx.term.KEY_DOWN:
                 last = offset
                 offset = min(count - DISPLAY_LIMIT, offset + 1)
 
@@ -84,10 +84,10 @@ async def main(cx: Context):
 
                 continue
 
-            elif ks.code == cx.term.KEY_ESCAPE:
+            if ks.code == cx.term.KEY_ESCAPE:
                 return done()
 
-            elif ks.code == cx.term.KEY_ENTER:
+            if ks.code == cx.term.KEY_ENTER:
                 val = led.value[0].strip()
 
                 if len(val) == 0:
@@ -99,5 +99,4 @@ async def main(cx: Context):
 
                 break
 
-            else:
-                cx.echo(led.process_keystroke(ks))
+            cx.echo(led.process_keystroke(ks))
