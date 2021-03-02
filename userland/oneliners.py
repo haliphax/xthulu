@@ -1,9 +1,6 @@
 "oneliners script"
 
-# stdlib
-from typing import List
 # api
-from xthulu import db
 from xthulu.context import Context
 from xthulu.ui.editors import LineEditor
 # local
