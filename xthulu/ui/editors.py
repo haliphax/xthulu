@@ -379,7 +379,12 @@ class BlockEditor(object):
             if self.pos[0] + self.cursor[0] < len(self.value[self.pos[1]]) \
             else len(after) - 1
 
-        return self._color(ucs + after + self.term.move_left(move_left))
+        out = [ucs, after]
+
+        if move_left > 0:
+            out.append(self.term.move_left(move_left))
+
+        return self._color(''.join(out))
 
 
 class LineEditor(BlockEditor):
