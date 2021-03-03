@@ -83,6 +83,8 @@ async def show_art(cx: Context, filename: str, delay=0.2,
             ignore = False
 
             for seq in seqs:
+                # sequences immediately following CUB/CUF should be ignored
+                # https://github.com/jquast/blessed/issues/197
                 if ignore:
                     ignore = False
 
@@ -97,6 +99,7 @@ async def show_art(cx: Context, filename: str, delay=0.2,
                         else:
                             col += int(spaces[0])
 
+                        # see note re: CUB/CUF sequences
                         ignore = True
                     elif seq[-1] == 'm':
                         colors = re.findall(r'4[0-7]', seq)
