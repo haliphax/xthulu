@@ -123,7 +123,7 @@ async def handle_client(proc: asyncssh.SSHServerProcess):
             except aio.futures.TimeoutError:
                 cx.echo(cx.term.bold_red_on_black('\r\nTimed out.\r\n'))
                 log.warning(f'{cx.user.name}@{cx.sid} timed out')
-                proc.close()
+                await proc.wait_closed()
 
                 return
 
@@ -162,7 +162,7 @@ async def handle_client(proc: asyncssh.SSHServerProcess):
         finally:
             # send sentinel to close child 'term_pipe' process
             proxy_pipe.send((None, (), {}))
-            proc.close()
+            await proc.wait_closed()
 
     await aio.gather(input_loop(), main_process())
 
