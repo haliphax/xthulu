@@ -1,6 +1,7 @@
 "xthulu module initialization"
 
 # stdlib
+from importlib import import_module
 import logging
 from os import environ
 from os.path import dirname, join
@@ -20,5 +21,5 @@ config_file = (environ['XTHULU_CONFIG'] if 'XTHULU_CONFIG' in environ
 config = toml.load(config_file)
 log.setLevel(logging.DEBUG if config.get('debug', {}).get('enabled', False)
              else logging.INFO)
-
 db = Gino()
+import_module('.encodings', __name__)

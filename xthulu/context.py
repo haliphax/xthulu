@@ -2,6 +2,7 @@
 
 # stdlib
 import asyncio as aio
+from codecs import decode
 from functools import partial, singledispatch
 from imp import find_module, load_module
 import logging
@@ -63,8 +64,8 @@ class Context(object):
             self.log.addFilter(ContextLogFilter(_username, self.ip))
             streamHandler = logging.StreamHandler(sys.stdout)
             streamHandler.setFormatter(logging.Formatter(
-                '{asctime} {levelname} {module}.{funcName}: {username}@{ip} '
-                '{message}',
+                '{asctime} {levelname:<7} {module}.{funcName}: '
+                '{username}@{ip} {message}',
                 style='{'))
             self.log.addHandler(streamHandler)
             self.log.setLevel(syslog.getEffectiveLevel())
@@ -84,7 +85,7 @@ class Context(object):
 
         return self._sid
 
-    def echo(self, text: str) -> None:
+    def echo(self, text: str, encoding=None) -> None:
         """
         Echo text to the terminal
 
@@ -93,6 +94,9 @@ class Context(object):
 
         if text is None:
             return
+
+        if encoding is not None:
+            text = decode(bytes(text, encoding), encoding)
 
         self.proc.stdout.write(text.encode(self.encoding))
 
