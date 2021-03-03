@@ -1,1 +1,1 @@
-"xthulu default userland scripts module"
+"xthulu default userland"

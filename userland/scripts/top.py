@@ -1,6 +1,7 @@
 "Userland entry point"
 
 # local
+from xthulu import log
 from xthulu.context import Context
 from xthulu.ui import show_art
 
