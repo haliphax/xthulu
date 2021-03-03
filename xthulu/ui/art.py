@@ -63,6 +63,9 @@ async def show_art(cx: Context, filename: str, delay=0.2,
     lastcolor = ''
 
     async with aiofiles.open(filename, 'r', encoding=encoding) as f:
+        if cx.encoding != 'utf-8':
+            encoding = None
+
         for line in await f.readlines():
             out = []
 
