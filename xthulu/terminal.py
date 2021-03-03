@@ -143,6 +143,7 @@ class ProxyTerminal(object):
 
         if debug_term:
             log.debug(f'setattr {attr}')
+
         setattr(self, attr, resolved_value)
 
         return resolved_value
