@@ -77,6 +77,7 @@ async def show_art(cx: Context, filename: str, delay=0.2,
             col = 0
             row += 1
             first = False
+            # \x1a is the EOF character, used to delimit SAUCE from the artwork
             line = re.sub(r'\r|\n|\x1a.*', '', line)
             out = []
             seqs = cx.term.split_seqs(line)
