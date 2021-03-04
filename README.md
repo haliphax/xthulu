@@ -1,4 +1,10 @@
-# xthulu Python 3 asyncio terminal server
+# xthulu
+
+Python 3 asyncio terminal server
+
+![Header image](https://github.com/haliphax/xthulu/raw/assets/xthulu.jpg)
+
+## Progress
 
 - [x] SSH server
 - [ ] SFTP server
@@ -25,5 +31,6 @@
   - [ ] Vertical lightbar
   - [ ] Matrix (vertical/horizontal lightbar)
   - [ ] Panel (scrollable boundary)
+
 
 [GINO]: https://python-gino.org
