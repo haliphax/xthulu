@@ -9,7 +9,7 @@ from xthulu.ui import show_art
 async def main(cx: Context):
     if cx.encoding == 'utf-8':
         cx.echo('\x1b%G')
-    else:
+    elif cx.env['TERM'] != 'ansi':
         cx.echo('\x1b%@\x1b(U')
 
     cx.echo(f'{cx.term.normal}\r\nConnected: '
