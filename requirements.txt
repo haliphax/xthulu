@@ -3,6 +3,6 @@ asyncssh==2.6.0
 bcrypt==3.2.0
 blessed==1.18.0
 Click==7.0
-gino==0.8.6
+gino==1.0.1
 toml==0.10.2
 wrapt==1.12.1
