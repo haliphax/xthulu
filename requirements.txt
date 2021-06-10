@@ -1,4 +1,4 @@
-aiofiles==0.6.0
+aiofiles==0.7.0
 asyncssh==2.6.0
 bcrypt==3.2.0
 blessed==1.17.4
