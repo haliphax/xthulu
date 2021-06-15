@@ -1,7 +1,7 @@
 aiofiles==0.7.0
 asyncssh==2.6.0
 bcrypt==3.2.0
-blessed==1.18.0
+blessed==1.18.1
 Click==8.0.1
 gino==1.0.1
 toml==0.10.2
