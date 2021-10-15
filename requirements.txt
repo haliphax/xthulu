@@ -5,4 +5,4 @@ blessed==1.19.0
 Click==8.0.1
 gino==1.0.1
 toml==0.10.2
-wrapt==1.13.1
+wrapt==1.13.2
