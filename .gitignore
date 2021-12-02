@@ -1,13 +1,7 @@
 .vscode/
 **/__pycache__/
 *.egg-info/
-bin/
 data/*.toml
 data/ssh_host_key*
 db/
-lib/
-lib64/
-share/
 *.pyc
-lib64
-pyvenv.cfg
