@@ -114,10 +114,10 @@ async def handle_client(proc: asyncssh.SSHServerProcess):
 
                 await session_stdin.put(r)
 
-            except aio.streams.IncompleteReadError:
+            except aio.IncompleteReadError:
                 return
 
-            except aio.futures.TimeoutError:
+            except aio.TimeoutError:
                 cx.echo(cx.term.bold_red_on_black('\r\nTimed out.\r\n'))
                 log.warning(f'{cx.user.name}@{cx.sid} timed out')
                 proc.close()
