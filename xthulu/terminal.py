@@ -195,10 +195,10 @@ class ProxyTerminal(object):
 
                     break
 
-                except aio.streams.IncompleteReadError:
+                except aio.IncompleteReadError:
                     raise ProcessClosing()
 
-                except aio.futures.TimeoutError:
+                except aio.TimeoutError:
                     if timeout is not None:
                         break
 
@@ -212,10 +212,10 @@ class ProxyTerminal(object):
                     inp = await aio.wait_for(self.stdin.get(), esc_delay)
                     ucs += inp.decode(self.encoding)
 
-                except aio.streams.IncompleteReadError:
+                except aio.IncompleteReadError:
                     raise ProcessClosing()
 
-                except aio.futures.TimeoutError:
+                except aio.TimeoutError:
                     break
 
             ks = self.resolve(text=ucs) if len(ucs) else blessed.Keystroke()

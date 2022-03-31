@@ -5,6 +5,8 @@ services:
         command: start
         depends_on:
             - db
+        environment:
+            TERM: xterm-256color
         image: xthulu
         network_mode: host
         restart: unless-stopped
@@ -17,7 +19,7 @@ services:
         environment:
             POSTGRES_USER: xthulu
             POSTGRES_PASSWORD: xthulu
-        image: postgres:12-alpine
+        image: postgres:13-alpine
         ports:
             - 127.0.0.1:5433:5432
         restart: unless-stopped
