@@ -1,5 +1,5 @@
 aiofiles==0.8.0
-asyncssh==2.10.1
+asyncssh==2.11.0
 bcrypt==3.2.2
 blessed==1.19.1
 Click==8.1.3
