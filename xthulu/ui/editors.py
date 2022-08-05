@@ -7,7 +7,6 @@ from blessed import Terminal
 # local
 from .. import log
 
-
 class BlockEditor(object):
 
     "Block editor (multiple lines)"
@@ -46,9 +45,10 @@ class BlockEditor(object):
             setattr(self, k, kwargs[k])
 
         self._color = getattr(term, self._color_str)
+        textlen = 0
 
         if 'pos' not in kwargs:
-            for i in range(len(self.value)):
+            for i in range(max(0, len(self.value) - self.rows)):
                 if len(self.value[i]) > 0:
                     self.pos[1] = i
 
@@ -56,6 +56,9 @@ class BlockEditor(object):
             self.pos[0] = max(0, textlen - self.columns)
 
         if 'cursor' not in kwargs:
+            if textlen == 0:
+                textlen = len(self.value[self.pos[1]])
+
             self.cursor[0] = min(self.columns - 1, max(0, textlen))
             self.cursor[1] = min(self.rows - 1, max(0, len(self.value) - 1))
 
@@ -95,14 +98,12 @@ class BlockEditor(object):
         out = ''
         left = self.pos[0]
         top = self.pos[1]
-        spread = self.rows - top
-        lastlen = 0
         travel = 0
 
         if anchor:
             out += self.reset_anchor()
 
-        for i in range(spread):
+        for i in range(self.rows):
             if i > 0:
                 out += '\r\n'
                 travel += 1
@@ -110,18 +111,14 @@ class BlockEditor(object):
             if self.corner[0] is not None:
                 out += self.term.move_x(self.corner[0])
 
-            out += self._color(' ' * self.columns)
-            out += self.term.move_left(self.columns)
             text = self.value[top + i][left:left + self.columns]
             out += self._color(text)
-            lastlen = len(text)
+            out += self._color(' ' * (self.columns - len(text)))
+            out += self.term.move_left(self.columns)
 
         log.debug('redrawing editor')
 
         if redraw_cursor:
-            if lastlen > 0:
-                out += self.term.move_left(lastlen)
-
             if travel > 0:
                 out += self.term.move_up(travel)
 
@@ -168,7 +165,7 @@ class BlockEditor(object):
             out += self.term.move_left(self.cursor[0])
 
         if self.cursor[1] > 0:
-            out += self.ter.move_up(self.cursor[1])
+            out += self.term.move_up(self.cursor[1])
 
         log.debug('resetting anchor')
 
@@ -201,7 +198,7 @@ class BlockEditor(object):
         if self.cursor[0] <= 0:
             self.pos[0] = max(0, self.pos[0] - 1)
 
-        self.value[self.pos[1]] = before[:-1] + after
+        self.value[self.pos[1] + self.cursor[1]] = before[:-1] + after
         out = ''
 
         after = after[:min(len(after), self.columns - self.cursor[0])]
@@ -213,7 +210,7 @@ class BlockEditor(object):
 
         out += self._color(after + self.term.move_left(len(after)))
         log.debug(f'backspace {self.pos} {self.cursor} '
-                    f'{self.value[self.pos[1]]!r}')
+                    f'{self.value[self.pos[1] + self.cursor[1]]!r}')
 
         return out
 
@@ -227,13 +224,13 @@ class BlockEditor(object):
             return ''
 
         after = after[1:]
-        self.value[self.pos[1]] = before + after
+        self.value[self.pos[1] + self.cursor[1]] = before + after
         after = after[:min(len(after), self.columns - self.cursor[0])]
 
         if self.cursor[0] + len(after) <= self.columns - 1:
             after += ' '
 
-        log.debug(f'delete "{self.value[self.pos[1]]}"')
+        log.debug(f'delete "{self.value[self.pos[1] + self.cursor[1]]}"')
 
         return self._color(after + self.term.move_left(len(after)))
 
@@ -259,7 +256,8 @@ class BlockEditor(object):
     def kp_right(self) -> str:
         "Handle KEY_RIGHT."
 
-        if self.pos[0] + self.cursor[0] >= len(self.value[self.pos[1]]):
+        if (self.pos[0] + self.cursor[0]
+                >= len(self.value[self.pos[1] + self.cursor[1]])):
             log.debug('already at end of line')
             return ''
 
@@ -301,7 +299,7 @@ class BlockEditor(object):
     def kp_end(self) -> str:
         "Handle KEY_END."
 
-        strlen = len(self.value[self.pos[1]])
+        strlen = len(self.value[self.pos[1] + self.cursor[1]])
 
         if self.pos[0] + self.cursor[0] >= strlen:
             log.debug('already at end of line')
@@ -321,6 +319,62 @@ class BlockEditor(object):
         return self.redraw(anchor=True) if shift \
             else self.term.move_right(self.cursor[0] - prev)
 
+    def kp_up(self) -> str:
+        "Handle KEY_UP."
+
+        if self.cursor[1] <= 0 and self.pos[1] <= 0:
+            log.debug('already at start of editor')
+            return ''
+
+        shift = False
+        old_cursor = self.cursor[0]
+
+        if self.cursor[1] <= 0:
+            shift = True
+            self.pos[1] -= 1
+            log.debug('shifting visible area up')
+
+        self.cursor[1] = max(0, self.cursor[1] - 1)
+        out = ''
+        textlen = len(self.value[self.pos[1] + self.cursor[1]])
+
+        if self.pos[0] + self.cursor[0] > textlen:
+            self.cursor[0] = textlen
+            out += self.term.move_left(old_cursor - self.cursor[0])
+
+        log.debug(f'up {self.pos} {self.cursor}')
+        out += self.redraw(anchor=True) if shift else self.term.move_up
+
+        return out
+
+    def kp_down(self) -> str:
+        "Handle KEY_DOWN."
+
+        if self.pos[1] + self.cursor[1] >= len(self.value) - 1:
+            log.debug('already at end of editor')
+            return ''
+
+        shift = False
+        old_cursor = self.cursor[0]
+
+        if self.cursor[1] >= self.rows - 1:
+            shift = True
+            self.pos[1] += 1
+            log.debug('shifting visible area down')
+
+        self.cursor[1] = min(self.rows - 1, self.cursor[1] + 1)
+        out = ''
+        textlen = len(self.value[self.pos[1] + self.cursor[1]])
+
+        if self.pos[0] + self.cursor[0] > textlen:
+            self.cursor[0] = textlen
+            out += self.term.move_left(old_cursor - self.cursor[0])
+
+        log.debug(f'down {self.pos} {self.cursor}')
+        out += self.redraw(anchor=True) if shift else self.term.move_down
+
+        return out
+
     def process_keystroke(self, ks) -> str:
         """
         Process keystroke and produce output (if any)
@@ -339,6 +393,15 @@ class BlockEditor(object):
             self.term.KEY_HOME: self.kp_home,
             self.term.KEY_END: self.kp_end,
         }
+
+        if self.rows > 1:
+            handlers = {
+                **handlers,
+                **{
+                    self.term.KEY_UP: self.kp_up,
+                    self.term.KEY_DOWN: self.kp_down,
+                }
+            }
 
         # TODO general: tab
         # TODO multiline: up/down, under/overflow, enter
@@ -363,9 +426,9 @@ class BlockEditor(object):
         # handle typed character
 
         _, before, after = self._row_vars
-        self.value[self.pos[1]] = before + ucs + after
+        self.value[self.pos[1] + self.cursor[1]] = before + ucs + after
         self.cursor[0] += 1
-        log.debug(f"{self.pos} {self.value}")
+        log.debug(f"{self.pos} {self.cursor} {self.value}")
 
         if not self.at_end and self.cursor[0] >= self.columns:
             self.cursor[0] -= 1
@@ -376,7 +439,8 @@ class BlockEditor(object):
 
         after = after[:min(len(after), self.columns - self.cursor[0])]
         move_left = len(after) \
-            if self.pos[0] + self.cursor[0] < len(self.value[self.pos[1]]) \
+            if (self.pos[0] + self.cursor[0]
+                < len(self.value[self.pos[1] + self.cursor[1]])) \
             else len(after) - 1
 
         out = [ucs, after]
