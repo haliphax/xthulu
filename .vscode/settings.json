@@ -1,9 +1,9 @@
 {
-        "python.analysis.importFormat": "relative",
-				"python.analysis.indexing": true,
-				"python.analysis.typeCheckingMode": "basic",
-				"python.formatting.provider": "black",
-				"black-formatter.importStrategy": "fromEnvironment",
-				"python.linting.pylintEnabled": true,
-				"python.linting.enabled": true
+	"python.analysis.importFormat": "relative",
+	"python.analysis.indexing": true,
+	"python.analysis.typeCheckingMode": "basic",
+	"python.formatting.provider": "black",
+	"black-formatter.importStrategy": "fromEnvironment",
+	"python.linting.pylintEnabled": true,
+	"python.linting.enabled": true
 }
