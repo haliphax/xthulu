@@ -21,6 +21,6 @@ USER xthulu
 RUN --mount=type=cache,target=/app/.cache/pip \
 <<-EOF
 	pip install -U pip setuptools
-	pip install .
+	pip install -e .
 EOF
 ENTRYPOINT ["/usr/local/bin/python3", "-m", "xthulu"]

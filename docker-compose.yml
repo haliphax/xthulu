@@ -14,7 +14,6 @@ services:
         volumes:
             - ./data:/app/data
             - ./userland:/app/userland
-            - ./xthulu:/app/xthulu
     db:
         environment:
             POSTGRES_USER: xthulu
