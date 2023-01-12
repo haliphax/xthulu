@@ -5,17 +5,25 @@ import asyncio as aio
 from os.path import exists, isfile
 import re
 from typing import Union
+
 # 3rd party
 import aiofiles
 from blessed.keyboard import Keystroke
+
 # local
 from ..context import Context
 
 
-async def show_art(cx: Context, filename: str, delay=0.2,
-                   dismissable=True, preload=0, maxwidth=80, center=False,
-                   encoding='cp437') \
-        -> Union[Keystroke, None]:
+async def show_art(
+    cx: Context,
+    filename: str,
+    delay=0.2,
+    dismissable=True,
+    preload=0,
+    maxwidth=80,
+    center=False,
+    encoding="cp437",
+) -> Union[Keystroke, None]:
     """
     Display artwork from given filename with given delay between rows of
     output.
@@ -33,7 +41,7 @@ async def show_art(cx: Context, filename: str, delay=0.2,
     """
 
     def done():
-        cx.echo(f'{cx.term.normal}\r\n')
+        cx.echo(f"{cx.term.normal}\r\n")
 
     async def do_delay() -> Union[Keystroke, None]:
         if delay is None or delay <= 0:
@@ -51,37 +59,38 @@ async def show_art(cx: Context, filename: str, delay=0.2,
         maxwidth = cx.term.width
 
     if not (exists(filename) and isfile(filename)):
-        raise FileNotFoundError(f'Could not find {filename}')
+        raise FileNotFoundError(f"Could not find {filename}")
 
     if preload is not None and preload <= 0:
         preload = cx.term.height - 1
 
-    center_pos = 0 if not center \
-        else max(0, (cx.term.width // 2) - (maxwidth // 2))
+    center_pos = (
+        0 if not center else max(0, (cx.term.width // 2) - (maxwidth // 2))
+    )
     first = True
     row = 0
-    lastcolor = ''
+    lastcolor = ""
 
-    async with aiofiles.open(filename, 'r', encoding=encoding) as f:
-        if cx.encoding != 'utf-8':
+    async with aiofiles.open(filename, "r", encoding=encoding) as f:
+        if cx.encoding != "utf-8":
             encoding = None
 
         for line in await f.readlines():
             out = []
 
             if not first:
-                out.append(f'{cx.term.normal}\r\n')
+                out.append(f"{cx.term.normal}\r\n")
 
             if center_pos > 0:
                 out.append(cx.term.move_x(center_pos))
 
-            cx.echo(''.join(out))
+            cx.echo("".join(out))
 
             col = 0
             row += 1
             first = False
             # \x1a is the EOF character, used to delimit SAUCE from the artwork
-            line = re.sub(r'\r|\n|\x1a.*', '', line)
+            line = re.sub(r"\r|\n|\x1a.*", "", line)
             out = []
             seqs = cx.term.split_seqs(line)
             ignore = False
@@ -94,9 +103,9 @@ async def show_art(cx: Context, filename: str, delay=0.2,
 
                     continue
 
-                if seq[0] == '\x1b':
-                    if seq[-1] == 'C':
-                        spaces = re.findall(r'\d+', seq)
+                if seq[0] == "\x1b":
+                    if seq[-1] == "C":
+                        spaces = re.findall(r"\d+", seq)
 
                         if len(spaces) == 0:
                             col += 1
@@ -105,14 +114,14 @@ async def show_art(cx: Context, filename: str, delay=0.2,
 
                         # see note re: CUB/CUF sequences
                         ignore = True
-                    elif seq[-1] == 'm':
-                        colors = re.findall(r'4[0-7]', seq)
+                    elif seq[-1] == "m":
+                        colors = re.findall(r"4[0-7]", seq)
 
                         for c in colors:
-                            if c == '40':
+                            if c == "40":
                                 c = 0
 
-                            lastcolor = f'\x1b[{c}m'
+                            lastcolor = f"\x1b[{c}m"
 
                     out.append(seq)
 
@@ -127,19 +136,19 @@ async def show_art(cx: Context, filename: str, delay=0.2,
                         out.append(seq[0:fit])
                         seq = seq[fit:]
                         strlen = len(seq)
-                        cx.echo(''.join(out), encoding=encoding)
+                        cx.echo("".join(out), encoding=encoding)
                         out.clear()
                         row += 1
                         col = 0
 
                         if cx.term.width > maxwidth:
-                            out.append(f'{cx.term.normal}\r\n')
+                            out.append(f"{cx.term.normal}\r\n")
 
                             if center_pos > 0:
                                 out.append(cx.term.move_right(center_pos))
 
                             out.append(lastcolor)
-                            cx.echo(''.join(out))
+                            cx.echo("".join(out))
                             out.clear()
 
                         if preload is not None and row < preload:
@@ -157,7 +166,7 @@ async def show_art(cx: Context, filename: str, delay=0.2,
                 out.append(seq)
                 col += strlen
 
-            cx.echo(''.join(out), encoding=encoding)
+            cx.echo("".join(out), encoding=encoding)
 
             if preload is not None and row < preload:
                 continue

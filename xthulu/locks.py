@@ -2,6 +2,7 @@
 
 # stdlib
 from contextlib import contextmanager
+
 # local
 from . import log
 
@@ -23,10 +24,10 @@ def get(owner: str, name: str) -> bool:
     :returns: Whether or not the lock was granted
     """
 
-    log.debug(f'{owner} getting lock {name}')
+    log.debug(f"{owner} getting lock {name}")
 
     if name in Locks.locks:
-        log.debug(f'{name} lock already exists')
+        log.debug(f"{name} lock already exists")
 
         return False
 
@@ -51,15 +52,15 @@ def release(owner: str, name: str) -> bool:
     :returns: Whether or not the lock was valid to begin with
     """
 
-    log.debug(f'{owner} releasing lock {name}')
+    log.debug(f"{owner} releasing lock {name}")
 
     if name not in Locks.locks:
-        log.debug(f'{name} lock does not exist')
+        log.debug(f"{name} lock does not exist")
 
         return False
 
     if owner not in Locks.owned or name not in Locks.owned[owner]:
-        log.debug(f'{owner} does not own lock {name}')
+        log.debug(f"{owner} does not own lock {name}")
 
         return False
 
@@ -94,7 +95,7 @@ def expire(owner: str):
     :param owner: The name of the owner
     """
 
-    log.debug(f'Releasing locks owned by {owner}')
+    log.debug(f"Releasing locks owned by {owner}")
     locks = 0
     owned = None
 
@@ -103,7 +104,7 @@ def expire(owner: str):
         locks = len(owned)
 
     if locks == 0:
-        log.debug(f'No locks for {owner}')
+        log.debug(f"No locks for {owner}")
     else:
         for l in owned:
             release(owner, l)

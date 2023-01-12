@@ -21,8 +21,9 @@ class EventQueue(object):
     def __getattr__(self, attr: str):
         return getattr(self._q, attr)
 
-    async def poll(self, event_name: str = None, flush=False, get_last=False) \
-        -> EventData:
+    async def poll(
+        self, event_name: str = None, flush=False, get_last=False
+    ) -> EventData:
         """
         Check for event
 

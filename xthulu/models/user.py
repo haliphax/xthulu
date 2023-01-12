@@ -3,8 +3,10 @@
 # stdlib
 from datetime import datetime
 from typing import Tuple
+
 # 3rd party
 import bcrypt
+
 # local
 from .. import db
 
@@ -13,10 +15,10 @@ class User(db.Model):
 
     "User model"
 
-    __tablename__ = 'user'
+    __tablename__ = "user"
     __table_args__ = (
-        db.Index('idx_user_name_lower', db.func.lower('name')),
-        db.Index('idx_user_email_lower', db.func.lower('email')),
+        db.Index("idx_user_name_lower", db.func.lower("name")),
+        db.Index("idx_user_email_lower", db.func.lower("email")),
     )
 
     #: Unique ID
@@ -35,7 +37,7 @@ class User(db.Model):
     last = db.Column(db.DateTime(), default=datetime.utcnow)
 
     def __repr__(self):
-        return f'User({self.name}#{self.id})'
+        return f"User({self.name}#{self.id})"
 
     @staticmethod
     def hash_password(pwd: str, salt: bytes = None) -> Tuple[bytes, bytes]:
@@ -51,6 +53,6 @@ class User(db.Model):
         if salt is None:
             salt = bcrypt.gensalt()
 
-        password = bcrypt.hashpw(pwd.encode('utf8'), salt)
+        password = bcrypt.hashpw(pwd.encode("utf8"), salt)
 
         return password, salt

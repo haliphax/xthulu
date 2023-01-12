@@ -9,8 +9,10 @@ import logging
 import subprocess
 import sys
 from typing import List, Tuple, Union
+
 # 3rd party
 from asyncssh import SSHServerProcess
+
 # local
 from . import config, db, locks, log as syslog
 from .events import EventQueue
@@ -20,7 +22,6 @@ from .structs import Script
 
 
 class _LockManager(object):
-
     def __init__(self, sid: str, name: str):
         self.sid = sid
         self.name = name
@@ -42,12 +43,12 @@ class Context(object):
     user: User = None
     _sid: str = None
 
-    def __init__(self, proc, encoding='utf-8'):
-        _peername = proc.get_extra_info('peername')
-        _username = proc.get_extra_info('username')
+    def __init__(self, proc, encoding="utf-8"):
+        _peername = proc.get_extra_info("peername")
+        _username = proc.get_extra_info("username")
         #: SSHServerProcess for session
         self.proc: SSHServerProcess = proc
-        self._sid: str = '{}:{}'.format(*_peername)
+        self._sid: str = "{}:{}".format(*_peername)
         #: Encoding for session
         self.encoding: str = encoding
         #: Remote IP address
@@ -63,19 +64,25 @@ class Context(object):
         if not self.log.filters:
             self.log.addFilter(ContextLogFilter(_username, self.ip))
             streamHandler = logging.StreamHandler(sys.stdout)
-            streamHandler.setFormatter(logging.Formatter(
-                '{asctime} {levelname:<7} {module}.{funcName}: '
-                '{username}@{ip} {message}',
-                style='{'))
+            streamHandler.setFormatter(
+                logging.Formatter(
+                    "{asctime} {levelname:<7} {module}.{funcName}: "
+                    "{username}@{ip} {message}",
+                    style="{",
+                )
+            )
             self.log.addHandler(streamHandler)
             self.log.setLevel(syslog.getEffectiveLevel())
 
     async def _init(self):
         "Asynchronous initialization routine"
 
-        _username = self.proc.get_extra_info('username')
-        self.user = await (User.query.where(db.func.lower(User.name) ==
-                                            _username.lower()).gino.first())
+        _username = self.proc.get_extra_info("username")
+        self.user = await (
+            User.query.where(
+                db.func.lower(User.name) == _username.lower()
+            ).gino.first()
+        )
         self.log.debug(repr(self.user))
 
     # read-only
@@ -152,8 +159,9 @@ class Context(object):
 
         return locks.release(self.sid, name)
 
-    async def redirect(self, proc: Union[subprocess.Popen, List, Tuple, str]) \
-        -> None:
+    async def redirect(
+        self, proc: Union[subprocess.Popen, List, Tuple, str]
+    ) -> None:
         """
         Redirect context IO to other process; convenience method which wraps
         AsyncSSH's redirection routine
@@ -163,12 +171,16 @@ class Context(object):
 
         @singledispatch
         async def f(proc):
-            raise NotImplemented('proc must be Popen, tuple, list, or str')
+            raise NotImplemented("proc must be Popen, tuple, list, or str")
 
         @f.register(subprocess.Popen)
         async def _(proc):
-            await self.proc.redirect(stdin=proc.stdin, stdout=proc.stdout,
-                                     stderr=proc.stderr, send_eof=False)
+            await self.proc.redirect(
+                stdin=proc.stdin,
+                stdout=proc.stdout,
+                stderr=proc.stderr,
+                send_eof=False,
+            )
             await self.proc.stdout.drain()
             await self.proc.stderr.drain()
             await self.proc.redirect(stdin=subprocess.PIPE)
@@ -177,9 +189,13 @@ class Context(object):
         @f.register(list)
         @f.register(str)
         async def _(proc):
-            p = subprocess.Popen(proc, stdin=subprocess.PIPE,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE, close_fds=False)
+            p = subprocess.Popen(
+                proc,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                close_fds=False,
+            )
             await self.redirect(p)
 
         await f(proc)
@@ -192,8 +208,8 @@ class Context(object):
         :returns: The return value of the script (if any)
         """
 
-        self.log.info(f'Running {script}')
-        split = script.name.split('.')
+        self.log.info(f"Running {script}")
+        split = script.name.split(".")
         found = None
         mod = None
 
@@ -201,7 +217,7 @@ class Context(object):
             if mod is not None:
                 found = find_module(seg, mod.__path__)
             else:
-                found = find_module(seg, config['ssh']['userland']['paths'])
+                found = find_module(seg, config["ssh"]["userland"]["paths"])
 
             mod = load_module(seg, *found)
 
@@ -211,8 +227,11 @@ class Context(object):
             raise
         except Exception as exc:
             self.log.exception(exc)
-            self.echo(self.term.bold_red_on_black(
-                f'\r\nException in {script.name}\r\n'))
+            self.echo(
+                self.term.bold_red_on_black(
+                    f"\r\nException in {script.name}\r\n"
+                )
+            )
             await aio.sleep(3)
 
 

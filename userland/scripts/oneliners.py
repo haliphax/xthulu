@@ -3,26 +3,33 @@
 # api
 from xthulu.context import Context
 from xthulu.ui.editors import LineEditor
+
 # local
 from userland.models import Oneliner
 
 LIMIT = 200
 DISPLAY_LIMIT = 10
 
-async def main(cx: Context):
 
+async def main(cx: Context):
     async def get_oneliners():
-        recent = (Oneliner.select('id').order_by(Oneliner.id.desc())
-                  .limit(LIMIT).alias('recent').select())
-        oneliners = await (Oneliner.query.where(Oneliner.id.in_(recent))
-                           .gino.all())
+        recent = (
+            Oneliner.select("id")
+            .order_by(Oneliner.id.desc())
+            .limit(LIMIT)
+            .alias("recent")
+            .select()
+        )
+        oneliners = await (
+            Oneliner.query.where(Oneliner.id.in_(recent)).gino.all()
+        )
         count = len(oneliners)
         offset = max(0, count - DISPLAY_LIMIT)
 
         return oneliners, count, offset
 
     def done():
-        cx.echo('\r\n')
+        cx.echo("\r\n")
 
     oneliners, count, offset = await get_oneliners()
     first = True
@@ -38,13 +45,17 @@ async def main(cx: Context):
 
         first = False
 
-        for ol in oneliners[offset:offset + DISPLAY_LIMIT]:
-            cx.echo(''.join((
-                cx.term.clear_eol(),
-                cx.term.move_x(0),
-                ol.message[:cx.term.width - 1],
-                '\r\n',
-            )))
+        for ol in oneliners[offset : offset + DISPLAY_LIMIT]:
+            cx.echo(
+                "".join(
+                    (
+                        cx.term.clear_eol(),
+                        cx.term.move_x(0),
+                        ol.message[: cx.term.width - 1],
+                        "\r\n",
+                    )
+                )
+            )
 
         dirty = True
 
@@ -56,7 +67,7 @@ async def main(cx: Context):
             ks = None
 
             while not ks:
-                ev = await cx.events.poll('resize', flush=True, get_last=True)
+                ev = await cx.events.poll("resize", flush=True, get_last=True)
 
                 if ev:
                     dirty = True
