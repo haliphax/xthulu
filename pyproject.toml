@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xthulu"
+requires-python = ">=3.11"
+version = "1.0.0a0"
+dynamic = [
+	"dependencies",
+	"optional-dependencies"
+]
+
+[tool.setuptools]
+packages = ["xthulu"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = "requirements/_.txt"}
+
+[tool.setuptools.dynamic.optional-dependencies]
+dev = {file = "requirements/dev.txt"}
+
+[tool.black]
+line-length = 80

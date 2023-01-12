@@ -1,26 +1,26 @@
-FROM python:3.10-alpine
+# syntax = docker/dockerfile-upstream:1-labs
+
+FROM python:3.11-alpine
 WORKDIR /app
-VOLUME /app/data
-VOLUME /app/xthulu
-VOLUME /app/userland
-EXPOSE 8022
 STOPSIGNAL SIGTERM
-ADD ./requirements.txt /app/
-RUN sh -c "\
-	apk add -U gcc g++ libffi libffi-dev musl-dev openssl openssl-dev cargo \
-	&& pip install -U pip \
-	&& pip install -r requirements.txt \
-	&& apk del gcc g++ libffi-dev musl-dev openssl-dev cargo \
-	&& printf 'from xthulu.__main__ import main; main()' > /app/entrypoint.py \
-	&& printf '#!/bin/ash\nexec /usr/local/bin/python3 /app/entrypoint.py \$@' \
-		> /usr/local/bin/xt \
-	&& chmod a+x /usr/local/bin/xt \
-	&& addgroup --gid 1000 xthulu \
-	&& adduser --disabled-password --home /app --uid 1000 \
-		--ingroup xthulu xthulu \
-	&& chown -R xthulu:xthulu /app"
-ADD ./setup.py /app/
-ADD ./xthulu /app/xthulu
-RUN sh -c "pip install -e ."
+VOLUME ["/app/data", "/app/xthulu", "/app/userland"]
+EXPOSE 8022
+ENV ENV=/app/.profile
+COPY ./requirements /app/requirements
+COPY ./pyproject.toml /app/pyproject.toml
+COPY ./xthulu /app/xthulu
+RUN --mount=type=cache,target=/var/cache/apk \
+<<-EOF
+	set -eo pipefail
+	apk add -U gcc g++ libffi libffi-dev musl-dev openssl openssl-dev cargo
+	addgroup --gid 1000 xthulu
+	adduser --disabled-password --home /app --uid 1000 --ingroup xthulu xthulu
+	chown -R xthulu:xthulu /app
+EOF
 USER xthulu
-ENTRYPOINT ["/usr/local/bin/xt"]
+RUN --mount=type=cache,target=/app/.cache/pip \
+<<-EOF
+	pip install -U pip setuptools
+	pip install .
+EOF
+ENTRYPOINT ["/usr/local/bin/python3", "-m", "xthulu"]

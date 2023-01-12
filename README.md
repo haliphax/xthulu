@@ -32,5 +32,11 @@ Python 3 asyncio terminal server
   - [ ] Matrix (vertical/horizontal lightbar)
   - [ ] Panel (scrollable boundary)
 
+## Building the docker image
+
+```shell
+DOCKER_BUILDKIT=1 docker build -t xthulu:latest .
+```
+
 
 [GINO]: https://python-gino.org
