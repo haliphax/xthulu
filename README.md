@@ -38,5 +38,12 @@ Python 3 asyncio terminal server
 DOCKER_BUILDKIT=1 docker build -t xthulu:latest .
 ```
 
+## Creating/initializing the database
+
+```shell
+docker-compose exec app db_create
+docker-compose exec app db_init
+```
+
 
 [GINO]: https://python-gino.org
