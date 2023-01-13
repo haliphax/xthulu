@@ -8,7 +8,6 @@
 		}
 	},
 	"onCreateCommand": "bash .devcontainer/oncreatecommand.bash",
-	"forwardPorts": [8022],
 	"runArgs": ["--init", "--privileged", "--network=host"],
 	"extensions": [
 		"editorconfig.editorconfig",
