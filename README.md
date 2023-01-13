@@ -35,7 +35,13 @@ Python 3 asyncio terminal server
 ## Building the docker image
 
 ```shell
-DOCKER_BUILDKIT=1 docker build -t xthulu:latest .
+DOCKER_BUILDKIT=1 docker-compose build app
+```
+
+## Starting the services
+
+```shell
+docker-compose up -d
 ```
 
 ## Creating/initializing the database
@@ -43,6 +49,7 @@ DOCKER_BUILDKIT=1 docker build -t xthulu:latest .
 ```shell
 docker-compose exec app db_create
 docker-compose exec app db_init
+docker-compose restart app
 ```
 
 
