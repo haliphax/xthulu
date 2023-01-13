@@ -23,7 +23,7 @@ EOF
 echo "pyenv activate xthulu" >> /home/$USER/.bashrc
 cp .devcontainer/docker-compose.override.yml .
 sudo su $USER -s /bin/bash /bin/bash -c "
-	export PATH=\"\$HOME/.pyenv/versions/3.11/envs/xthulu/bin:\$PATH\";
+	export PATH=\"\$HOME/.pyenv/versions/3.11/envs/xthulu/bin:\$PATH\"
 	cd /workspaces/xthulu
 	pip install -Ue .[dev]
 	pre-commit install --install-hooks
