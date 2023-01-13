@@ -1,0 +1,21 @@
+{
+	"name": "xthulu",
+	"image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+	"features": {
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {
+			"moby": false,
+			"dockerDashComposeVersion": "v2"
+		}
+	},
+	"onCreateCommand": "bash .devcontainer/oncreatecommand.bash",
+	"forwardPorts": [8022],
+	"runArgs": ["--init", "--privileged", "--network=host"],
+	"extensions": [
+		"editorconfig.editorconfig",
+		"ms-python.black-formatter",
+		"ms-python.pylint",
+		"ms-python.python",
+		"redhat.vscode-yaml",
+		"ZainChen.json"
+	]
+}
