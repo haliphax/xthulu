@@ -4,7 +4,6 @@ from .structs import Script
 
 
 class Goto(Exception):
-
     "Thrown to change script without returning"
 
     def __init__(self, script, *args, **kwargs):
@@ -12,5 +11,4 @@ class Goto(Exception):
 
 
 class ProcessClosing(Exception):
-
     "Thrown when the SSHServerProcess is closing"

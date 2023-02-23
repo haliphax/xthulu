@@ -34,7 +34,6 @@ class _LockManager(object):
 
 
 class Context(object):
-
     "Context object for SSH sessions"
 
     #: Script stack
@@ -78,11 +77,9 @@ class Context(object):
         "Asynchronous initialization routine"
 
         _username = self.proc.get_extra_info("username")
-        self.user = await (
-            User.query.where(
-                db.func.lower(User.name) == _username.lower()
-            ).gino.first()
-        )
+        self.user = await User.query.where(
+            db.func.lower(User.name) == _username.lower()
+        ).gino.first()
         self.log.debug(repr(self.user))
 
     # read-only
@@ -171,7 +168,7 @@ class Context(object):
 
         @singledispatch
         async def f(proc):
-            raise NotImplemented("proc must be Popen, tuple, list, or str")
+            raise NotImplementedError("proc must be Popen, tuple, list, or str")
 
         @f.register(subprocess.Popen)
         async def _(proc):
@@ -236,7 +233,6 @@ class Context(object):
 
 
 class ContextLogFilter(logging.Filter):
-
     "Custom logging.Filter that injects username and remote IP address"
 
     #: The context user's username

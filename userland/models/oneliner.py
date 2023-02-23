@@ -9,7 +9,6 @@ from xthulu.models import User
 
 
 class Oneliner(db.Model):
-
     "Oneliner model"
 
     __tablename__ = "oneliner"

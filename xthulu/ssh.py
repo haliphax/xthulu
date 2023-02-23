@@ -4,7 +4,6 @@
 import asyncio as aio
 from datetime import datetime
 from multiprocessing import Process, Pipe
-import os
 
 # 3rd party
 import asyncssh
@@ -21,7 +20,6 @@ from .terminal import ProxyTerminal, terminal_process
 
 
 class SSHServer(asyncssh.SSHServer):
-
     "xthulu SSH Server"
 
     _username = None
@@ -70,11 +68,9 @@ class SSHServer(asyncssh.SSHServer):
     async def validate_password(self, username: str, password: str):
         "Validate provided password"
 
-        u = await (
-            User.query.where(
-                func.lower(User.name) == username.lower()
-            ).gino.first()
-        )
+        u = await User.query.where(
+            func.lower(User.name) == username.lower()
+        ).gino.first()
 
         if u is None:
             log.warn(f"User {username} does not exist")

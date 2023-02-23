@@ -11,7 +11,6 @@ from .. import log
 
 
 class BlockEditor(object):
-
     "Block editor (multiple lines)"
 
     #: Editor text
@@ -467,7 +466,6 @@ class BlockEditor(object):
 
 
 class LineEditor(BlockEditor):
-
     "Line editor (single line)"
 
     def __init__(self, term, columns, limit=0, *args, **kwargs):

@@ -20,9 +20,9 @@ async def main(cx: Context):
             .alias("recent")
             .select()
         )
-        oneliners = await (
-            Oneliner.query.where(Oneliner.id.in_(recent)).gino.all()
-        )
+        oneliners = await Oneliner.query.where(
+            Oneliner.id.in_(recent)
+        ).gino.all()
         count = len(oneliners)
         offset = max(0, count - DISPLAY_LIMIT)
 

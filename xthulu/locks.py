@@ -8,7 +8,6 @@ from . import log
 
 
 class Locks(object):
-
     "Lock storage singleton"
 
     locks = set([])

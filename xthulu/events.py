@@ -5,14 +5,12 @@ from .structs import EventData
 
 
 class EventQueues(object):
-
     "Underlying event queue storage"
 
     q = {}
 
 
 class EventQueue(object):
-
     "Event queue management surface"
 
     def __init__(self, sid: str):
