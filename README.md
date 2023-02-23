@@ -52,5 +52,4 @@ docker-compose exec app db_init
 docker-compose restart app
 ```
 
-
-[GINO]: https://python-gino.org
+[gino]: https://python-gino.org

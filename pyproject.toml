@@ -12,18 +12,18 @@ dynamic = ["dependencies", "optional-dependencies"]
 packages = ["xthulu"]
 
 [tool.setuptools.dynamic]
-dependencies = {file = "requirements/_.txt"}
+dependencies = { file = "requirements/_.txt" }
 
 [tool.setuptools.dynamic.optional-dependencies]
-dev = {file = "requirements/dev.txt"}
+dev = { file = "requirements/dev.txt" }
 
 [tool.black]
 line-length = 80
 
 [tool.ruff]
 ignore = [
-        "E741", # ambiguous variable name
+	"E741", # ambiguous variable name
+
 ]
 line-length = 80
 target-version = "py311"
-
