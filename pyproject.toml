@@ -6,10 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "xthulu"
 requires-python = ">=3.11"
 version = "1.0.0a0"
-dynamic = [
-	"dependencies",
-	"optional-dependencies"
-]
+dynamic = ["dependencies", "optional-dependencies"]
 
 [tool.setuptools]
 packages = ["xthulu"]
