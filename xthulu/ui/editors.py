@@ -3,11 +3,9 @@
 # stdlib
 from typing import Callable
 
-# 3rd party
-from blessed import Terminal
-
 # local
 from .. import log
+from ..terminal import ProxyTerminal
 
 
 class BlockEditor(object):
@@ -28,7 +26,7 @@ class BlockEditor(object):
     _color_str = "bold_white_on_blue"
     _color = None
 
-    def __init__(self, term: Terminal, rows: int, columns: int, **kwargs):
+    def __init__(self, term: ProxyTerminal, rows: int, columns: int, **kwargs):
         #: Terminal to use for sequences
         self.term = term
         #: Height in rows
@@ -116,8 +114,8 @@ class BlockEditor(object):
                 out += self.term.move_x(self.corner[0])
 
             text = self.value[top + i][left : left + self.columns]
-            out += self._color(text)
-            out += self._color(" " * (self.columns - len(text)))
+            out += self.color(text)
+            out += self.color(" " * (self.columns - len(text)))
             out += self.term.move_left(self.columns)
 
         log.debug("redrawing editor")
@@ -209,10 +207,10 @@ class BlockEditor(object):
 
         if self.cursor[0] > 0:
             after += " "
-            out += self.term.move_left
+            out += self.term.move_left()
             self.cursor[0] -= 1
 
-        out += self._color(after + self.term.move_left(len(after)))
+        out += self.color(after + self.term.move_left(len(after)))
         log.debug(
             f"backspace {self.pos} {self.cursor} "
             f"{self.value[self.pos[1] + self.cursor[1]]!r}"
@@ -238,7 +236,7 @@ class BlockEditor(object):
 
         log.debug(f'delete "{self.value[self.pos[1] + self.cursor[1]]}"')
 
-        return self._color(after + self.term.move_left(len(after)))
+        return self.color(after + self.term.move_left(len(after)))
 
     def kp_left(self) -> str:
         "Handle KEY_LEFT."
@@ -257,7 +255,7 @@ class BlockEditor(object):
         self.cursor[0] = max(0, self.cursor[0] - 1)
         log.debug(f"left {self.pos} {self.cursor}")
 
-        return self.redraw(anchor=True) if shift else self.term.move_left
+        return self.redraw(anchor=True) if shift else self.term.move_left()
 
     def kp_right(self) -> str:
         "Handle KEY_RIGHT."
@@ -278,7 +276,7 @@ class BlockEditor(object):
         self.cursor[0] = min(self.columns - 1, self.cursor[0] + 1)
         log.debug(f"right {self.pos} {self.cursor}")
 
-        return self.redraw(anchor=True) if shift else self.term.move_right
+        return self.redraw(anchor=True) if shift else self.term.move_right()
 
     def kp_home(self) -> str:
         "Handle KEY_HOME."
@@ -353,7 +351,7 @@ class BlockEditor(object):
             out += self.term.move_left(old_cursor - self.cursor[0])
 
         log.debug(f"up {self.pos} {self.cursor}")
-        out += self.redraw(anchor=True) if shift else self.term.move_up
+        out += self.redraw(anchor=True) if shift else self.term.move_up()
 
         return out
 
@@ -381,7 +379,7 @@ class BlockEditor(object):
             out += self.term.move_left(old_cursor - self.cursor[0])
 
         log.debug(f"down {self.pos} {self.cursor}")
-        out += self.redraw(anchor=True) if shift else self.term.move_down
+        out += self.redraw(anchor=True) if shift else self.term.move_down()
 
         return out
 
@@ -462,7 +460,7 @@ class BlockEditor(object):
         if move_left > 0:
             out.append(self.term.move_left(move_left))
 
-        return self._color("".join(out))
+        return self.color("".join(out))
 
 
 class LineEditor(BlockEditor):

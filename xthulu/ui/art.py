@@ -1,10 +1,12 @@
 "art module"
 
+# type checking
+from typing import Sequence, Union
+
 # stdlib
 import asyncio as aio
 from os.path import exists, isfile
 import re
-from typing import Union
 
 # 3rd party
 import aiofiles
@@ -92,7 +94,7 @@ async def show_art(
             # \x1a is the EOF character, used to delimit SAUCE from the artwork
             line = re.sub(r"\r|\n|\x1a.*", "", line)
             out = []
-            seqs = cx.term.split_seqs(line)
+            seqs: Sequence[str] = cx.term.split_seqs(line)  # type: ignore
             ignore = False
 
             for seq in seqs:

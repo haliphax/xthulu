@@ -1,5 +1,8 @@
 "xthulu event queues"
 
+# type checking
+from typing import Optional
+
 # local
 from .structs import EventData
 
@@ -20,8 +23,8 @@ class EventQueue(object):
         return getattr(self._q, attr)
 
     async def poll(
-        self, event_name: str = None, flush=False, get_last=False
-    ) -> EventData:
+        self, event_name: Optional[str] = None, flush=False, get_last=False
+    ) -> EventData | None:
         """
         Check for event
 
@@ -32,8 +35,8 @@ class EventQueue(object):
         """
 
         popped = []
-        found: EventData = None
-        last: EventData = None
+        found: Optional[EventData] = None
+        last: Optional[EventData] = None
 
         while not self._q.empty() and (found is None or flush or get_last):
             recv = await self._q.get()
@@ -60,7 +63,7 @@ class EventQueue(object):
 
         return last if last is not None else found
 
-    async def flush(self, event_name: str = None):
+    async def flush(self, event_name: Optional[str] = None):
         """
         Flush the event queue
 

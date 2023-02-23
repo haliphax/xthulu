@@ -2,6 +2,7 @@
 
 # stdlib
 from contextlib import contextmanager
+from functools import partial
 
 # local
 from . import log
@@ -95,18 +96,16 @@ def expire(owner: str):
     """
 
     log.debug(f"Releasing locks owned by {owner}")
-    locks = 0
-    owned = None
 
-    if owner in Locks.owned:
-        owned = Locks.owned[owner].copy()
-        locks = len(owned)
+    if owner not in Locks.owned:
+        log.debug(f"No lock storage for {owner}")
+        return
 
-    if locks == 0:
-        log.debug(f"No locks for {owner}")
+    owned: dict[str, str] = Locks.owned[owner].copy()
+
+    if not owned:
+        log.debug(f"No remaining locks for {owner}")
     else:
-        for l in owned:
-            release(owner, l)
+        map(partial(release, (owner,)), owned.values())
 
-    if owned is not None:
-        del Locks.owned[owner]
+    del Locks.owned[owner]

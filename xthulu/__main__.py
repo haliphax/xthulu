@@ -50,11 +50,11 @@ def start():
 def db_create():
     "Create database tables"
 
-    from . import models
+    from . import models  # noqa: F401
 
     async def f():
         click.echo("Creating database")
-        await db.gino.create_all()
+        await db.gino.create_all()  # type: ignore
 
     loop.run_until_complete(f())
 

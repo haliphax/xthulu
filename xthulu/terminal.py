@@ -3,18 +3,21 @@
 # significant rewrites for blessed functionality thanks to
 # https://github.com/jquast
 
+# type checking
+from typing import Callable, Optional, Protocol
+
 # stdlib
-from asyncio.queues import Queue
-import io
 import asyncio as aio
 import contextlib
 from functools import partial
+from io import StringIO
 from multiprocessing.connection import Connection
 import os
-from typing import Callable
 
 # 3rd party
-import blessed
+from blessed.keyboard import Keystroke, resolve_sequence
+from blessed.formatters import FormattingOtherString, ParameterizingString
+from blessed.terminal import Terminal as BlessedTerminal
 import wrapt
 
 # local
@@ -24,7 +27,7 @@ from .exceptions import ProcessClosing
 debug_term = bool(config.get("debug", {}).get("term", False))
 
 
-class SubprocessTerminal(blessed.Terminal):
+class SubprocessTerminal(BlessedTerminal):
     def __init__(
         self,
         kind: str,
@@ -33,16 +36,16 @@ class SubprocessTerminal(blessed.Terminal):
         pixel_height: int = 0,
         pixel_width: int = 0,
     ):
-        stream = io.StringIO()
+        stream = StringIO()
         super().__init__(kind, stream, force_styling=True)
         log.debug(f"Terminal.errors: {self.errors}")
         self._keyboard_fd = "defunc"
         self._height = height
         self._width = width
         self.resolve = partial(
-            blessed.keyboard.resolve_sequence,
-            mapper=self._keymap,
-            codes=self._keycodes,
+            resolve_sequence,
+            mapper=self._keymap,  # type: ignore
+            codes=self._keycodes,  # type: ignore
         )
 
     @contextlib.contextmanager
@@ -70,6 +73,11 @@ class TerminalProxyCall(wrapt.ObjectProxy):
         return self.pipe_master.recv()
 
 
+class IntOrNoneReturnsStr(Protocol):
+    def __call__(self, value: int = 1) -> str:
+        ...
+
+
 class ProxyTerminal(object):
     _kbdbuf = []
 
@@ -83,10 +91,19 @@ class ProxyTerminal(object):
         "fullscreen",
     )
 
+    # type hints
+    clear_eol: Callable[[], str]
+    move_down: IntOrNoneReturnsStr
+    move_left: IntOrNoneReturnsStr
+    move_right: IntOrNoneReturnsStr
+    move_up: IntOrNoneReturnsStr
+    move_x: IntOrNoneReturnsStr
+    move_y: IntOrNoneReturnsStr
+
     def __init__(
         self,
-        stdin: Queue,
-        stdout: Queue,
+        stdin: aio.Queue[bytes],
+        stdout: StringIO,
         encoding: str,
         pipe_master: Connection,
         width: int = 0,
@@ -138,7 +155,7 @@ class ProxyTerminal(object):
         if attr in self._ctxattrs:
             return proxy_contextmanager
 
-        blessed_attr = getattr(blessed.Terminal, attr, None)
+        blessed_attr = getattr(BlessedTerminal, attr, None)
 
         if callable(blessed_attr):
             if debug_term:
@@ -163,8 +180,8 @@ class ProxyTerminal(object):
             if isinstance(
                 resolved_value,
                 (
-                    blessed.formatters.ParameterizingString,
-                    blessed.formatters.FormattingOtherString,
+                    ParameterizingString,
+                    FormattingOtherString,
                 ),
             ):
                 resolved_value = TerminalProxyCall(
@@ -199,7 +216,9 @@ class ProxyTerminal(object):
     def width(self):
         return self._width
 
-    async def inkey(self, timeout: float = None, esc_delay: float = 0.35):
+    async def inkey(
+        self, timeout: Optional[float] = None, esc_delay: float = 0.35
+    ):
         ucs = ""
 
         # get anything currently in kbd buffer
@@ -207,9 +226,9 @@ class ProxyTerminal(object):
             ucs += c
 
         self._kbdbuf = []
-        ks = (
-            self.resolve(text=ucs) if len(ucs) else blessed.keyboard.Keystroke()
-        )
+        ks: Keystroke = (
+            self.resolve(text=ucs) if len(ucs) else Keystroke()
+        )  # type: ignore
 
         # either buffer was empty or we don't have enough for a keystroke;
         # wait for input from kbd
@@ -236,14 +255,12 @@ class ProxyTerminal(object):
                         break
 
             ks = (
-                self.resolve(text=ucs)
-                if len(ucs)
-                else blessed.keyboard.Keystroke()
-            )
+                self.resolve(text=ucs) if len(ucs) else Keystroke()
+            )  # type: ignore
 
         if ks.code == self.KEY_ESCAPE:
             # esc was received; let's see if we're getting a key sequence
-            while ucs in self._keymap_prefixes:
+            while ucs in self._keymap_prefixes:  # type: ignore
                 try:
                     inp = await aio.wait_for(self.stdin.get(), esc_delay)
                     ucs += inp.decode(self.encoding)
@@ -254,7 +271,9 @@ class ProxyTerminal(object):
                 except aio.TimeoutError:
                     break
 
-            ks = self.resolve(text=ucs) if len(ucs) else blessed.Keystroke()
+            ks = (
+                self.resolve(text=ucs) if len(ucs) else Keystroke()
+            )  # type: ignore
 
         # append any remaining input back into the kbd buffer
         for c in ucs[len(ks) :]:
@@ -296,7 +315,7 @@ def terminal_process(
         # and these CM's are the only ones without side-effects.
         if given_attr.startswith("!CTX"):
             # here, we feel the real punishment of side-effects...
-            sideeffect_stream = subproc_term.stream.getvalue()
+            sideeffect_stream = subproc_term.stream.getvalue()  # type: ignore
             assert not sideeffect_stream, ("should be empty", sideeffect_stream)
 
             given_attr = given_attr[len("!CTX") :]
@@ -307,7 +326,9 @@ def terminal_process(
             with getattr(subproc_term, given_attr)(
                 *args, **kwargs
             ) as enter_result:
-                enter_side_effect = subproc_term.stream.getvalue()
+                enter_side_effect = (
+                    subproc_term.stream.getvalue()  # type: ignore
+                )
                 subproc_term.stream.truncate(0)
                 subproc_term.stream.seek(0)
 
@@ -319,7 +340,7 @@ def terminal_process(
 
                 subproc_pipe.send((enter_result, enter_side_effect))
 
-            exit_side_effect = subproc_term.stream.getvalue()
+            exit_side_effect = subproc_term.stream.getvalue()  # type: ignore
             subproc_term.stream.truncate(0)
             subproc_term.stream.seek(0)
             subproc_pipe.send(exit_side_effect)

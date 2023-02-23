@@ -1,5 +1,8 @@
 "xthulu context class module"
 
+# type checking
+from typing import Any, Callable, Final, NoReturn, Optional
+
 # stdlib
 import asyncio as aio
 from codecs import decode
@@ -12,13 +15,15 @@ from typing import List, Tuple, Union
 
 # 3rd party
 from asyncssh import SSHServerProcess
+from sqlalchemy import func
 
 # local
-from . import config, db, locks, log as syslog
+from . import config, locks, log as syslog
 from .events import EventQueue
 from .exceptions import Goto, ProcessClosing
 from .models import User
 from .structs import Script
+from .terminal import ProxyTerminal
 
 
 class _LockManager(object):
@@ -36,28 +41,40 @@ class _LockManager(object):
 class Context(object):
     "Context object for SSH sessions"
 
-    #: Script stack
     stack = []
-    #: User object (assigned at _init)
-    user: User = None
-    _sid: str = None
+    """Script stack"""
+
+    user: User
+    """User object (assigned at _init)"""
+
+    term: ProxyTerminal
+    """Context terminal object"""
+
+    _sid: Final[str]
+    """Internal session ID"""
 
     def __init__(self, proc, encoding="utf-8"):
         _peername = proc.get_extra_info("peername")
         _username = proc.get_extra_info("username")
-        #: SSHServerProcess for session
+        self._sid = "{}:{}".format(*_peername)
+
         self.proc: SSHServerProcess = proc
-        self._sid: str = "{}:{}".format(*_peername)
-        #: Encoding for session
+        """SSHServerProcess for session"""
+
         self.encoding: str = encoding
-        #: Remote IP address
+        """Encoding for session"""
+
         self.ip: str = _peername[0]
-        #: Logging facility
+        """Remote IP address"""
+
         self.log: logging.Logger = logging.getLogger(self.sid)
-        #: Events queue
+        """Logging facility"""
+
         self.events: EventQueue = EventQueue(self.sid)
-        #: Environment variables
+        """Events queue"""
+
         self.env: dict = proc.env
+        """Environment variables"""
 
         # set up logging
         if not self.log.filters:
@@ -77,9 +94,13 @@ class Context(object):
         "Asynchronous initialization routine"
 
         _username = self.proc.get_extra_info("username")
-        self.user = await User.query.where(
-            db.func.lower(User.name) == _username.lower()
+        """Internal username"""
+
+        self.user: User = await User.query.where(
+            func.lower(User.name) == _username.lower()
         ).gino.first()
+        """Session user object"""
+
         self.log.debug(repr(self.user))
 
     # read-only
@@ -89,9 +110,9 @@ class Context(object):
 
         return self._sid
 
-    def echo(self, text: str, encoding=None) -> None:
+    def echo(self, text: str, encoding: Optional[str] = None) -> None:
         """
-        Echo text to the terminal
+        Echo text to the terminal.
 
         :param text: The text to echo
         """
@@ -104,21 +125,21 @@ class Context(object):
 
         self.proc.stdout.write(text.encode(self.encoding))
 
-    async def gosub(self, script: Script, *args, **kwargs) -> any:
+    async def gosub(self, script: str, *args, **kwargs) -> Any:
         """
-        Execute script and return result
+        Execute script and return result.
 
         :param script: The userland script to execute
         :returns: The return value from the script (if any)
         """
 
-        script = Script(script, args, kwargs)
+        to_run = Script(script, args, kwargs)
 
-        return await self.runscript(script)
+        return await self.runscript(to_run)
 
     def goto(self, script: Script, *args, **kwargs) -> None:
         """
-        Switch to script and clear stack
+        Switch to script and clear stack.
 
         :param script: The userland script to execute
         """
@@ -126,7 +147,7 @@ class Context(object):
         raise Goto(script, *args, **kwargs)
 
     @property
-    def lock(self) -> bool:
+    def lock(self) -> partial[_LockManager]:
         """
         Session lock context manager
 
@@ -138,7 +159,7 @@ class Context(object):
 
     def get_lock(self, name: str) -> bool:
         """
-        Acquire lock on behalf of session user
+        Acquire lock on behalf of session user.
 
         :param name: The name of the lock to attempt
         :returns: Whether or not the lock was granted
@@ -148,7 +169,7 @@ class Context(object):
 
     def release_lock(self, name: str) -> bool:
         """
-        Release lock on behalf of session user
+        Release lock on behalf of session user.
 
         :param name: The name of the lock to release
         :returns: Whether or not the lock was valid to begin with
@@ -167,11 +188,11 @@ class Context(object):
         """
 
         @singledispatch
-        async def f(proc):
+        async def f(proc: subprocess.Popen | Tuple | List | str):
             raise NotImplementedError("proc must be Popen, tuple, list, or str")
 
         @f.register(subprocess.Popen)
-        async def _(proc):
+        async def _(proc) -> NoReturn:  # type: ignore
             await self.proc.redirect(
                 stdin=proc.stdin,
                 stdout=proc.stdout,
@@ -185,7 +206,7 @@ class Context(object):
         @f.register(tuple)
         @f.register(list)
         @f.register(str)
-        async def _(proc):
+        async def _(proc) -> NoReturn:  # type: ignore
             p = subprocess.Popen(
                 proc,
                 stdin=subprocess.PIPE,
@@ -197,7 +218,7 @@ class Context(object):
 
         await f(proc)
 
-    async def runscript(self, script: Script) -> any:
+    async def runscript(self, script: Script) -> Any:
         """
         Run script and return result; used by :meth:`goto` and :meth:`gosub`
 
@@ -212,20 +233,21 @@ class Context(object):
 
         for seg in split:
             if mod is not None:
-                found = find_module(seg, mod.__path__)
+                found = find_module(seg, list(mod.__path__))
             else:
                 found = find_module(seg, config["ssh"]["userland"]["paths"])
 
-            mod = load_module(seg, *found)
+            mod = load_module(seg, *found)  # type: ignore
 
         try:
-            return await mod.main(self, *script.args, **script.kwargs)
+            main: Callable = getattr(mod, "main")
+            return await main(self, *script.args, **script.kwargs)
         except (ProcessClosing, Goto):
             raise
         except Exception as exc:
             self.log.exception(exc)
             self.echo(
-                self.term.bold_red_on_black(
+                self.term.bold_red_on_black(  # type: ignore
                     f"\r\nException in {script.name}\r\n"
                 )
             )
@@ -235,17 +257,18 @@ class Context(object):
 class ContextLogFilter(logging.Filter):
     "Custom logging.Filter that injects username and remote IP address"
 
-    #: The context user's username
-    username: str = None
-    #: The context user's IP address
-    ip: str = None
+    username: str
+    """The context user's username"""
+
+    ip: str
+    """The context user's IP address"""
 
     def __init__(self, username: str, ip: str):
         self.username = username
         self.ip = ip
 
     def filter(self, record: logging.LogRecord):
-        "Filter log record"
+        """Filter log record."""
 
         record.username = self.username
         record.ip = self.ip

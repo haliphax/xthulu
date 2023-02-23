@@ -18,7 +18,9 @@ class Codec(codecs.Codec):
         return codecs.charmap_encode(char, errors, ENCODING_MAP)
 
     def decode(self, char, errors="strict"):
-        return codecs.charmap_decode(char, errors, DECODING_TABLE)
+        return codecs.charmap_decode(
+            char, errors, DECODING_TABLE  # type: ignore
+        )
 
 
 class IncrementalEncoder(codecs.IncrementalEncoder):
@@ -28,7 +30,9 @@ class IncrementalEncoder(codecs.IncrementalEncoder):
 
 class IncrementalDecoder(codecs.IncrementalDecoder):
     def decode(self, char, final=False):
-        return codecs.charmap_decode(char, self.errors, DECODING_TABLE)[0]
+        return codecs.charmap_decode(
+            char, self.errors, DECODING_TABLE  # type: ignore
+        )[0]
 
 
 class StreamWriter(Codec, codecs.StreamWriter):
@@ -61,8 +65,8 @@ def getaliases():
 def getregentry():
     return codecs.CodecInfo(
         name="cp437",
-        encode=Codec().encode,
-        decode=Codec().decode,
+        encode=Codec().encode,  # type: ignore
+        decode=Codec().decode,  # type: ignore
         incrementalencoder=IncrementalEncoder,
         incrementaldecoder=IncrementalDecoder,
         streamreader=StreamReader,
@@ -72,7 +76,7 @@ def getregentry():
 
 # Decoding Map
 
-DECODING_MAP = codecs.make_identity_dict(range(256))
+DECODING_MAP = codecs.make_identity_dict(range(256))  # type: ignore
 DECODING_MAP.update(
     {
         0x0001: 0x263A,  # WHITE SMILING FACE

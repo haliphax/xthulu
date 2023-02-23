@@ -77,6 +77,8 @@ async def main(cx: Context):
 
                 ks = await cx.term.inkey(1)
 
+            assert ks is not None
+
             if ks.code == cx.term.KEY_UP:
                 last = offset
                 offset = max(0, offset - 1)
