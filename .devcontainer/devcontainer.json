@@ -12,6 +12,7 @@
 	"extensions": [
 		"charliermarsh.ruff",
 		"editorconfig.editorconfig",
+		"esbenp.prettier-vscode",
 		"ms-python.black-formatter",
 		"ms-python.python",
 		"redhat.vscode-yaml",
