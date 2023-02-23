@@ -4,4 +4,5 @@ __pycache__/
 /data/ssh_host_key*
 /db/
 /docker-compose.override.yml
+/node_modules/
 *.pyc

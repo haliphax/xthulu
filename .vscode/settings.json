@@ -1,7 +1,8 @@
 {
 	"files.exclude": {
 		"*.egg-info/": true,
-		".*": true
+		".*": true,
+		"package*.json": true
 	},
 	"black-formatter.importStrategy": "fromEnvironment",
 	"python.analysis.importFormat": "relative",

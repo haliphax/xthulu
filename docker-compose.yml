@@ -1,7 +1,6 @@
-version: '3.5'
+version: "3.5"
 
 services:
-
   app:
     build: .
     command: start
@@ -26,4 +25,7 @@ services:
       - "127.0.0.1:5433:5432"
     restart: unless-stopped
     volumes:
-      - ./db:/var/lib/postgresql/data
+      - db:/var/lib/postgresql/data
+
+volumes:
+  db:
