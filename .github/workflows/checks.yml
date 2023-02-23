@@ -1,0 +1,105 @@
+name: Checks
+
+on:
+  pull_request:
+
+  push:
+    branches: [master]
+
+  workflow_dispatch:
+
+jobs:
+  changes:
+    name: Change detection
+    runs-on: ubuntu-latest
+    outputs:
+      misc: ${{ steps.changes.outputs.misc }}
+      py: ${{ steps.changes.outputs.py }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+
+      - name: Detect changed files
+        id: changes
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            misc:
+              - "**.json"
+              - "**.md"
+              - "**.toml"
+              - "**.yaml"
+              - "**.yml"
+            py:
+              - "**.py"
+              - "requirements/"
+              - "pyproject.toml"
+
+  # formatting
+
+  black:
+    name: Black (formatter)
+    needs: changes
+    if: ${{ needs.changes.outputs.py == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          python -m pip install -U pip setuptools
+          pip install -e .[dev]
+
+      - name: Black
+        run: black --check .
+
+  prettier:
+    name: Prettier (formatter)
+    needs: changes
+    if: ${{ needs.changes.outputs.misc == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: npm
+
+      - name: Install dependencies
+        run: npm i
+
+      - name: Prettier
+        run: npx prettier -c .
+
+  # linting
+
+  ruff:
+    name: Ruff (linter)
+    needs: changes
+    if: ${{ needs.changes.outputs.py == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          python -m pip install -U pip setuptools
+          pip install -e .[dev]
+
+      - name: Ruff
+        run: ruff check .
