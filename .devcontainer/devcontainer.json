@@ -7,12 +7,12 @@
 			"dockerDashComposeVersion": "v2"
 		}
 	},
-	"onCreateCommand": "bash .devcontainer/oncreatecommand.bash",
+	"onCreateCommand": "bash .devcontainer/on-create",
 	"runArgs": ["--init", "--privileged", "--network=host"],
 	"extensions": [
+		"charliermarsh.ruff",
 		"editorconfig.editorconfig",
 		"ms-python.black-formatter",
-		"ms-python.pylint",
 		"ms-python.python",
 		"redhat.vscode-yaml",
 		"ZainChen.json"
