@@ -22,12 +22,13 @@ from .terminal import ProxyTerminal, terminal_process
 class SSHServer(asyncssh.SSHServer):
     "xthulu SSH Server"
 
-    _username = None
+    _username: str | None = None
 
     def connection_made(self, conn: asyncssh.SSHServerConnection):
         "Connection opened"
 
-        self._peername = conn.get_extra_info("peername")
+        log.info(conn._extra)
+        self._peername: list[str] = conn.get_extra_info("peername")
         self._sid = "{}:{}".format(*self._peername)
         EventQueues.q[self._sid] = aio.Queue()
         log.info(f"{self._peername[0]} connecting")
@@ -88,6 +89,9 @@ class SSHServer(asyncssh.SSHServer):
 
         return True
 
+    def session_requested(self):
+        return super().session_requested()
+
 
 async def handle_client(proc: asyncssh.SSHServerProcess):
     "Client connected"
@@ -95,15 +99,21 @@ async def handle_client(proc: asyncssh.SSHServerProcess):
     cx = Context(proc=proc)
     await cx._init()
 
-    if "LANG" not in cx.proc.env or "UTF-8" not in cx.proc.env["LANG"]:
+    if "LANG" not in proc.env or "UTF-8" not in proc.env["LANG"]:
         cx.encoding = "cp437"
 
     termtype = proc.get_terminal_type()
+
+    if "TERM" not in cx.env:
+        cx.env["TERM"] = termtype
+
     w, h, pw, ph = proc.get_terminal_size()
+    cx.env["COLUMNS"] = w
+    cx.env["LINES"] = h
     proxy_pipe, subproc_pipe = Pipe()
     session_stdin = aio.Queue()
     timeout = int(config.get("ssh", {}).get("session", {}).get("timeout", 120))
-    await cx.user.update(last=datetime.utcnow()).apply()
+    await cx.user.update(last=datetime.utcnow()).apply()  # type: ignore
 
     async def input_loop():
         "Catch exceptions on stdin and convert to EventData"
@@ -128,6 +138,8 @@ async def handle_client(proc: asyncssh.SSHServerProcess):
                 return
 
             except asyncssh.misc.TerminalSizeChanged as sz:
+                cx.env["COLUMNS"] = sz.width
+                cx.env["LINES"] = sz.height
                 cx.term._width = sz.width
                 cx.term._height = sz.height
                 cx.term._pixel_width = sz.pixwidth
@@ -181,13 +193,13 @@ async def start_server():
     "Run init tasks and throw SSH server into asyncio event loop"
 
     await db.set_bind(config["db"]["bind"])
-    log.info(
-        "SSH listening on " f"{config['ssh']['host']}:{config['ssh']['port']}"
-    )
-    await asyncssh.create_server(
-        SSHServer,
-        config["ssh"]["host"],
-        int(config["ssh"]["port"]),
+    host: str = config["ssh"]["host"]
+    port = int(config["ssh"]["port"])
+    log.info(f"SSH listening on {host}:{port}")
+    await asyncssh.listen(
+        host=host,
+        port=port,
+        server_factory=SSHServer,
         server_host_keys=config["ssh"]["host_keys"],
         process_factory=handle_client,
         encoding=None,

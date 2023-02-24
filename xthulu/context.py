@@ -73,7 +73,7 @@ class Context(object):
         self.events: EventQueue = EventQueue(self.sid)
         """Events queue"""
 
-        self.env: dict = proc.env
+        self.env: dict = proc.env.copy()
         """Environment variables"""
 
         # set up logging

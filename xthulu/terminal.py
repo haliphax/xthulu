@@ -4,7 +4,7 @@
 # https://github.com/jquast
 
 # type checking
-from typing import Callable, Optional, Protocol
+from typing import Any, Callable, Optional
 
 # stdlib
 import asyncio as aio
@@ -73,37 +73,31 @@ class TerminalProxyCall(wrapt.ObjectProxy):
         return self.pipe_master.recv()
 
 
-class IntOrNoneReturnsStr(Protocol):
-    def __call__(self, value: int = 1) -> str:
-        ...
-
-
-class ProxyTerminal(object):
+class ProxyTerminal:
     _kbdbuf = []
 
     # context manager attribs
     _ctxattrs = (
-        "location",
-        "keypad",
-        "raw",
         "cbreak",
-        "hidden_cursor",
         "fullscreen",
+        "hidden_cursor",
+        "keypad",
+        "location",
+        "raw",
     )
 
-    # type hints
-    clear_eol: Callable[[], str]
-    move_down: IntOrNoneReturnsStr
-    move_left: IntOrNoneReturnsStr
-    move_right: IntOrNoneReturnsStr
-    move_up: IntOrNoneReturnsStr
-    move_x: IntOrNoneReturnsStr
-    move_y: IntOrNoneReturnsStr
+    # their type hints
+    cbreak: contextlib._GeneratorContextManager[Any]
+    fullscreen: contextlib._GeneratorContextManager[Any]
+    hidden_cursor: contextlib._GeneratorContextManager[Any]
+    keypad: contextlib._GeneratorContextManager[Any]
+    location: contextlib._GeneratorContextManager[Any]
+    raw: contextlib._GeneratorContextManager[Any]
 
     def __init__(
         self,
         stdin: aio.Queue[bytes],
-        stdout: StringIO,
+        stdout: Any,
         encoding: str,
         pipe_master: Connection,
         width: int = 0,
@@ -119,7 +113,7 @@ class ProxyTerminal(object):
         self._pixel_width = pixel_width
         self._pixel_height = pixel_height
 
-    def __getattr__(self, attr: str):
+    def __getattr__(self, attr: str) -> Callable[..., str]:
         @contextlib.contextmanager
         def proxy_contextmanager(*args, **kwargs):
             # we send special '!CTX' header, which means we
@@ -153,7 +147,7 @@ class ProxyTerminal(object):
                 self.stdout.write(exit_side_effect)
 
         if attr in self._ctxattrs:
-            return proxy_contextmanager
+            return proxy_contextmanager  # type: ignore
 
         blessed_attr = getattr(BlessedTerminal, attr, None)
 
