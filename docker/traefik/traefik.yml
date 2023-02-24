@@ -1,0 +1,12 @@
+api:
+  insecure: true
+
+entryPoints:
+  ssh:
+    address: :22
+
+providers:
+  docker:
+    exposedByDefault: false
+    network: xthulu_proxy
+    watch: true

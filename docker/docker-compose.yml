@@ -1,0 +1,64 @@
+version: "3"
+
+networks:
+  internal:
+  proxy:
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    cap_add:
+      - NET_ADMIN
+    command: start
+    depends_on:
+      - db
+    environment:
+      TERM: xterm-256color
+    image: xthulu
+    labels:
+      - traefik.enable=true
+      - traefik.tcp.routers.ssh.entrypoints=ssh
+      - traefik.tcp.routers.ssh.rule=HostSNI(`*`)
+      - traefik.tcp.routers.ssh.service=ssh
+      - traefik.tcp.services.ssh.loadbalancer.proxyprotocol=2
+      - traefik.tcp.services.ssh.loadbalancer.server.port=22
+    networks:
+      - internal
+      - proxy
+    privileged: true
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - ../data:/app/data:ro
+      - ../userland:/app/userland:ro
+
+  db:
+    environment:
+      POSTGRES_USER: xthulu
+      POSTGRES_PASSWORD: xthulu
+    image: postgres:13-alpine
+    networks:
+      - internal
+    restart: unless-stopped
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  proxy:
+    depends_on:
+      - app
+    image: traefik:2.9
+    networks:
+      - proxy
+    ports:
+      - "22:22"
+      - 127.0.0.1:8080:8080
+    restart: unless-stopped
+    volumes:
+      - ./traefik/traefik.yml:/traefik.yml:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+volumes:
+  db:
