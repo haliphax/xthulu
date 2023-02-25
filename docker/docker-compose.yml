@@ -22,7 +22,7 @@ services:
       - traefik.tcp.routers.ssh.entrypoints=ssh
       - traefik.tcp.routers.ssh.rule=HostSNI(`*`)
       - traefik.tcp.routers.ssh.service=ssh
-      - traefik.tcp.services.ssh.loadbalancer.proxyprotocol=2
+      - traefik.tcp.services.ssh.loadbalancer.proxyprotocol
       - traefik.tcp.services.ssh.loadbalancer.server.port=22
     networks:
       - internal
