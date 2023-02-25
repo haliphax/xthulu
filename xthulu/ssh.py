@@ -95,13 +95,18 @@ class SSHServer(asyncssh.SSHServer):
 async def handle_client(proc: asyncssh.SSHServerProcess):
     "Client connected"
 
+    termtype = proc.get_terminal_type()
+
+    if termtype is None:
+        proc.channel.close()
+        proc.close()
+        return
+
     cx = Context(proc=proc)
     await cx._init()
 
     if "LANG" not in proc.env or "UTF-8" not in proc.env["LANG"]:
         cx.encoding = "cp437"
-
-    termtype = proc.get_terminal_type()
 
     if "TERM" not in cx.env:
         cx.env["TERM"] = termtype
@@ -183,9 +188,10 @@ async def handle_client(proc: asyncssh.SSHServerProcess):
         finally:
             # send sentinel to close child 'term_pipe' process
             proxy_pipe.send((None, (), {}))
+            proc.channel.close()
             proc.close()
 
-    await aio.gather(input_loop(), main_process())
+    await aio.gather(input_loop(), main_process(), return_exceptions=True)
 
 
 async def start_server():
