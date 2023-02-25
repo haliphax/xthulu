@@ -27,7 +27,6 @@ class SSHServer(asyncssh.SSHServer):
     def connection_made(self, conn: asyncssh.SSHServerConnection):
         "Connection opened"
 
-        log.info(conn._extra)
         self._peername: list[str] = conn.get_extra_info("peername")
         self._sid = "{}:{}".format(*self._peername)
         EventQueues.q[self._sid] = aio.Queue()
