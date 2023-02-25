@@ -77,7 +77,8 @@ async def main(cx: Context):
 
                 ks = await cx.term.inkey(1)
 
-            assert ks is not None
+            if ks is None:
+                continue
 
             if ks.code == cx.term.KEY_UP:
                 last = offset
