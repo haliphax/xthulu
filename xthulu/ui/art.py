@@ -1,11 +1,9 @@
 "art module"
 
-# type checking
-from typing import Optional, Union
-
 # stdlib
 import asyncio as aio
 from os.path import exists, isfile
+import re
 
 # 3rd party
 import aiofiles
@@ -19,13 +17,13 @@ from ..context import Context
 async def show_art(
     cx: Context,
     filename: str,
-    delay=0.2,
+    delay=0.125,
     dismissable=True,
     preload=0,
-    maxwidth: Optional[int] = None,
+    maxwidth: int | None = None,
     center=False,
     encoding="cp437",
-) -> Union[Keystroke, None]:
+) -> Keystroke | None:
     """
     Display artwork from given filename with given delay between rows of
     output.
@@ -45,7 +43,7 @@ async def show_art(
     def newline():
         cx.echo(f"{cx.term.normal}\r\n")
 
-    if maxwidth is None or maxwidth > cx.term.width:
+    if maxwidth is None or maxwidth > cx.term.width - 1:
         maxwidth = cx.term.width - 1
 
     if not (exists(filename) and isfile(filename)):
@@ -54,46 +52,65 @@ async def show_art(
     if preload is not None and preload <= 0:
         preload = cx.term.height - 1
 
+    file_lines: list[str]
+
+    async with aiofiles.open(filename, "r", encoding=encoding) as f:
+        file_lines = await f.readlines()
+
+    lines: list[str] = []
+    wrapper = SequenceTextWrapper(maxwidth, cx.term)  # type: ignore
+    longest_line = 0
+
+    # \x1a is the EOF character, used to delimit SAUCE from the artwork
+    for line in [re.sub(r"\r|\n|\x1a.*", "", l) for l in file_lines]:
+        # replace CUF sequences with spaces to avoid loss of background
+        # color when a CUF sequence would wrap
+        normalized = re.sub(
+            r"\x1b\[(\d+)C", lambda x: " " * int(x.group(1)), line
+        )
+        # wrap to maximum width and discard excess
+        wrapped = wrapper.wrap(normalized)
+        did_wrap = len(wrapped) > 1
+        first = wrapped[0] if did_wrap else normalized
+        lines.append(first)
+
+        # calculate longest line length for centering
+        if center and longest_line < maxwidth:
+            if did_wrap:
+                # if this line wrapped, we know it's at least maxwidth
+                longest_line = maxwidth
+            else:
+                # strip sequences to get true length
+                stripped = re.sub(r"\x1b\[[;0-9]+m", "", first)
+                strlen = len(stripped)
+
+                if strlen > longest_line:
+                    longest_line = strlen
+
     center_pos = (
-        0 if not center else min(0, (cx.term.width // 2) - (maxwidth // 2))
+        0 if not center else max(0, (cx.term.width // 2) - (longest_line // 2))
     )
     row = 0
 
-    async with aiofiles.open(filename, "r", encoding=encoding) as f:
-        if cx.encoding != "utf-8":
-            encoding = None
+    for line in lines:
+        if center_pos > 0:
+            cx.echo(cx.term.move_right(center_pos))
 
-        wrapper = SequenceTextWrapper(
-            min(maxwidth, cx.term.width - 1), cx.term  # type: ignore
-        )
+        cx.echo(line)
+        row += 1
 
-        for line in await f.readlines():
-            # \x1a is the EOF character, used to delimit SAUCE from the artwork
-            if "\x1a" in line:
-                break
-
-            output = []
-
-            if center_pos > 0:
-                output.append(cx.term.move_x(center_pos))
-
-            wrapped = wrapper.wrap(line)
-            output.append(wrapped[0] if wrapped else line)
-            cx.echo("".join(output))
-            row += 1
-
-            if preload is not None and row < preload:
-                newline()
-                continue
-
-            if delay is not None and delay > 0:
-                if dismissable:
-                    ks: Keystroke = await cx.term.inkey(timeout=delay)
-
-                    if ks.code is not None:
-                        newline()
-                        return ks
-                else:
-                    await aio.sleep(delay)
-
+        if preload is not None and row < preload:
             newline()
+            continue
+
+        if delay is not None and delay > 0:
+            if dismissable:
+                ks: Keystroke = await cx.term.inkey(timeout=delay)
+
+                if ks.code is not None:
+                    newline()
+                    return ks
+            else:
+                await aio.sleep(delay)
+
+        newline()
