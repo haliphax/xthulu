@@ -10,5 +10,8 @@
 	"python.analysis.typeCheckingMode": "basic",
 	"python.formatting.provider": "black",
 	"python.linting.enabled": false,
-	"ruff.importStrategy": "fromEnvironment"
+	"ruff.importStrategy": "fromEnvironment",
+	"python.testing.unittestArgs": ["-v", "-s", "./tests", "-p", "test_*.py"],
+	"python.testing.pytestEnabled": false,
+	"python.testing.unittestEnabled": true
 }
