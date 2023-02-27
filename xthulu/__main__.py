@@ -30,7 +30,6 @@ def start():
         loop.stop()
 
     loop.add_signal_handler(SIGTERM, shutdown)
-    log.info("Starting SSH server")
 
     try:
         loop.run_until_complete(start_server())
@@ -38,7 +37,6 @@ def start():
         sys.exit(f"Error: {exc}")
 
     try:
-        log.info("SSH server is listening")
         loop.run_forever()
     except KeyboardInterrupt:
         pass

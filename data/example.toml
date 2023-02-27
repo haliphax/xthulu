@@ -9,6 +9,7 @@ term = false
 host_keys = ["data/ssh_host_key"]
 host = "0.0.0.0"
 port = 8022
+proxy_protocol = true
 
 [ssh.auth]
 no_password = ["guest"]
