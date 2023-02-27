@@ -4,8 +4,3 @@ services:
   app:
     volumes:
       - ./xthulu:/app/xthulu
-
-  db:
-    user: 1000:1000
-    volumes:
-      - /etc/passwd:/etc/passwd:ro
