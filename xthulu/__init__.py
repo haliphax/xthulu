@@ -3,7 +3,7 @@
 # stdlib
 import logging
 from os import environ
-from os.path import join
+from os.path import exists, join
 import sys
 
 # 3rd party
@@ -27,7 +27,10 @@ config_file = (
     if "XTHULU_CONFIG" in environ
     else join("data", "config.toml")
 )
-config = toml.load(config_file)
+
+if exists(config_file):
+    config = toml.load(config_file)
+
 log.setLevel(
     logging.DEBUG
     if config.get("debug", {}).get("enabled", False)
