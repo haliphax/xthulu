@@ -1,4 +1,4 @@
-"xthulu module initialization"
+"""xthulu module initialization"""
 
 # stdlib
 import logging
@@ -14,6 +14,8 @@ import toml
 from .encodings import register_encodings
 
 log = logging.getLogger(__name__)
+"""Root logger instance"""
+
 streamHandler = logging.StreamHandler(sys.stdout)
 streamHandler.setFormatter(
     logging.Formatter(
@@ -21,7 +23,10 @@ streamHandler.setFormatter(
     )
 )
 log.addHandler(streamHandler)
+
 config = {}
+"""xthulu configuration"""
+
 config_file = (
     environ["XTHULU_CONFIG"]
     if "XTHULU_CONFIG" in environ
@@ -30,11 +35,16 @@ config_file = (
 
 if exists(config_file):
     config = toml.load(config_file)
+else:
+    log.warn(f"Configuration file not found: {config_file}")
 
 log.setLevel(
     logging.DEBUG
     if config.get("debug", {}).get("enabled", False)
     else logging.INFO
 )
+
 db = Gino()
+"""Gino database API instance"""
+
 register_encodings()
