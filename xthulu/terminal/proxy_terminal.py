@@ -1,7 +1,4 @@
-"Asyncio blessed.Terminal implementation"
-
-# significant rewrites for blessed functionality thanks to
-# https://github.com/jquast
+"""Proxied blessed.Terminal"""
 
 # type checking
 from typing import Any, Callable, Optional
@@ -9,71 +6,28 @@ from typing import Any, Callable, Optional
 # stdlib
 import asyncio as aio
 import contextlib
-from functools import partial
-from io import StringIO
 from multiprocessing.connection import Connection
-import os
 
 # 3rd party
-from blessed.keyboard import Keystroke, resolve_sequence
+from blessed import Terminal
+from blessed.keyboard import Keystroke
 from blessed.formatters import FormattingOtherString, ParameterizingString
-from blessed.terminal import Terminal as BlessedTerminal
-import wrapt
 
 # local
-from . import config, log
-from .exceptions import ProcessClosing
+from .. import config, log
+from ..exceptions import ProcessClosing
+from .proxy_call import TerminalProxyCall
 
 debug_term = bool(config.get("debug", {}).get("term", False))
-
-
-class SubprocessTerminal(BlessedTerminal):
-    def __init__(
-        self,
-        kind: str,
-        height: int = 0,
-        width: int = 0,
-        pixel_height: int = 0,
-        pixel_width: int = 0,
-    ):
-        stream = StringIO()
-        super().__init__(kind, stream, force_styling=True)
-        log.debug(f"Terminal.errors: {self.errors}")
-        self._keyboard_fd = "defunc"
-        self._height = height
-        self._width = width
-        self.resolve = partial(
-            resolve_sequence,
-            mapper=self._keymap,  # type: ignore
-            codes=self._keycodes,  # type: ignore
-        )
-
-    @contextlib.contextmanager
-    def raw(self):
-        yield
-
-    @contextlib.contextmanager
-    def cbreak(self):
-        yield
-
-    @property
-    def is_a_tty(self):
-        return True
-
-
-class TerminalProxyCall(wrapt.ObjectProxy):
-    def __init__(self, wrapped: Callable, attr: str, pipe_master: Connection):
-        super().__init__(wrapped)
-        self.pipe_master = pipe_master
-        self.attr = attr
-
-    def __call__(self, *args, **kwargs):
-        self.pipe_master.send((f"!CALL{self.attr}", args, kwargs))
-
-        return self.pipe_master.recv()
+"""Whether terminal debugging is enabled"""
 
 
 class ProxyTerminal:
+    """
+    Terminal implementation which proxies calls to a `blessed.Terminal` instance
+    running in a subprocess.
+    """
+
     _kbdbuf = []
 
     # context manager attribs
@@ -149,7 +103,7 @@ class ProxyTerminal:
         if attr in self._ctxattrs:
             return proxy_contextmanager  # type: ignore
 
-        blessed_attr = getattr(BlessedTerminal, attr, None)
+        blessed_attr = getattr(Terminal, attr, None)
 
         if callable(blessed_attr):
             if debug_term:
@@ -194,21 +148,31 @@ class ProxyTerminal:
     def does_styling(self):
         return True
 
+    does_styling.__doc__ = Terminal.does_styling.__doc__
+
     @property
     def pixel_width(self):
         return self._pixel_width
+
+    pixel_width.__doc__ = Terminal.pixel_width.__doc__
 
     @property
     def pixel_height(self):
         return self._pixel_height
 
+    pixel_height.__doc__ = Terminal.pixel_height.__doc__
+
     @property
     def height(self):
         return self._height
 
+    height.__doc__ = Terminal.height.__doc__
+
     @property
     def width(self):
         return self._width
+
+    width.__doc__ = Terminal.width.__doc__
 
     async def inkey(
         self, timeout: Optional[float] = None, esc_delay: float = 0.35
@@ -275,87 +239,4 @@ class ProxyTerminal:
 
         return ks
 
-
-def terminal_process(
-    termtype: str, w: int, h: int, pw: int, ph: int, subproc_pipe: Connection
-):
-    """
-    Avoid Python curses singleton bug by stuffing Terminal in a subprocess
-    and proxying calls/responses via Pipe
-    """
-
-    subproc_term = SubprocessTerminal(termtype, w, h, pw, ph)
-
-    while True:
-        try:
-            given_attr, args, kwargs = subproc_pipe.recv()
-        except KeyboardInterrupt:
-            return
-
-        if debug_term:
-            log.debug(f"proxy received: {given_attr}, {args!r}, " f"{kwargs!r}")
-
-        # exit sentinel
-        if given_attr is None:
-            if debug_term:
-                log.debug(f"term={subproc_term}/pid={os.getpid()} exit")
-
-            break
-
-        # special attribute -- a context manager, enter it naturally, exit
-        # unnaturally (even, prematurely), with the exit value ready for
-        # our client side, this is only possible because blessed doesn't
-        # use any state or time-sensitive values, only terminal sequences,
-        # and these CM's are the only ones without side-effects.
-        if given_attr.startswith("!CTX"):
-            # here, we feel the real punishment of side-effects...
-            sideeffect_stream = subproc_term.stream.getvalue()  # type: ignore
-            assert not sideeffect_stream, ("should be empty", sideeffect_stream)
-
-            given_attr = given_attr[len("!CTX") :]
-
-            if debug_term:
-                log.debug(f"context attr: {given_attr}")
-
-            with getattr(subproc_term, given_attr)(
-                *args, **kwargs
-            ) as enter_result:
-                enter_side_effect = (
-                    subproc_term.stream.getvalue()  # type: ignore
-                )
-                subproc_term.stream.truncate(0)
-                subproc_term.stream.seek(0)
-
-                if debug_term:
-                    log.debug(
-                        "enter_result, enter_side_effect = "
-                        f"{enter_result!r}, {enter_side_effect!r}"
-                    )
-
-                subproc_pipe.send((enter_result, enter_side_effect))
-
-            exit_side_effect = subproc_term.stream.getvalue()  # type: ignore
-            subproc_term.stream.truncate(0)
-            subproc_term.stream.seek(0)
-            subproc_pipe.send(exit_side_effect)
-
-        elif given_attr.startswith("!CALL"):
-            given_attr = given_attr[len("!CALL") :]
-            matching_attr = getattr(subproc_term, given_attr)
-
-            if debug_term:
-                log.debug(f"callable attr: {given_attr}")
-
-            subproc_pipe.send(matching_attr(*args, **kwargs))
-
-        else:
-            if debug_term:
-                log.debug(f"attr: {given_attr}")
-
-            assert len(args) == len(kwargs) == 0, (args, kwargs)
-            matching_attr = getattr(subproc_term, given_attr)
-
-            if debug_term:
-                log.debug(f"value: {matching_attr!r}")
-
-            subproc_pipe.send(matching_attr)
+    inkey.__doc__ = Terminal.inkey.__doc__
