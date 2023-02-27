@@ -4,7 +4,7 @@
 from typing import Any
 
 # 3rd party
-import asyncssh
+from asyncssh import listen
 
 # local
 from .. import config, db, log
@@ -27,7 +27,6 @@ async def start_server():
         "server_factory": SSHServer,
         "server_host_keys": config["ssh"]["host_keys"],
         "process_factory": SSHServer.handle_client,
-        "tunnel": ProxyProtocolListener(),
         "encoding": None,
     }
 
@@ -37,4 +36,4 @@ async def start_server():
         log.info("Using PROXY protocol v1 listener")
         kwargs["tunnel"] = ProxyProtocolListener()
 
-    await asyncssh.listen(**kwargs)
+    await listen(**kwargs)
