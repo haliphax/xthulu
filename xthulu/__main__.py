@@ -1,4 +1,4 @@
-"xthulu main entry point"
+"""xthulu main entry point"""
 
 # stdlib
 import asyncio as aio
@@ -18,12 +18,12 @@ loop = aio.get_event_loop()
 
 @click.group()
 def cli():
-    "xthulu terminal server command line utility"
+    """xthulu terminal server command line utility"""
 
 
 @cli.command()
 def start():
-    "Start SSH server process"
+    """Start SSH server process"""
 
     def shutdown():
         log.info("Shutting down")
@@ -46,7 +46,7 @@ def start():
 
 @cli.command()
 def db_create():
-    "Create database tables"
+    """Create database tables"""
 
     from . import models  # noqa: F401
 
@@ -59,7 +59,7 @@ def db_create():
 
 @cli.command()
 def db_init():
-    "Initialize database with starter data"
+    """Initialize database with starter data"""
 
     from .models.user import User
 
@@ -85,6 +85,8 @@ def db_init():
 
 
 def main():
+    """Main method for CLI; binds to the database before invoking methods."""
+
     async def f():
         await db.set_bind(config["db"]["bind"])
 

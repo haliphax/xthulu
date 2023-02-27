@@ -1,4 +1,4 @@
-"xthulu context class module"
+"""xthulu context class module"""
 
 # type checking
 from typing import Any, Callable, Final, NoReturn, Optional
@@ -18,28 +18,18 @@ from asyncssh import SSHServerProcess
 from sqlalchemy import func
 
 # local
-from . import config, locks, log as syslog
-from .events import EventQueue
-from .exceptions import Goto, ProcessClosing
-from .models import User
-from .structs import Script
-from .terminal import ProxyTerminal
-
-
-class _LockManager(object):
-    def __init__(self, sid: str, name: str):
-        self.sid = sid
-        self.name = name
-
-    def __enter__(self, *args, **kwargs):
-        return locks.get(self.sid, self.name)
-
-    def __exit__(self, *args, **kwargs):
-        return locks.release(self.sid, self.name)
+from .. import config, locks, log as syslog
+from ..events import EventQueue
+from ..exceptions import Goto, ProcessClosing
+from ..models import User
+from ..structs import Script
+from ..terminal import ProxyTerminal
+from .lock_manager import _LockManager
+from .log_filter import ContextLogFilter
 
 
 class Context(object):
-    "Context object for SSH sessions"
+    """Context object for SSH sessions"""
 
     stack = []
     """Script stack"""
@@ -91,7 +81,7 @@ class Context(object):
             self.log.setLevel(syslog.getEffectiveLevel())
 
     async def _init(self):
-        "Asynchronous initialization routine"
+        """Asynchronous initialization routine"""
 
         _username = self.proc.get_extra_info("username")
         """Internal username"""
@@ -106,15 +96,18 @@ class Context(object):
     # read-only
     @property
     def sid(self) -> str:
-        "Session ID (IP:PORT)"
+        """Session ID (IP:PORT)"""
 
         return self._sid
 
-    def echo(self, text: str, encoding: Optional[str] = None) -> None:
+    def echo(self, text: str, encoding: Optional[str] = None):
         """
         Echo text to the terminal.
 
-        :param text: The text to echo
+        Args:
+            text: The text to echo.
+            encoding: The encoding to use for output. If unspecified, the
+                context's encoding will be used.
         """
 
         if text is None:
@@ -129,19 +122,23 @@ class Context(object):
         """
         Execute script and return result.
 
-        :param script: The userland script to execute
-        :returns: The return value from the script (if any)
+        Args:
+            script: The userland script to execute.
+
+        Returns:
+            The return value of the script, if any.
         """
 
         to_run = Script(script, args, kwargs)
 
         return await self.runscript(to_run)
 
-    def goto(self, script: Script, *args, **kwargs) -> None:
+    def goto(self, script: Script, *args, **kwargs):
         """
         Switch to script and clear stack.
 
-        :param script: The userland script to execute
+        Args:
+            script: The userland script to execute.
         """
 
         raise Goto(script, *args, **kwargs)
@@ -149,10 +146,13 @@ class Context(object):
     @property
     def lock(self) -> partial[_LockManager]:
         """
-        Session lock context manager
+        Session lock context manager.
 
-        :param name: The name of the lock to attempt
-        :returns: Whether or not the lock was granted
+        Args:
+            name: The name of the lock to attempt.
+
+        Returns:
+            Whether or not the lock was granted.
         """
 
         return partial(_LockManager, self.sid)
@@ -161,8 +161,11 @@ class Context(object):
         """
         Acquire lock on behalf of session user.
 
-        :param name: The name of the lock to attempt
-        :returns: Whether or not the lock was granted
+        Args:
+            name: The name of the lock to attempt.
+
+        Returns:
+            Whether or not the lock was granted.
         """
 
         return locks.get(self.sid, name)
@@ -171,20 +174,22 @@ class Context(object):
         """
         Release lock on behalf of session user.
 
-        :param name: The name of the lock to release
-        :returns: Whether or not the lock was valid to begin with
+        Args:
+            name: The name of the lock to release.
+
+        Returns:
+            Whether or not the lock was valid to begin with.
         """
 
         return locks.release(self.sid, name)
 
-    async def redirect(
-        self, proc: Union[subprocess.Popen, List, Tuple, str]
-    ) -> None:
+    async def redirect(self, proc: Union[subprocess.Popen, List, Tuple, str]):
         """
         Redirect context IO to other process; convenience method which wraps
-        AsyncSSH's redirection routine
+        AsyncSSH's redirection routine.
 
-        :param proc: The process to redirect to
+        Args:
+            proc: The process to redirect to.
         """
 
         @singledispatch
@@ -220,10 +225,13 @@ class Context(object):
 
     async def runscript(self, script: Script) -> Any:
         """
-        Run script and return result; used by :meth:`goto` and :meth:`gosub`
+        Run script and return result; used by `goto` and `gosub`.
 
-        :param script: The userland script to run
-        :returns: The return value of the script (if any)
+        Args:
+            script: The userland script to run.
+
+        Returns:
+            The return value of the script, if any.
         """
 
         self.log.info(f"Running {script}")
@@ -252,25 +260,3 @@ class Context(object):
                 )
             )
             await aio.sleep(3)
-
-
-class ContextLogFilter(logging.Filter):
-    "Custom logging.Filter that injects username and remote IP address"
-
-    username: str
-    """The context user's username"""
-
-    ip: str
-    """The context user's IP address"""
-
-    def __init__(self, username: str, ip: str):
-        self.username = username
-        self.ip = ip
-
-    def filter(self, record: logging.LogRecord):
-        """Filter log record."""
-
-        record.username = self.username
-        record.ip = self.ip
-
-        return True
