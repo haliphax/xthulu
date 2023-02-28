@@ -1,4 +1,4 @@
-"""Configuration tests"""
+"""SSH server startup tests"""
 
 # stdlib
 from unittest import TestCase
@@ -12,18 +12,19 @@ from xthulu.ssh.server import SSHServer
 from tests import run_coroutine
 
 
-class TestConfiguration(TestCase):
-    default_config = {
-        "db": {
-            "bind": "test",
-        },
-        "ssh": {
-            "host": "0.0.0.0",
-            "host_keys": "/test",
-            "port": "8022",
-        },
+class TestStartServer(TestCase):
+
+    """Test that the server starts up with the appropriate configuration."""
+
+    default_ssh_config = {
+        "host": "0.0.0.0",
+        "host_keys": "/test",
+        "port": "8022",
     }
-    """Default configuration for testing"""
+    """Default SSH configuration for testing"""
+
+    default_config = {"db": {"bind": "test"}, "ssh": default_ssh_config}
+    """Default overall configuration for testing"""
 
     def setUp(self):
         self._patch_db = patch("xthulu.ssh.db")
@@ -45,11 +46,9 @@ class TestConfiguration(TestCase):
 
     @patch("xthulu.ssh.config", default_config)
     def test_server_args(self):
-        config = self.default_config
-        ssh_config = config["ssh"]
-
         run_coroutine(start_server())
 
+        ssh_config = self.default_config["ssh"]
         self.mock_listen.assert_awaited_once_with(
             **{
                 "host": ssh_config["host"],
@@ -65,14 +64,7 @@ class TestConfiguration(TestCase):
         "xthulu.ssh.config",
         {
             **default_config,
-            **{
-                "ssh": {
-                    "host": "0.0.0.0",
-                    "host_keys": "/test",
-                    "port": 8022,
-                    "proxy_protocol": True,
-                }
-            },
+            "ssh": {**default_ssh_config, "proxy_protocol": True},
         },
     )
     @patch("xthulu.ssh.ProxyProtocolListener")
