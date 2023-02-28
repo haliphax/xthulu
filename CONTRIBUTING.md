@@ -80,8 +80,8 @@ python -m unittest discover -s tests
 
 ### Testing asynchronous code
 
-A convenience method `run_coroutine` exists in the root of the `tests` module
-that can be used to await asynchronous method calls in test cases.
+The convenience method `run_coroutine` in the root of the `tests` module can be
+used to await asynchronous method calls in test cases.
 
 <details>
 <summary>Example</summary>
