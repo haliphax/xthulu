@@ -13,6 +13,7 @@ from asyncssh import listen
 from .. import db
 from ..configuration import get_config
 from ..logger import log
+from .process_factory import handle_client
 from .proxy_protocol import ProxyProtocolListener
 from .server import SSHServer
 
@@ -31,7 +32,7 @@ async def start_server():
         "port": port,
         "server_factory": SSHServer,
         "server_host_keys": ssh_config["host_keys"],
-        "process_factory": SSHServer.handle_client,
+        "process_factory": handle_client,
         "encoding": None,
     }
 
