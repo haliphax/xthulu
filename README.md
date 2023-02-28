@@ -17,10 +17,10 @@ advantage of.
 
 ## Progress
 
-### Terminal server
-
 <details>
-<summary>Click to expand</summary>
+<summary>Terminal server checklist</summary>
+
+### Terminal server
 
 - [x] SSH server
 - [x] PROXY v1 support
@@ -41,10 +41,10 @@ advantage of.
 
 </details>
 
-### Other
-
 <details>
-<summary>Click to expand</summary>
+<summary>Miscellaneous checklist</summary>
+
+### Miscellaneous
 
 - [ ] HTTP server
   - [ ] Static files
