@@ -9,8 +9,6 @@ services:
     build:
       context: ..
       dockerfile: ./docker/Dockerfile
-    cap_add:
-      - NET_ADMIN
     command: start
     depends_on:
       - db
@@ -27,7 +25,6 @@ services:
     networks:
       - internal
       - proxy
-    privileged: true
     restart: unless-stopped
     tty: true
     volumes:
