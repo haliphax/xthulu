@@ -24,10 +24,14 @@ pyenv activate xthulu
 ### Install dependencies
 
 In addition to the standard dependencies for the project, a set of
-developer-focused dependencies are included.
+developer-focused dependencies are included. Some of them are located in the
+`dev` optional dependencies bundle from the project's Python package, but others
+come from the [node.js] ecosystem.
 
 ```shell
 pip install -e .[dev]
+nodeenv -p
+npm install
 ```
 
 ## Configure development tools
@@ -68,6 +72,7 @@ services:
 
 [pyenv]: https://github.com/pyenv/pyenv
 [dev containers]: https://containers.dev/
+[node.js]: https://nodejs.org
 [pre-commit]: https://pre-commit.com/
 [black]: https://black.readthedocs.io/en/stable/index.html
 [prettier]: https://prettier.io/
