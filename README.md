@@ -1,10 +1,14 @@
 # xthulu
 
-Python 3 asyncio terminal server
+Python 3 asyncio community server
 
 ![Header image](https://github.com/haliphax/xthulu/raw/assets/xthulu.jpg)
 
 [![Coverage Status](https://coveralls.io/repos/github/haliphax/xthulu/badge.svg?branch=master)](https://coveralls.io/github/haliphax/xthulu?branch=master)
+
+While _xthulu_ is intended to be a _community_ server which will provide
+multiple avenues of interaction (e.g. web, terminal), its primary focus is in
+providing a modern SSH terminal server akin to the [bulletin boards] of old.
 
 ## Progress
 
@@ -96,4 +100,5 @@ docker-compose up -d
 ssh guest@localhost
 ```
 
+[bulletin boards]: https://archive.org/details/BBS.The.Documentary
 [gino]: https://python-gino.org
