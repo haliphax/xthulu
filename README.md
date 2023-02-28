@@ -12,6 +12,8 @@ providing a modern SSH terminal server akin to the [bulletin boards] of old.
 Rather than leaning entirely into [DOS]-era nostalgia, modern character sets
 (UTF-8) and [terminal capabilities] are taken advantage of.
 
+- [Contributor guide]
+
 ## Progress
 
 ### Terminal server
@@ -105,4 +107,5 @@ ssh guest@localhost
 [bulletin boards]: https://archive.org/details/BBS.The.Documentary
 [dos]: https://en.wikipedia.org/wiki/MS-DOS
 [terminal capabilities]: https://en.wikipedia.org/wiki/Terminal_capabilities
+[contributor guide]: ./CONTRIBUTING.md
 [gino]: https://python-gino.org
