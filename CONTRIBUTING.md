@@ -32,6 +32,8 @@ pip install -e .[dev]
 
 ## Configure development tools
 
+### pre-commit
+
 This project makes use of the [pre-commit] system. The following applications
 are used to lint source code and check formatting:
 
@@ -44,6 +46,24 @@ installed, they will be invoked automatically when you commit.
 
 ```shell
 pre-commit install --install-hooks
+```
+
+### docker-compose
+
+In order to avoid the need to rebuild the service container's base image each
+time you make changes to the source code, you can create an override
+configuration for the `docker-compose` stack. This configuration will mount the
+live source code directory into the running container so that restarting it
+should be sufficient to pick up any changes.
+
+```yaml
+# docker/docker-compose.override.yml
+
+version: "3"
+services:
+	app:
+		volumes:
+			- ./xthulu:/app/xthulu
 ```
 
 [pyenv]: https://github.com/pyenv/pyenv
