@@ -16,7 +16,10 @@ Python 3 asyncio terminal server
 - [ ] HTTP server
   - [ ] Static files
   - [ ] REST API
-- [x] Userland script stack with goto, gosub, exception handling
+- [x] Userland script stack
+  - [x] Goto
+  - [x] Gosub
+  - [x] Exception handling
 - [ ] IPC
   - [x] Session events queue
   - [x] Methods for manipulating queue (querying specific events, etc.)
