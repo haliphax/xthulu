@@ -199,7 +199,7 @@ class SSHServer(AsyncSSHServer):
 
                 except TimeoutError:
                     cx.echo(cx.term.bold_red_on_black("\r\nTimed out.\r\n"))
-                    log.warning(f"{cx.user.name}@{cx.sid} timed out")
+                    log.warning(f"{cx.whoami} timed out")
                     proc.channel.close()
                     proc.close()
 
@@ -261,5 +261,5 @@ class SSHServer(AsyncSSHServer):
                 proc.channel.close()
                 proc.close()
 
-        log.info(f"{cx.user}@{cx.ip} starting terminal session")
+        log.info(f"{cx.whoami} starting terminal session")
         await gather(input_loop(), main_process(), return_exceptions=True)
