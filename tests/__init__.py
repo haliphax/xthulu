@@ -5,6 +5,9 @@ from typing import Any, Coroutine
 
 # stdlib
 from asyncio import new_event_loop
+import logging
+
+logging.disable(logging.CRITICAL)
 
 
 def run_coroutine(f: Coroutine[Any, Any, Any]):
