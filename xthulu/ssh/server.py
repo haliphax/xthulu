@@ -213,13 +213,7 @@ class SSHServer(AsyncSSHServer):
                     cx.term._pixel_width = sz.pixwidth
                     cx.term._pixel_height = sz.pixheight
                     await cx.events.put(
-                        EventData(
-                            "resize",
-                            (
-                                sz.width,
-                                sz.height,
-                            ),
-                        )
+                        EventData("resize", (sz.width, sz.height))
                     )
 
         async def main_process():
