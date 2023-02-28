@@ -37,14 +37,14 @@ class TestStartServer(TestCase):
         self._patch_db.stop()
         self._patch_listen.stop()
 
-    @patch("xthulu.ssh.config", default_config)
+    @patch("xthulu.configuration.config", default_config)
     def test_db_bind(self):
         run_coroutine(start_server())
 
         set_bind: AsyncMock = self.mock_db.set_bind
         set_bind.assert_awaited_once_with("test")
 
-    @patch("xthulu.ssh.config", default_config)
+    @patch("xthulu.configuration.config", default_config)
     def test_server_args(self):
         run_coroutine(start_server())
 
@@ -61,7 +61,7 @@ class TestStartServer(TestCase):
         )
 
     @patch(
-        "xthulu.ssh.config",
+        "xthulu.configuration.config",
         {
             **default_config,
             "ssh": {**default_ssh_config, "proxy_protocol": True},
