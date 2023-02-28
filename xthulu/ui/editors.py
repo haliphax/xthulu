@@ -7,7 +7,7 @@ from typing import Callable, Literal
 from blessed.keyboard import Keystroke
 
 # local
-from .. import log
+from ..logger import log
 from ..terminal.proxy_terminal import ProxyTerminal
 
 

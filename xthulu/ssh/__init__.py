@@ -10,8 +10,9 @@ from tracemalloc import start
 from asyncssh import listen
 
 # local
-from .. import db, log
+from .. import db
 from ..configuration import get_config
+from ..logger import log
 from .proxy_protocol import ProxyProtocolListener
 from .server import SSHServer
 

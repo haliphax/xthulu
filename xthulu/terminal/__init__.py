@@ -10,10 +10,12 @@ from multiprocessing.connection import Connection
 import os
 
 # local
-from .. import config, log
+from ..configuration import get_config
+from ..logger import log
 from .subprocess import SubprocessTerminal
 
-debug_term = bool(config.get("debug", {}).get("term", False))
+debug_term = bool(get_config("debug.term", False))
+"""Whether terminal debugging is enabled"""
 
 
 def terminal_process(

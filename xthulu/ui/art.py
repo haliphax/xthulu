@@ -1,12 +1,12 @@
 """art module"""
 
 # stdlib
-import asyncio as aio
+from asyncio import sleep
 from os.path import exists, isfile
 import re
 
 # 3rd party
-import aiofiles
+from aiofiles import open
 from blessed.keyboard import Keystroke
 from blessed.sequences import SequenceTextWrapper
 
@@ -59,7 +59,7 @@ async def show_art(
 
     file_lines: list[str]
 
-    async with aiofiles.open(filename, "r", encoding=encoding) as f:
+    async with open(filename, "r", encoding=encoding) as f:
         file_lines = await f.readlines()
 
     lines: list[str] = []
@@ -116,6 +116,6 @@ async def show_art(
                     newline()
                     return ks
             else:
-                await aio.sleep(delay)
+                await sleep(delay)
 
         newline()

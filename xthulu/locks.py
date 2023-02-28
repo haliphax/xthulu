@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from functools import partial
 
 # local
-from . import log
+from .logger import log
 
 
 class Locks:

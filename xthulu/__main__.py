@@ -10,7 +10,9 @@ import asyncssh
 import click
 
 # local
-from . import config, db, log
+from . import db
+from .configuration import get_config
+from .logger import log
 from .ssh import start_server
 
 loop = get_event_loop()
@@ -88,7 +90,7 @@ def main():
     """Main method for CLI; binds to the database before invoking methods."""
 
     async def f():
-        await db.set_bind(config["db"]["bind"])
+        await db.set_bind(get_config("db.bind"))
 
     loop.run_until_complete(f())
     cli()

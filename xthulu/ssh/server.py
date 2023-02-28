@@ -1,7 +1,7 @@
 """SSH server implementation"""
 
 # stdlib
-import asyncio as aio
+from asyncio import gather, IncompleteReadError, Queue, TimeoutError, wait_for
 from datetime import datetime
 from multiprocessing import Pipe, Process
 
@@ -20,11 +20,11 @@ from ..configuration import get_config
 from ..context import Context
 from ..events import EventQueues
 from ..exceptions import Goto, ProcessClosing
+from ..logger import log
 from ..models import User
 from ..structs import EventData, Script
 from ..terminal import terminal_process
 from ..terminal.proxy_terminal import ProxyTerminal
-from . import log
 
 
 class SSHServer(AsyncSSHServer):
@@ -50,7 +50,7 @@ class SSHServer(AsyncSSHServer):
 
         self._peername = conn.get_extra_info("peername")
         self._sid = "{}:{}".format(*self._peername)
-        EventQueues.q[self._sid] = aio.Queue()
+        EventQueues.q[self._sid] = Queue()
         log.info(f"{self._peername[0]} connecting")
 
     def connection_lost(self, exc: Exception):
@@ -178,7 +178,7 @@ class SSHServer(AsyncSSHServer):
         cx.env["COLUMNS"] = str(w)
         cx.env["LINES"] = str(h)
         proxy_pipe, subproc_pipe = Pipe()
-        session_stdin = aio.Queue()
+        session_stdin = Queue()
         timeout = int(get_config("ssh.session.timeout", 120))
         await cx.user.update(last=datetime.utcnow()).apply()  # type: ignore
 
@@ -188,18 +188,16 @@ class SSHServer(AsyncSSHServer):
             while True:
                 try:
                     if timeout > 0:
-                        r = await aio.wait_for(
-                            proc.stdin.readexactly(1), timeout
-                        )
+                        r = await wait_for(proc.stdin.readexactly(1), timeout)
                     else:
                         r = await proc.stdin.readexactly(1)
 
                     await session_stdin.put(r)
 
-                except aio.IncompleteReadError:
+                except IncompleteReadError:
                     return
 
-                except aio.TimeoutError:
+                except TimeoutError:
                     cx.echo(cx.term.bold_red_on_black("\r\nTimed out.\r\n"))
                     log.warning(f"{cx.user.name}@{cx.sid} timed out")
                     proc.channel.close()
@@ -264,4 +262,4 @@ class SSHServer(AsyncSSHServer):
                 proc.close()
 
         log.info(f"{cx.user}@{cx.ip} starting terminal session")
-        await aio.gather(input_loop(), main_process(), return_exceptions=True)
+        await gather(input_loop(), main_process(), return_exceptions=True)

@@ -4,7 +4,7 @@
 from typing import Any, Callable
 
 # stdlib
-import asyncio as aio
+from asyncio import IncompleteReadError, TimeoutError, Queue, wait_for
 import contextlib
 from multiprocessing.connection import Connection
 
@@ -14,11 +14,12 @@ from blessed.keyboard import Keystroke
 from blessed.formatters import FormattingOtherString, ParameterizingString
 
 # local
-from .. import config, log
+from ..configuration import get_config
 from ..exceptions import ProcessClosing
+from ..logger import log
 from .proxy_call import TerminalProxyCall
 
-debug_term = bool(config.get("debug", {}).get("term", False))
+debug_term = bool(get_config("debug.term", False))
 """Whether terminal debugging is enabled"""
 
 
@@ -51,7 +52,7 @@ class ProxyTerminal:
 
     def __init__(
         self,
-        stdin: aio.Queue[bytes],
+        stdin: Queue[bytes],
         stdout: Any,
         encoding: str,
         pipe_master: Connection,
@@ -198,18 +199,18 @@ class ProxyTerminal:
                         # don't actually wait indefinitely; wait in 0.1 second
                         # increments so that the coroutine can be aborted if
                         # the connection is dropped
-                        inp = await aio.wait_for(self.stdin.get(), 0.1)
+                        inp = await wait_for(self.stdin.get(), 0.1)
                         ucs += inp.decode(self.encoding)
                     else:
-                        inp = await aio.wait_for(self.stdin.get(), timeout)
+                        inp = await wait_for(self.stdin.get(), timeout)
                         ucs += inp.decode(self.encoding)
 
                     break
 
-                except aio.IncompleteReadError:
+                except IncompleteReadError:
                     raise ProcessClosing()
 
-                except aio.TimeoutError:
+                except TimeoutError:
                     if timeout is not None:
                         break
 
@@ -221,13 +222,13 @@ class ProxyTerminal:
             # esc was received; let's see if we're getting a key sequence
             while ucs in self._keymap_prefixes:  # type: ignore
                 try:
-                    inp = await aio.wait_for(self.stdin.get(), esc_delay)
+                    inp = await wait_for(self.stdin.get(), esc_delay)
                     ucs += inp.decode(self.encoding)
 
-                except aio.IncompleteReadError:
+                except IncompleteReadError:
                     raise ProcessClosing()
 
-                except aio.TimeoutError:
+                except TimeoutError:
                     break
 
             ks = (
