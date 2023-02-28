@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, Mock, patch
 # target
 from xthulu.ssh import start_server
 from xthulu.ssh.server import SSHServer
+from xthulu.ssh.process_factory import handle_client
 
 # local
 from tests import run_coroutine
@@ -55,7 +56,7 @@ class TestStartServer(TestCase):
                 "port": int(ssh_config["port"]),
                 "server_factory": SSHServer,
                 "server_host_keys": ssh_config["host_keys"],
-                "process_factory": SSHServer.handle_client,
+                "process_factory": handle_client,
                 "encoding": None,
             }
         )
