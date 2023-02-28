@@ -105,14 +105,14 @@ from tests import run_coroutine
 
 class TestExample(TestCase):
 
-  """Example test case"""
+    """Example test case"""
 
-  @patch("xthulu.some_package.a_different_asynchronous_method")
-  def test_something_asynchronous(self, mock_method: AsyncMock):
-    result = run_coroutine(some_asynchronous_method())
+    @patch("xthulu.some_package.a_different_asynchronous_method")
+    def test_something_asynchronous(self, mock_method: AsyncMock):
+        result = run_coroutine(some_asynchronous_method())
 
-    assert result == "expected result"
-    mock_method.assert_awaited_once()
+        assert result == "expected result"
+        mock_method.assert_awaited_once()
 ```
 
 </details>
