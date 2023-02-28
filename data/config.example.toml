@@ -6,15 +6,18 @@ enabled = false
 term = false
 
 [ssh]
-host_keys = ["data/ssh_host_key"]
 host = "0.0.0.0"
+host_keys = ["data/ssh_host_key"]
 port = 8022
 proxy_protocol = true
 
 [ssh.auth]
-no_password = ["guest"]
 bad_usernames = ["admin", "administrator", "root", "system", "god"]
+no_password = ["guest"]
 
 [ssh.userland]
 paths = ["userland/scripts"]
 top = ["top"]
+
+[ssh.session]
+timeout = 180
