@@ -1,7 +1,7 @@
 """Proxied blessed.Terminal"""
 
 # type checking
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 # stdlib
 import asyncio as aio
@@ -23,9 +23,10 @@ debug_term = bool(config.get("debug", {}).get("term", False))
 
 
 class ProxyTerminal:
+
     """
     Terminal implementation which proxies calls to a `blessed.Terminal` instance
-    running in a subprocess.
+    running in a subprocess
     """
 
     _kbdbuf = []
@@ -175,7 +176,7 @@ class ProxyTerminal:
     width.__doc__ = Terminal.width.__doc__
 
     async def inkey(
-        self, timeout: Optional[float] = None, esc_delay: float = 0.35
+        self, timeout: float | None = None, esc_delay: float = 0.35
     ):
         ucs = ""
 

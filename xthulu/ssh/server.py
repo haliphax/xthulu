@@ -6,7 +6,12 @@ from datetime import datetime
 from multiprocessing import Pipe, Process
 
 # 3rd party
-import asyncssh
+from asyncssh import (
+    SSHServer as AsyncSSHServer,
+    SSHServerConnection,
+    SSHServerProcess,
+)
+from asyncssh.misc import TerminalSizeChanged
 from sqlalchemy import func
 
 # local
@@ -21,13 +26,13 @@ from ..terminal.proxy_terminal import ProxyTerminal
 from . import log
 
 
-class SSHServer(asyncssh.SSHServer):
+class SSHServer(AsyncSSHServer):
 
     """xthulu SSH Server"""
 
     _username: str | None = None
 
-    def connection_made(self, conn: asyncssh.SSHServerConnection):
+    def connection_made(self, conn: SSHServerConnection):
         """
         Connection opened.
 
@@ -82,7 +87,12 @@ class SSHServer(asyncssh.SSHServer):
         return pwd_required
 
     def password_auth_supported(self) -> bool:
-        """Support password authentication."""
+        """
+        Support password authentication.
+
+        Returns:
+            True, as this server supports password authentication.
+        """
 
         return True
 
@@ -119,7 +129,7 @@ class SSHServer(asyncssh.SSHServer):
         return True
 
     @classmethod
-    async def handle_client(cls, proc: asyncssh.SSHServerProcess):
+    async def handle_client(cls, proc: SSHServerProcess):
         """
         Client connected.
 
@@ -178,7 +188,7 @@ class SSHServer(asyncssh.SSHServer):
 
                     return
 
-                except asyncssh.misc.TerminalSizeChanged as sz:
+                except TerminalSizeChanged as sz:
                     cx.env["COLUMNS"] = sz.width
                     cx.env["LINES"] = sz.height
                     cx.term._width = sz.width

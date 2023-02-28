@@ -1,8 +1,5 @@
 """User model and helper functions"""
 
-# type checking
-from typing import Optional, Tuple
-
 # stdlib
 from datetime import datetime
 
@@ -25,12 +22,6 @@ from .. import db
 class User(db.Model):
     """User model"""
 
-    __tablename__ = "user"
-    __table_args__ = (
-        Index("idx_user_name_lower", func.lower("name")),
-        Index("idx_user_email_lower", func.lower("email")),
-    )
-
     id = Column(Integer(), primary_key=True)
     """Unique ID"""
 
@@ -52,13 +43,19 @@ class User(db.Model):
     last = Column(DateTime(), default=datetime.utcnow)
     """Last login"""
 
+    __tablename__ = "user"
+    __table_args__ = (
+        Index("idx_user_name_lower", func.lower("name")),
+        Index("idx_user_email_lower", func.lower("email")),
+    )
+
     def __repr__(self):
         return f"User({self.name}#{self.id})"
 
     @staticmethod
     def hash_password(
-        pwd: str, salt: Optional[bytes] = None
-    ) -> Tuple[bytes, bytes]:
+        pwd: str, salt: bytes | None = None
+    ) -> tuple[bytes, bytes]:
         """
         Generate a hash for the given password and salt. If no salt is
         provided, one will be generated.

@@ -1,7 +1,9 @@
-"""Asyncio blessed.Terminal implementation"""
+"""
+Asyncio blessed.Terminal implementation
 
-# significant rewrites for blessed functionality thanks to
-# https://github.com/jquast
+Significant rewrites for blessed functionality thanks to
+https://github.com/jquast
+"""
 
 # stdlib
 from multiprocessing.connection import Connection

@@ -14,6 +14,7 @@ from .. import log
 
 
 class SubprocessTerminal(Terminal):
+
     """`blessed.Terminal` instance which runs in a subprocess"""
 
     def __init__(

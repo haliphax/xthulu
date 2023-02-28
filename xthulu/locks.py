@@ -8,11 +8,14 @@ from functools import partial
 from . import log
 
 
-class Locks(object):
+class Locks:
+
     """Lock storage singleton"""
 
-    locks = set([])
-    owned = {}
+    locks: set[str] = set([])
+    """Existing locks"""
+
+    owned: dict[str, set[str]] = {}
 
 
 def get(owner: str, name: str) -> bool:
@@ -111,11 +114,11 @@ def expire(owner: str):
         log.debug(f"No lock storage for {owner}")
         return
 
-    owned: dict[str, str] = Locks.owned[owner].copy()
+    owned: set[str] = Locks.owned[owner].copy()
 
     if not owned:
         log.debug(f"No remaining locks for {owner}")
     else:
-        map(partial(release, (owner,)), owned.values())
+        map(partial(release, (owner,)), owned)
 
     del Locks.owned[owner]

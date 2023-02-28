@@ -1,4 +1,4 @@
-"Userland entry point"
+"""Userland entry point"""
 
 # local
 from xthulu.context import Context

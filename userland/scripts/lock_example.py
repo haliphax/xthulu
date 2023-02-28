@@ -1,4 +1,4 @@
-"xthulu lock example"
+"""xthulu lock example"""
 
 # api
 from xthulu.context import Context

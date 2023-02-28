@@ -1,5 +1,8 @@
 """xthulu module initialization"""
 
+# type checking
+from typing import Any
+
 # stdlib
 import logging
 from os import environ
@@ -24,7 +27,7 @@ streamHandler.setFormatter(
 )
 log.addHandler(streamHandler)
 
-config = {}
+config: dict[str, Any] = {}
 """xthulu configuration"""
 
 config_file = (
@@ -32,6 +35,7 @@ config_file = (
     if "XTHULU_CONFIG" in environ
     else join("data", "config.toml")
 )
+"""xthulu configuration file"""
 
 if exists(config_file):
     config = toml.load(config_file)

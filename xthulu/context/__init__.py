@@ -1,7 +1,8 @@
 """xthulu context class module"""
 
 # type checking
-from typing import Any, Callable, Final, NoReturn, Optional
+from typing import IO, Any, Callable, Final, NoReturn, Optional
+from types import ModuleType
 
 # stdlib
 import asyncio as aio
@@ -11,7 +12,6 @@ from imp import find_module, load_module
 import logging
 import subprocess
 import sys
-from typing import List, Tuple, Union
 
 # 3rd party
 from asyncssh import SSHServerProcess
@@ -63,7 +63,7 @@ class Context(object):
         self.events: EventQueue = EventQueue(self.sid)
         """Events queue"""
 
-        self.env: dict = proc.env.copy()
+        self.env: dict[str, str] = proc.env.copy()
         """Environment variables"""
 
         # set up logging
@@ -133,7 +133,7 @@ class Context(object):
 
         return await self.runscript(to_run)
 
-    def goto(self, script: str, *args, **kwargs):
+    def goto(self, script: str, *args, **kwargs) -> NoReturn:
         """
         Switch to script and clear stack.
 
@@ -183,7 +183,7 @@ class Context(object):
 
         return locks.release(self.sid, name)
 
-    async def redirect(self, proc: Union[subprocess.Popen, List, Tuple, str]):
+    async def redirect(self, proc: subprocess.Popen | list | tuple | str):
         """
         Redirect context IO to other process; convenience method which wraps
         AsyncSSH's redirection routine.
@@ -193,11 +193,11 @@ class Context(object):
         """
 
         @singledispatch
-        async def f(proc: subprocess.Popen | Tuple | List | str):
+        async def f(proc: subprocess.Popen | tuple | list | str):
             raise NotImplementedError("proc must be Popen, tuple, list, or str")
 
         @f.register(subprocess.Popen)
-        async def _(proc) -> NoReturn:  # type: ignore
+        async def _(proc: subprocess.Popen) -> NoReturn:  # type: ignore
             await self.proc.redirect(
                 stdin=proc.stdin,
                 stdout=proc.stdout,
@@ -211,7 +211,7 @@ class Context(object):
         @f.register(tuple)
         @f.register(list)
         @f.register(str)
-        async def _(proc) -> NoReturn:  # type: ignore
+        async def _(proc: tuple | list | str) -> NoReturn:  # type: ignore
             p = subprocess.Popen(
                 proc,
                 stdin=subprocess.PIPE,
@@ -235,9 +235,9 @@ class Context(object):
         """
 
         self.log.info(f"Running {script}")
-        split = script.name.split(".")
-        found = None
-        mod = None
+        split: list[str] = script.name.split(".")
+        found: tuple[IO[Any], str, tuple[str, str, int]] | None = None
+        mod: ModuleType | None = None
 
         for seg in split:
             if mod is not None:
@@ -248,7 +248,7 @@ class Context(object):
             mod = load_module(seg, *found)  # type: ignore
 
         try:
-            main: Callable = getattr(mod, "main")
+            main: Callable[..., Any] = getattr(mod, "main")
             return await main(self, *script.args, **script.kwargs)
         except (ProcessClosing, Goto):
             raise

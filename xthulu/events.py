@@ -1,29 +1,39 @@
 """xthulu event queues"""
 
-# type checking
-from typing import Optional
+# stdlib
+from asyncio import Queue
 
 # local
 from .structs import EventData
 
 
 class EventQueues(object):
+
     """Underlying event queue storage"""
 
-    q = {}
+    q: dict[str, Queue] = {}
+    """Queue storage"""
 
 
 class EventQueue(object):
+
     """Event queue management surface"""
 
     def __init__(self, sid: str):
+        """
+        Event queue management surface.
+
+        Args:
+            sid: The session ID for the queue.
+        """
+
         self._q = EventQueues.q[sid]
 
     def __getattr__(self, attr: str):
         return getattr(self._q, attr)
 
     async def poll(
-        self, event_name: Optional[str] = None, flush=False, get_last=False
+        self, event_name: str | None = None, flush=False, get_last=False
     ) -> EventData | None:
         """
         Check for event.
@@ -38,8 +48,8 @@ class EventQueue(object):
         """
 
         popped = []
-        found: Optional[EventData] = None
-        last: Optional[EventData] = None
+        found: EventData | None = None
+        last: EventData | None = None
 
         while not self._q.empty() and (found is None or flush or get_last):
             recv = await self._q.get()
@@ -66,7 +76,7 @@ class EventQueue(object):
 
         return last if last is not None else found
 
-    async def flush(self, event_name: Optional[str] = None):
+    async def flush(self, event_name: str | None = None):
         """
         Flush the event queue.
 
@@ -84,5 +94,5 @@ async def put_global(event: EventData):
     :param event: The event to replicate
     """
 
-    for q in EventQueues.q:
+    for q in EventQueues.q.values():
         await q.put(event)

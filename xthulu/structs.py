@@ -10,7 +10,7 @@ EventData = namedtuple(
         "data",
     ),
 )
-"""Represents an event and its accompanying data."""
+"""An event and its accompanying data"""
 
 Script = namedtuple(
     "Script",
@@ -20,4 +20,4 @@ Script = namedtuple(
         "kwargs",
     ),
 )
-"""Represents a userland Python script."""
+"""A userland Python script"""

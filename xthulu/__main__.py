@@ -1,7 +1,7 @@
 """xthulu main entry point"""
 
 # stdlib
-import asyncio as aio
+from asyncio import get_event_loop
 from signal import SIGTERM
 import sys
 
@@ -13,7 +13,7 @@ import click
 from . import config, db, log
 from .ssh import start_server
 
-loop = aio.get_event_loop()
+loop = get_event_loop()
 
 
 @click.group()

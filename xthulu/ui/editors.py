@@ -1,7 +1,7 @@
-"""editors module"""
+"""Editors module"""
 
 # stdlib
-from typing import Callable
+from typing import Callable, Literal
 
 # 3rd party
 from blessed.keyboard import Keystroke
@@ -12,6 +12,7 @@ from ..terminal.proxy_terminal import ProxyTerminal
 
 
 class BlockEditor:
+
     """Block editor (multiple lines)"""
 
     value = []
@@ -526,13 +527,28 @@ class BlockEditor:
 
 
 class LineEditor(BlockEditor):
+
     """Line editor (single line)"""
 
-    def __init__(self, term, columns, limit=0, *args, **kwargs):
+    def __init__(
+        self, term: ProxyTerminal, columns: int, limit=0, *args, **kwargs
+    ):
+        """
+        Line editor (single line)
+
+        Args:
+            term: The terminal to use for generating output sequences.
+            columns: The width of the editor in columns.
+            limit: The maximum number of characters allowed in the editor.
+            args: Arguments passed to the underlying `BlockEditor` constructor.
+            kwargs: Arguments passed to the underlying `BlockEditor`
+                constructor.
+        """
+
         super().__init__(term, 1, columns, limit=(limit, 1), *args, **kwargs)
 
     @property
-    def rows(self) -> int:
+    def rows(self) -> Literal[1]:
         """A line editor only has a single row."""
 
         return 1

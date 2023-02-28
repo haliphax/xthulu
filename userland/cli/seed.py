@@ -1,7 +1,7 @@
 """seed method"""
 
 # stdlib
-import asyncio as aio
+from asyncio import new_event_loop
 from inspect import isclass
 
 # local
@@ -25,4 +25,4 @@ async def seed():
 
 
 if __name__ == "__main__":
-    aio.new_event_loop().run_until_complete(seed())
+    new_event_loop().run_until_complete(seed())

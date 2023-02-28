@@ -1,4 +1,4 @@
-"oneliners script"
+"""oneliners script"""
 
 # api
 from xthulu.context import Context
@@ -8,7 +8,10 @@ from xthulu.ui.editors import LineEditor
 from userland.models import Oneliner
 
 LIMIT = 200
+"""Total number of oneliners to keep"""
+
 DISPLAY_LIMIT = 10
+"""Number of oneliners to display on screen"""
 
 
 async def main(cx: Context):
