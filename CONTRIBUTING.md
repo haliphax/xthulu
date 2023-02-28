@@ -123,7 +123,7 @@ The [coverage] application is used to calculate test coverage after unit tests
 have been run:
 
 ```shell
-coverage run --source=xthulu --omit="xthulu/__main__.py"
+coverage run --source=xthulu --omit="xthulu/__main__.py" -m unittest discover -s tests
 coverage report
 ```
 
