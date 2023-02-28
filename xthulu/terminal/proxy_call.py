@@ -22,3 +22,6 @@ class TerminalProxyCall(ObjectProxy):
         self.pipe_master.send((f"!CALL{self.attr}", args, kwargs))
 
         return self.pipe_master.recv()
+
+    def __str__(self):
+        return self.__call__()

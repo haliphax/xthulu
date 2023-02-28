@@ -1,7 +1,7 @@
 """Proxied blessed.Terminal"""
 
 # type checking
-from typing import Any, Callable
+from typing import Any
 
 # stdlib
 from asyncio import IncompleteReadError, TimeoutError, Queue, wait_for
@@ -50,6 +50,9 @@ class ProxyTerminal:
     location: contextlib._GeneratorContextManager[Any]
     raw: contextlib._GeneratorContextManager[Any]
 
+    # other type hints for non-callable proxies
+    normal: str
+
     def __init__(
         self,
         stdin: Queue[bytes],
@@ -69,7 +72,7 @@ class ProxyTerminal:
         self._pixel_width = pixel_width
         self._pixel_height = pixel_height
 
-    def __getattr__(self, attr: str) -> Callable[..., str]:
+    def __getattr__(self, attr: str) -> TerminalProxyCall:
         @contextlib.contextmanager
         def proxy_contextmanager(*args, **kwargs):
             # we send special '!CTX' header, which means we
