@@ -78,8 +78,10 @@ The project's chosen testing framework is the standard library's own `unittest`.
 python -m unittest discover -s tests
 ```
 
-A convenience method exists in the root of the testing module that can be used
-to await asynchronous method calls in test cases.
+### Testing asynchronous code
+
+A convenience method `run_coroutine` exists in the root of the `tests` module
+that can be used to await asynchronous method calls in test cases.
 
 <details>
 <summary>Example</summary>
@@ -112,6 +114,16 @@ class TestExample(TestCase):
 
 </details>
 
+### Test coverage
+
+The [coverage] application is used to calculate test coverage after unit tests
+have been run:
+
+```shell
+coverage run --source=xthulu --omit="xthulu/__main__.py"
+coverage report
+```
+
 [pyenv]: https://github.com/pyenv/pyenv
 [dev containers]: https://containers.dev/
 [node.js]: https://nodejs.org
@@ -119,3 +131,4 @@ class TestExample(TestCase):
 [black]: https://black.readthedocs.io/en/stable/index.html
 [prettier]: https://prettier.io/
 [ruff]: https://beta.ruff.rs/docs/
+[coverage]: https://coverage.readthedocs.io/en/latest/
