@@ -1,30 +1,21 @@
 """SSH server implementation"""
 
 # stdlib
-from asyncio import gather, IncompleteReadError, Queue, TimeoutError, wait_for
-from datetime import datetime
-from multiprocessing import Pipe, Process
+from asyncio import Queue
 
 # 3rd party
 from asyncssh import (
     SSHServer as AsyncSSHServer,
     SSHServerConnection,
-    SSHServerProcess,
 )
-from asyncssh.misc import TerminalSizeChanged
 from sqlalchemy import func
 
 # local
 from .. import locks
 from ..configuration import get_config
-from ..context import Context
 from ..events import EventQueues
-from ..exceptions import Goto, ProcessClosing
 from ..logger import log
 from ..models import User
-from ..structs import EventData, Script
-from ..terminal import terminal_process
-from ..terminal.proxy_terminal import ProxyTerminal
 
 
 class SSHServer(AsyncSSHServer):
@@ -55,7 +46,7 @@ class SSHServer(AsyncSSHServer):
 
     def connection_lost(self, exc: Exception):
         """
-        Connection closed.
+        Connection lost.
 
         Args:
             exc: The exception that caused the connection loss, if any.
@@ -66,7 +57,7 @@ class SSHServer(AsyncSSHServer):
 
         if exc:
             if bool(get_config("debug.enabled", False)):
-                log.error(exc.with_traceback(None))
+                log.error(exc, stack_info=True, stacklevel=10)
             else:
                 log.error(exc)
 
@@ -137,128 +128,3 @@ class SSHServer(AsyncSSHServer):
         log.info(f"{self.whoami} authenticated (password)")
 
         return True
-
-    @classmethod
-    async def handle_client(cls, proc: SSHServerProcess):
-        """
-        Client connected.
-
-        Args:
-            proc: The server process responsible for the client.
-        """
-
-        cx = Context(proc=proc)
-        await cx._init()
-
-        if proc.subsystem:
-            log.error(
-                f"{cx.whoami} requested unimplemented subsystem: "
-                f"{proc.subsystem}"
-            )
-            proc.channel.close()
-            proc.close()
-
-            return
-
-        termtype = proc.get_terminal_type()
-
-        if termtype is None:
-            proc.channel.close()
-            proc.close()
-
-            return
-
-        if "LANG" not in proc.env or "UTF-8" not in proc.env["LANG"]:
-            cx.encoding = "cp437"
-
-        if "TERM" not in cx.env:
-            cx.env["TERM"] = termtype
-
-        w, h, pw, ph = proc.get_terminal_size()
-        cx.env["COLUMNS"] = str(w)
-        cx.env["LINES"] = str(h)
-        proxy_pipe, subproc_pipe = Pipe()
-        session_stdin = Queue()
-        timeout = int(get_config("ssh.session.timeout", 120))
-        await cx.user.update(last=datetime.utcnow()).apply()  # type: ignore
-
-        async def input_loop():
-            """Catch exceptions on stdin and convert to EventData."""
-
-            while True:
-                try:
-                    if timeout > 0:
-                        r = await wait_for(proc.stdin.readexactly(1), timeout)
-                    else:
-                        r = await proc.stdin.readexactly(1)
-
-                    await session_stdin.put(r)
-
-                except IncompleteReadError:
-                    if proc.channel:
-                        proc.channel.close()
-
-                    proc.close()
-
-                    return
-
-                except TimeoutError:
-                    cx.echo(cx.term.bold_red_on_black("\r\nTimed out.\r\n"))
-                    log.warning(f"{cx.whoami} timed out")
-                    proc.channel.close()
-                    proc.close()
-
-                    return
-
-                except TerminalSizeChanged as sz:
-                    cx.env["COLUMNS"] = str(sz.width)
-                    cx.env["LINES"] = str(sz.height)
-                    cx.term._width = sz.width
-                    cx.term._height = sz.height
-                    cx.term._pixel_width = sz.pixwidth
-                    cx.term._pixel_height = sz.pixheight
-                    await cx.events.put(
-                        EventData("resize", (sz.width, sz.height))
-                    )
-
-        async def main_process():
-            """Userland script stack; main process."""
-
-            tp = Process(
-                target=terminal_process,
-                args=(termtype, w, h, pw, ph, subproc_pipe),
-            )
-            tp.start()
-            cx.term = ProxyTerminal(
-                session_stdin,
-                proc.stdout,
-                cx.encoding,
-                proxy_pipe,
-                w,
-                h,
-                pw,
-                ph,
-            )
-            # prep script stack with top scripts;
-            # since we're treating it as a stack and not a queue, add them
-            # reversed so they are executed in the order they were defined
-            top_names: list[str] = get_config("ssh.userland.top", ("top",))
-            cx.stack = [Script(s, (), {}) for s in reversed(top_names)]
-
-            # main script engine loop
-            try:
-                while len(cx.stack):
-                    try:
-                        await cx.runscript(cx.stack.pop())
-                    except Goto as goto_script:
-                        cx.stack = [goto_script.value]
-                    except ProcessClosing:
-                        cx.stack = []
-            finally:
-                # send sentinel to close child 'term_pipe' process
-                proxy_pipe.send((None, (), {}))
-                proc.channel.close()
-                proc.close()
-
-        log.info(f"{cx.whoami} starting terminal session")
-        await gather(input_loop(), main_process(), return_exceptions=True)
