@@ -57,7 +57,7 @@ class SSHServer(AsyncSSHServer):
 
         if exc:
             if bool(get_config("debug.enabled", False)):
-                log.error(exc, stack_info=True, stacklevel=10)
+                log.error(exc.with_traceback(None))
             else:
                 log.error(exc)
 
