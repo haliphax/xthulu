@@ -1,4 +1,4 @@
-"SSH server module"
+"""SSH server module"""
 
 # type checking
 from typing import Any
@@ -13,7 +13,7 @@ from .server import SSHServer
 
 
 async def start_server():
-    """Run init tasks and throw SSH server into asyncio event loop"""
+    """Run init tasks and throw SSH server into asyncio event loop."""
 
     await db.set_bind(config["db"]["bind"])
     ssh_config: dict[str, Any] = config["ssh"]

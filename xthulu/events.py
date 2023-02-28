@@ -1,4 +1,4 @@
-"xthulu event queues"
+"""xthulu event queues"""
 
 # type checking
 from typing import Optional
@@ -8,13 +8,13 @@ from .structs import EventData
 
 
 class EventQueues(object):
-    "Underlying event queue storage"
+    """Underlying event queue storage"""
 
     q = {}
 
 
 class EventQueue(object):
-    "Event queue management surface"
+    """Event queue management surface"""
 
     def __init__(self, sid: str):
         self._q = EventQueues.q[sid]
@@ -26,12 +26,15 @@ class EventQueue(object):
         self, event_name: Optional[str] = None, flush=False, get_last=False
     ) -> EventData | None:
         """
-        Check for event
+        Check for event.
 
-        :param event_name: The event name to check for (if any)
-        :param flush: If other events with the same name should be removed
-        :param get_last: To return the last match rather than the first
-        :returns: The event (or None if no event was found)
+        Args:
+            event_name: The event name to check for, if any.
+            flush: If other events with the same name should be removed.
+            get_last: To return the last match rather than the first.
+
+        Returns:
+            The event, or `None` if no event was found.
         """
 
         popped = []
@@ -65,9 +68,10 @@ class EventQueue(object):
 
     async def flush(self, event_name: Optional[str] = None):
         """
-        Flush the event queue
+        Flush the event queue.
 
-        :param event_name: The event name to filter (if any)
+        Args:
+            event_name: The event name to filter, if any.
         """
 
         await self.poll(event_name=event_name, flush=True)

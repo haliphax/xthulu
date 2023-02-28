@@ -1,4 +1,4 @@
-"seed method"
+"""seed method"""
 
 # stdlib
 import asyncio as aio
@@ -9,6 +9,8 @@ from xthulu import config, db
 
 
 async def seed():
+    """Seed userland model data."""
+
     await db.set_bind(config["db"]["bind"])
     models = __import__("userland.models", fromlist=("*",))
 

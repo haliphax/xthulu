@@ -1,4 +1,4 @@
-"GINO models"
+"""GINO models"""
 
 from .user import User
 

@@ -1,4 +1,4 @@
-"art module"
+"""art module"""
 
 # stdlib
 import asyncio as aio
@@ -28,16 +28,19 @@ async def show_art(
     Display artwork from given filename with given delay between rows of
     output.
 
-    :param cx: The current context
-    :param filename: The filename to load
-    :param delay: Delay (in seconds) between rows of output
-    :param dismissable: If the display can be prematurely ended by keypress
-    :param preload: Number of rows to show immediately without delay
-        (0 for term height - 1, None for no preload)
-    :param maxwidth: The maximum number of columns to display
-    :param center: True to center output
-    :param encoding: The encoding to use for output
-    :returns: The keypress and prematurely ended the display, if any
+    Args:
+        cx: The current context.
+        filename: The filename to load.
+        delay: Delay (in seconds) between rows of output.
+        dismissable: If the display can be prematurely ended by keypress.
+        preload: Number of rows to show immediately without delay
+            (0 for term height - 1, None for no preload).
+        maxwidth: The maximum number of columns to display.
+        center: True to center output>
+        encoding: The encoding to use for output.
+
+    Returns:
+        The keypress and prematurely ended the display, if any.
     """
 
     def newline():
@@ -45,6 +48,8 @@ async def show_art(
 
     if maxwidth is None or maxwidth > cx.term.width - 1:
         maxwidth = cx.term.width - 1
+
+    assert maxwidth is not None
 
     if not (exists(filename) and isfile(filename)):
         raise FileNotFoundError(f"Could not find {filename}")

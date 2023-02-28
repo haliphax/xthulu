@@ -16,7 +16,8 @@ from ..events import EventQueues
 from ..exceptions import Goto, ProcessClosing
 from ..models import User
 from ..structs import EventData, Script
-from ..terminal import ProxyTerminal, terminal_process
+from ..terminal import terminal_process
+from ..terminal.proxy_terminal import ProxyTerminal
 from . import log
 
 
@@ -27,7 +28,12 @@ class SSHServer(asyncssh.SSHServer):
     _username: str | None = None
 
     def connection_made(self, conn: asyncssh.SSHServerConnection):
-        "Connection opened"
+        """
+        Connection opened.
+
+        Args:
+            conn: The connection object.
+        """
 
         self._peername: list[str] = conn.get_extra_info("peername")
         self._sid = "{}:{}".format(*self._peername)
@@ -35,7 +41,12 @@ class SSHServer(asyncssh.SSHServer):
         log.info(f"{self._peername[0]} connecting")
 
     def connection_lost(self, exc: Exception):
-        "Connection closed"
+        """
+        Connection closed.
+
+        Args:
+            exc: The exception that caused the connection loss, if any.
+        """
 
         del EventQueues.q[self._sid]
         locks.expire(self._sid)
@@ -45,8 +56,16 @@ class SSHServer(asyncssh.SSHServer):
 
         log.info(f"{self._username}@{self._peername[0]} disconnected")
 
-    def begin_auth(self, username: str):
-        "Check for auth bypass"
+    def begin_auth(self, username: str) -> bool:
+        """
+        Check for auth bypass.
+
+        Args:
+            username: The username to check.
+
+        Returns:
+            Whether authentication is necessary.
+        """
 
         self._username = username
         pwd_required = True
@@ -62,13 +81,22 @@ class SSHServer(asyncssh.SSHServer):
 
         return pwd_required
 
-    def password_auth_supported(self):
-        "Support password authentication"
+    def password_auth_supported(self) -> bool:
+        """Support password authentication."""
 
         return True
 
-    async def validate_password(self, username: str, password: str):
-        "Validate provided password"
+    async def validate_password(self, username: str, password: str) -> bool:
+        """
+        Validate provided password.
+
+        Args:
+            username: The username to validate.
+            password: The password to validate.
+
+        Returns:
+            Whether the authentication is valid.
+        """
 
         u = await User.query.where(
             func.lower(User.name) == username.lower()
@@ -92,7 +120,12 @@ class SSHServer(asyncssh.SSHServer):
 
     @classmethod
     async def handle_client(cls, proc: asyncssh.SSHServerProcess):
-        "Client connected"
+        """
+        Client connected.
+
+        Args:
+            proc: The server process responsible for the client.
+        """
 
         termtype = proc.get_terminal_type()
 
@@ -121,7 +154,7 @@ class SSHServer(asyncssh.SSHServer):
         await cx.user.update(last=datetime.utcnow()).apply()  # type: ignore
 
         async def input_loop():
-            "Catch exceptions on stdin and convert to EventData"
+            """Catch exceptions on stdin and convert to EventData."""
 
             while True:
                 try:
@@ -162,7 +195,7 @@ class SSHServer(asyncssh.SSHServer):
                     )
 
         async def main_process():
-            "Userland script stack; main process"
+            """Userland script stack; main process."""
 
             tp = Process(
                 target=terminal_process,

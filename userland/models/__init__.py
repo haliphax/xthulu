@@ -1,4 +1,4 @@
-"xthulu default userland models"
+"""xthulu default userland models"""
 
 # local
 from .oneliner import Oneliner

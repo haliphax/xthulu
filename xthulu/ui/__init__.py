@@ -1,4 +1,4 @@
-"xthulu user interface module"
+"""xthulu user interface module"""
 
 from .art import show_art
 from .editors import BlockEditor, LineEditor

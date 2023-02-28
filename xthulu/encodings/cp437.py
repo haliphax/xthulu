@@ -1,16 +1,10 @@
 """
+IBM PC VGA 8x16 Code Page 437 codec
+
 https://github.com/jquast/x84/blob/master/x84/encodings/cp437.py
----
-
-IBM PC Code Page 437 codec for x/84.
-
-Generated from:
-ftp://ftp.unicode.org/Public/MAPPINGS/VENDORS/MICSFT/PC/CP437.TXT
 """
 
 import codecs
-
-# Codec APIs
 
 
 class Codec(codecs.Codec):
@@ -43,9 +37,6 @@ class StreamReader(Codec, codecs.StreamReader):
     pass
 
 
-# encodings module API
-
-
 def getaliases():
     return (
         "cp437_alt",
@@ -73,8 +64,6 @@ def getregentry():
         streamwriter=StreamWriter,
     )
 
-
-# Decoding Map
 
 DECODING_MAP = codecs.make_identity_dict(range(256))  # type: ignore
 DECODING_MAP.update(
@@ -235,8 +224,6 @@ DECODING_MAP.update(
         0x00FF: 0x00A0,  # NO-BREAK SPACE
     }
 )
-
-# Decoding Table
 
 DECODING_TABLE = (
     "\x00"  # 0x0000 -> NULL
@@ -496,8 +483,6 @@ DECODING_TABLE = (
     "\u25a0"  # 0x00fe -> BLACK SQUARE
     "\xa0"  # 0x00ff -> NO-BREAK SPACE
 )
-
-# Encoding Map
 
 ENCODING_MAP = {
     0x0000: 0x0000,  # NULL

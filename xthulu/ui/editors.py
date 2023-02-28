@@ -1,38 +1,47 @@
-"editors module"
+"""editors module"""
 
 # stdlib
 from typing import Callable
 
+# 3rd party
+from blessed.keyboard import Keystroke
+
 # local
 from .. import log
-from ..terminal import ProxyTerminal
+from ..terminal.proxy_terminal import ProxyTerminal
 
 
-class BlockEditor(object):
-    "Block editor (multiple lines)"
+class BlockEditor:
+    """Block editor (multiple lines)"""
 
-    #: Editor text
     value = []
-    #: Text length limit (width, height)
+    """Editor text"""
+
     limit = [0, 0]
-    #: Top-left corner of editor on screen (x, y)
+    """Text length limit (width, height)"""
+
     corner = [None, None]
-    #: Cursor offset from top-left corner on screen (x, y)
+    """Top-left corner of editor on screen (x, y)"""
+
     cursor = [0, 0]
-    #: Position within corpus of corner of editor (x, y)
+    """Cursor offset from top-left corner on screen (x, y)"""
+
     pos = [0, 0]
+    """Position within corpus of corner of editor (x, y)"""
 
     # internals
     _color_str = "bold_white_on_blue"
     _color = None
 
     def __init__(self, term: ProxyTerminal, rows: int, columns: int, **kwargs):
-        #: Terminal to use for sequences
         self.term = term
-        #: Height in rows
+        """Terminal to use for sequences"""
+
         self.rows = rows
-        #: Width in columns
+        """Height in rows"""
+
         self.columns = columns
+        """Width in columns"""
 
         if "value" not in kwargs:
             self.value = [""] * rows
@@ -69,7 +78,7 @@ class BlockEditor(object):
     @property
     def color(self) -> Callable:
         """
-        Color property; setting it also sets the internal Terminal callable
+        Color property; setting it also sets the internal Terminal callable.
         """
 
         return getattr(self.term, self._color_str)
@@ -80,7 +89,9 @@ class BlockEditor(object):
         self._color = getattr(self.term, val)
 
     @property
-    def at_end(self):
+    def at_end(self) -> bool:
+        """Whether the cursor is at the end of the editor."""
+
         if self.limit[0] == 0:
             return False
 
@@ -91,10 +102,14 @@ class BlockEditor(object):
 
     def redraw(self, redraw_cursor=True, anchor=False) -> str:
         """
-        Output sequence to redraw editor
+        Output sequence to redraw editor.
 
-        :param redraw_cursor: Redraw cursor position as well
-        :param anchor: Reset anchor position as well
+        Args:
+            redraw_cursor: Redraw cursor position as well.
+            anchor: Reset anchor position as well.
+
+        Returns:
+            The output string to redraw the editor/cursor.
         """
 
         out = ""
@@ -131,7 +146,10 @@ class BlockEditor(object):
     def redraw_cursor(self) -> str:
         """
         Output sequence to restore cursor position; assumes cursor is already
-        located at top-left of editor if self.corner is unset
+        located at top-left of editor if self.corner is unset.
+
+        Returns:
+            The output sequence to redraw the cursor.
         """
 
         out = ""
@@ -159,6 +177,9 @@ class BlockEditor(object):
         Assuming the cursor has not moved since the editor was responsible for
         it, this will reset the on-screen cursor to the top-left corner of the
         editor.
+
+        Returns:
+            The output sequence to reset the anchor.
         """
 
         out = ""
@@ -174,7 +195,7 @@ class BlockEditor(object):
         return out
 
     def reset(self):
-        "Reset the editor's value, cursor, and offset position."
+        """Reset the editor's value, cursor, and offset position."""
 
         self.cursor = [0, 0]
         self.pos = [0, 0]
@@ -189,7 +210,12 @@ class BlockEditor(object):
         return row, before, after
 
     def kp_backspace(self) -> str:
-        "Handle KEY_BACKSPACE."
+        """
+        Handle KEY_BACKSPACE.
+
+        Returns:
+            The output sequence for screen updates.
+        """
 
         _, before, after = self._row_vars
 
@@ -219,7 +245,12 @@ class BlockEditor(object):
         return out
 
     def kp_delete(self) -> str:
-        "Handle KEY_DELETE."
+        """
+        Handle KEY_DELETE.
+
+        Returns:
+            The output sequence for screen updates.
+        """
 
         _, before, after = self._row_vars
 
@@ -239,7 +270,12 @@ class BlockEditor(object):
         return self.color(after + self.term.move_left(len(after)))
 
     def kp_left(self) -> str:
-        "Handle KEY_LEFT."
+        """
+        Handle KEY_LEFT.
+
+        Returns:
+            The output sequence for screen updates.
+        """
 
         if self.cursor[0] <= 0 and self.pos[0] <= 0:
             log.debug("already at start of line")
@@ -258,7 +294,12 @@ class BlockEditor(object):
         return self.redraw(anchor=True) if shift else self.term.move_left()
 
     def kp_right(self) -> str:
-        "Handle KEY_RIGHT."
+        """
+        Handle KEY_RIGHT.
+
+        Returns:
+            The output sequence for screen updates.
+        """
 
         if self.pos[0] + self.cursor[0] >= len(
             self.value[self.pos[1] + self.cursor[1]]
@@ -279,7 +320,12 @@ class BlockEditor(object):
         return self.redraw(anchor=True) if shift else self.term.move_right()
 
     def kp_home(self) -> str:
-        "Handle KEY_HOME."
+        """
+        Handle KEY_HOME.
+
+        Returns:
+            The output sequence for screen updates.
+        """
 
         if self.cursor[0] == 0:
             log.debug("already at start of line")
@@ -302,7 +348,12 @@ class BlockEditor(object):
         return out
 
     def kp_end(self) -> str:
-        "Handle KEY_END."
+        """
+        Handle KEY_END.
+
+        Returns:
+            The output sequence for screen updates.
+        """
 
         strlen = len(self.value[self.pos[1] + self.cursor[1]])
 
@@ -328,7 +379,12 @@ class BlockEditor(object):
         )
 
     def kp_up(self) -> str:
-        "Handle KEY_UP."
+        """
+        Handle KEY_UP.
+
+        Returns:
+            The output sequence for screen updates.
+        """
 
         if self.cursor[1] <= 0 and self.pos[1] <= 0:
             log.debug("already at start of editor")
@@ -356,7 +412,12 @@ class BlockEditor(object):
         return out
 
     def kp_down(self) -> str:
-        "Handle KEY_DOWN."
+        """
+        Handle KEY_DOWN.
+
+        Returns:
+            The output sequence for screen updates.
+        """
 
         if self.pos[1] + self.cursor[1] >= len(self.value) - 1:
             log.debug("already at end of editor")
@@ -383,14 +444,15 @@ class BlockEditor(object):
 
         return out
 
-    def process_keystroke(self, ks) -> str:
+    def process_keystroke(self, ks: Keystroke) -> str:
         """
-        Process keystroke and produce output (if any)
+        Process keystroke and produce output (if any).
 
-        :param :class:`blessed.keyboard.Keystroke` ks: Keystroke object
-            (e.g. from `inkey`)
-        :returns: Updated output for the editor display
-        :rtype: str
+        Args:
+            ks: The keystroke to process.
+
+        Returns:
+            The output sequence for screen updates.
         """
 
         handlers = {
@@ -464,14 +526,14 @@ class BlockEditor(object):
 
 
 class LineEditor(BlockEditor):
-    "Line editor (single line)"
+    """Line editor (single line)"""
 
     def __init__(self, term, columns, limit=0, *args, **kwargs):
         super().__init__(term, 1, columns, limit=(limit, 1), *args, **kwargs)
 
     @property
     def rows(self) -> int:
-        "A line editor only has a single row"
+        """A line editor only has a single row."""
 
         return 1
 

@@ -1,9 +1,8 @@
-"xthulu common structs"
+"""xthulu common structs"""
 
 # stdlib
 from collections import namedtuple
 
-#: Represents an event and its accompanying data
 EventData = namedtuple(
     "EventData",
     (
@@ -11,7 +10,8 @@ EventData = namedtuple(
         "data",
     ),
 )
-#: Represents a userland Python script
+"""Represents an event and its accompanying data."""
+
 Script = namedtuple(
     "Script",
     (
@@ -20,3 +20,4 @@ Script = namedtuple(
         "kwargs",
     ),
 )
+"""Represents a userland Python script."""

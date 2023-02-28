@@ -1,4 +1,4 @@
-"User model and helper functions"
+"""User model and helper functions"""
 
 # type checking
 from typing import Optional, Tuple
@@ -23,7 +23,7 @@ from .. import db
 
 
 class User(db.Model):
-    "User model"
+    """User model"""
 
     __tablename__ = "user"
     __table_args__ = (
@@ -31,20 +31,26 @@ class User(db.Model):
         Index("idx_user_email_lower", func.lower("email")),
     )
 
-    #: Unique ID
     id = Column(Integer(), primary_key=True)
-    #: User name
+    """Unique ID"""
+
     name = Column(String(24), unique=True)
-    #: Email address
+    """User name"""
+
     email = Column(String(64), unique=True)
-    #: Encrypted password
+    """Email address"""
+
     password = Column(LargeBinary(64))
-    #: Password salt
+    """Encrypted password"""
+
     salt = Column(LargeBinary(32))
-    #: Creation time
+    """Password salt"""
+
     created = Column(DateTime(), default=datetime.utcnow)
-    #: Last login
+    """Creation time"""
+
     last = Column(DateTime(), default=datetime.utcnow)
+    """Last login"""
 
     def __repr__(self):
         return f"User({self.name}#{self.id})"
@@ -57,9 +63,12 @@ class User(db.Model):
         Generate a hash for the given password and salt. If no salt is
         provided, one will be generated.
 
-        :param pwd: The plain-text password to encrypt
-        :param salt: The salt (if any) to use
-        :returns: encrypted password, salt
+        Args:
+            pwd: The plain-text password to encrypt.
+            salt: The salt to use, if any.
+
+        Returns:
+            The encrypted password and salt as a tuple.
         """
 
         if salt is None:

@@ -1,4 +1,4 @@
-"xthulu shared locks"
+"""xthulu shared locks"""
 
 # stdlib
 from contextlib import contextmanager
@@ -9,7 +9,7 @@ from . import log
 
 
 class Locks(object):
-    "Lock storage singleton"
+    """Lock storage singleton"""
 
     locks = set([])
     owned = {}
@@ -17,11 +17,14 @@ class Locks(object):
 
 def get(owner: str, name: str) -> bool:
     """
-    Acquire and hold lock on behalf of user/system
+    Acquire and hold lock on behalf of user/system.
 
-    :param owner: The name of the owner
-    :param name: The name of the lock
-    :returns: Whether or not the lock was granted
+    Args:
+        owner: The name of the owner.
+        name: The name of the lock.
+
+    Returns:
+        Whether or not the lock was granted.
     """
 
     log.debug(f"{owner} getting lock {name}")
@@ -45,11 +48,14 @@ def get(owner: str, name: str) -> bool:
 
 def release(owner: str, name: str) -> bool:
     """
-    Release a lock owned by user/system
+    Release a lock owned by user/system.
 
-    :param owner: The name of the owner
-    :param name: The name of the lock
-    :returns: Whether or not the lock was valid to begin with
+    Args:
+        owner: The name of the owner.
+        name: The name of the lock.
+
+    Returns:
+        Whether or not the lock was valid to begin with.
     """
 
     log.debug(f"{owner} releasing lock {name}")
@@ -75,11 +81,14 @@ def release(owner: str, name: str) -> bool:
 @contextmanager
 def hold(owner: str, name: str):
     """
-    Session-agnostic lock context manager
+    Session-agnostic lock context manager.
 
-    :param owner: The name of the owner
-    :param name: The name of the lock
-    :returns: Whether or not the lock was granted
+    Args:
+        owner: The name of the owner.
+        name: The name of the lock.
+
+    Returns:
+        Whether or not the lock was granted.
     """
 
     try:
@@ -90,9 +99,10 @@ def hold(owner: str, name: str):
 
 def expire(owner: str):
     """
-    Remove all locks owned by user
+    Remove all locks owned by user.
 
-    :param owner: The name of the owner
+    Args:
+        owner: The name of the owner.
     """
 
     log.debug(f"Releasing locks owned by {owner}")

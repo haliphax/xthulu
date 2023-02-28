@@ -1,4 +1,4 @@
-"Oneliner model"
+"""Oneliner model"""
 
 # stdlib
 from datetime import datetime
@@ -12,7 +12,7 @@ from xthulu.models import User
 
 
 class Oneliner(db.Model):
-    "Oneliner model"
+    """Oneliner model"""
 
     __tablename__ = "oneliner"
     id = Column(Integer(), primary_key=True)

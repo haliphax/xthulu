@@ -1,7 +1,9 @@
-"encodings module"
+"""encodings module"""
 
 
 def register_encodings():
+    """Register encodings to be used by the system."""
+
     # stdlib
     from codecs import decode, register
 
