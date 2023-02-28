@@ -4,10 +4,7 @@
 from asyncio import Queue
 
 # 3rd party
-from asyncssh import (
-    SSHServer as AsyncSSHServer,
-    SSHServerConnection,
-)
+from asyncssh import SSHServer as AsyncSSHServer, SSHServerConnection
 from sqlalchemy import func
 
 # local
