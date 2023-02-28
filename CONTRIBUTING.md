@@ -94,7 +94,7 @@ used to await asynchronous method calls in test cases.
 
 # stdlib
 from unittest import TestCase
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, patch
 
 # target
 from xthulu.some_package import some_asynchronous_method
@@ -107,12 +107,12 @@ class TestExample(TestCase):
 
   """Example test case"""
 
-  @patch("xthulu.some_package.some_method")
-  def test_something_asynchronous(self, mock_method: Mock):
+  @patch("xthulu.some_package.a_different_asynchronous_method")
+  def test_something_asynchronous(self, mock_method: AsyncMock):
     result = run_coroutine(some_asynchronous_method())
 
     assert result == "expected result"
-    mock_method.assert_called_once()
+    mock_method.assert_awaited_once()
 ```
 
 </details>
