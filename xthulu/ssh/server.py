@@ -173,6 +173,7 @@ class SSHServer(asyncssh.SSHServer):
                 except aio.TimeoutError:
                     cx.echo(cx.term.bold_red_on_black("\r\nTimed out.\r\n"))
                     log.warning(f"{cx.user.name}@{cx.sid} timed out")
+                    proc.channel.close()
                     proc.close()
 
                     return
