@@ -23,7 +23,7 @@ from ..events import EventQueue
 from ..exceptions import Goto, ProcessClosing
 from ..models import User
 from ..structs import Script
-from ..terminal import ProxyTerminal
+from ..terminal.proxy_terminal import ProxyTerminal
 from .lock_manager import _LockManager
 from .log_filter import ContextLogFilter
 
@@ -133,7 +133,7 @@ class Context(object):
 
         return await self.runscript(to_run)
 
-    def goto(self, script: Script, *args, **kwargs):
+    def goto(self, script: str, *args, **kwargs):
         """
         Switch to script and clear stack.
 
