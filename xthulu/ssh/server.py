@@ -195,6 +195,11 @@ class SSHServer(AsyncSSHServer):
                     await session_stdin.put(r)
 
                 except IncompleteReadError:
+                    if proc.channel:
+                        proc.channel.close()
+
+                    proc.close()
+
                     return
 
                 except TimeoutError:
