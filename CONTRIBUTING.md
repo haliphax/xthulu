@@ -60,15 +60,18 @@ configuration for the `docker-compose` stack. This configuration will mount the
 live source code directory into the running container so that restarting it
 should be sufficient to pick up any changes.
 
-```yaml
-# docker/docker-compose.override.yml
+<details>
+<summary>docker/docker-compose.override.yml</summary>
 
+```yaml
 version: "3"
 services:
   app:
     volumes:
       - ./xthulu:/app/xthulu
 ```
+
+</details>
 
 ## Unit tests
 
