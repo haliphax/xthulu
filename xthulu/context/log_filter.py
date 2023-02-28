@@ -1,5 +1,8 @@
 """Context specific LogFilter implementation"""
 
+# type checking
+from typing import Literal
+
 # stdlib
 from logging import Filter, LogRecord
 
@@ -7,24 +10,29 @@ from logging import Filter, LogRecord
 class ContextLogFilter(Filter):
     """Custom logging.Filter that injects username and remote IP address"""
 
-    username: str
-    """The context user's username"""
+    whoami: str
+    """The context user's username@host information"""
 
-    ip: str
-    """The context user's IP address"""
+    def __init__(self, whoami: str):
+        """
+        Custom logging.Filter that injects username and remote IP address.
 
-    def __init__(self, username: str, ip: str):
-        self.username = username
-        self.ip = ip
+        Args:
+            whoami: The connection information to inject.
+        """
+        self.whoami = whoami
 
-    def filter(self, record: LogRecord):
+    def filter(self, record: LogRecord) -> Literal[True]:
         """
         Filter log record.
 
-        @record: The record to filter.
+        Args:
+            record: The record to filter.
+
+        Returns:
+            Whether to persist the record.
         """
 
-        record.username = self.username
-        record.ip = self.ip
+        record.whoami = self.whoami
 
         return True

@@ -15,7 +15,8 @@ from asyncssh.misc import TerminalSizeChanged
 from sqlalchemy import func
 
 # local
-from .. import config, locks
+from .. import locks
+from ..configuration import get_config
 from ..context import Context
 from ..events import EventQueues
 from ..exceptions import Goto, ProcessClosing
@@ -31,6 +32,13 @@ class SSHServer(AsyncSSHServer):
     """xthulu SSH Server"""
 
     _username: str | None = None
+    _peername: list[str]
+
+    @property
+    def whoami(self):
+        """The peer name in the format username@host"""
+
+        return f"{self._username}@{self._peername[0]}"
 
     def connection_made(self, conn: SSHServerConnection):
         """
@@ -40,7 +48,7 @@ class SSHServer(AsyncSSHServer):
             conn: The connection object.
         """
 
-        self._peername: list[str] = conn.get_extra_info("peername")
+        self._peername = conn.get_extra_info("peername")
         self._sid = "{}:{}".format(*self._peername)
         EventQueues.q[self._sid] = aio.Queue()
         log.info(f"{self._peername[0]} connecting")
@@ -57,9 +65,12 @@ class SSHServer(AsyncSSHServer):
         locks.expire(self._sid)
 
         if exc:
-            log.error(f"Error: {exc}")
+            if bool(get_config("debug.enabled", False)):
+                log.error(exc.with_traceback(None))
+            else:
+                log.error(exc)
 
-        log.info(f"{self._username}@{self._peername[0]} disconnected")
+        log.info(f"{self.whoami} disconnected")
 
     def begin_auth(self, username: str) -> bool:
         """
@@ -75,14 +86,13 @@ class SSHServer(AsyncSSHServer):
         self._username = username
         pwd_required = True
 
-        if (
-            "no_password" in config["ssh"]["auth"]
-            and username in config["ssh"]["auth"]["no_password"]
+        if "no_password" in get_config("ssh.auth") and username in get_config(
+            "ssh.auth.no_password"
         ):
-            log.info(f"No password required for {username}")
+            log.info(f"{self.whoami} connected (no password)")
             pwd_required = False
-
-        log.info(f"{username}@{self._peername[0]} connected")
+        else:
+            log.info(f"{self.whoami} authenticating")
 
         return pwd_required
 
@@ -113,18 +123,18 @@ class SSHServer(AsyncSSHServer):
         ).gino.first()
 
         if u is None:
-            log.warn(f"User {username} does not exist")
+            log.warn(f"f{self.whoami} no such user")
 
             return False
 
         expected, _ = User.hash_password(password, u.salt)
 
         if expected != u.password:
-            log.warn(f"Invalid credentials received for {username}")
+            log.warn(f"{self.whoami} failed authentication (password)")
 
             return False
 
-        log.info(f"Valid credentials received for {username}")
+        log.info(f"{self.whoami} authenticated (password)")
 
         return True
 
@@ -137,15 +147,26 @@ class SSHServer(AsyncSSHServer):
             proc: The server process responsible for the client.
         """
 
+        cx = Context(proc=proc)
+        await cx._init()
+
+        if proc.subsystem:
+            log.error(
+                f"{cx.whoami} requested unimplemented subsystem: "
+                f"{proc.subsystem}"
+            )
+            proc.channel.close()
+            proc.close()
+
+            return
+
         termtype = proc.get_terminal_type()
 
         if termtype is None:
             proc.channel.close()
             proc.close()
-            return
 
-        cx = Context(proc=proc)
-        await cx._init()
+            return
 
         if "LANG" not in proc.env or "UTF-8" not in proc.env["LANG"]:
             cx.encoding = "cp437"
@@ -154,13 +175,11 @@ class SSHServer(AsyncSSHServer):
             cx.env["TERM"] = termtype
 
         w, h, pw, ph = proc.get_terminal_size()
-        cx.env["COLUMNS"] = w
-        cx.env["LINES"] = h
+        cx.env["COLUMNS"] = str(w)
+        cx.env["LINES"] = str(h)
         proxy_pipe, subproc_pipe = Pipe()
         session_stdin = aio.Queue()
-        timeout = int(
-            config.get("ssh", {}).get("session", {}).get("timeout", 120)
-        )
+        timeout = int(get_config("ssh.session.timeout", 120))
         await cx.user.update(last=datetime.utcnow()).apply()  # type: ignore
 
         async def input_loop():
@@ -189,8 +208,8 @@ class SSHServer(AsyncSSHServer):
                     return
 
                 except TerminalSizeChanged as sz:
-                    cx.env["COLUMNS"] = sz.width
-                    cx.env["LINES"] = sz.height
+                    cx.env["COLUMNS"] = str(sz.width)
+                    cx.env["LINES"] = str(sz.height)
                     cx.term._width = sz.width
                     cx.term._height = sz.height
                     cx.term._pixel_width = sz.pixwidth
@@ -226,9 +245,7 @@ class SSHServer(AsyncSSHServer):
             # prep script stack with top scripts;
             # since we're treating it as a stack and not a queue, add them
             # reversed so they are executed in the order they were defined
-            top_names = (
-                config.get("ssh", {}).get("userland", {}).get("top", ("top",))
-            )
+            top_names: list[str] = get_config("ssh.userland.top", ("top",))
             cx.stack = [Script(s, (), {}) for s in reversed(top_names)]
 
             # main script engine loop
@@ -246,4 +263,5 @@ class SSHServer(AsyncSSHServer):
                 proc.channel.close()
                 proc.close()
 
+        log.info(f"{cx.user}@{cx.ip} starting terminal session")
         await aio.gather(input_loop(), main_process(), return_exceptions=True)

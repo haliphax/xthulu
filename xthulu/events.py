@@ -7,7 +7,7 @@ from asyncio import Queue
 from .structs import EventData
 
 
-class EventQueues(object):
+class EventQueues:
 
     """Underlying event queue storage"""
 
@@ -15,7 +15,7 @@ class EventQueues(object):
     """Queue storage"""
 
 
-class EventQueue(object):
+class EventQueue:
 
     """Event queue management surface"""
 

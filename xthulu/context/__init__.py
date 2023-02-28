@@ -5,7 +5,7 @@ from typing import IO, Any, Callable, Final, NoReturn, Optional
 from types import ModuleType
 
 # stdlib
-import asyncio as aio
+from asyncio import sleep
 from codecs import decode
 from functools import partial, singledispatch
 from imp import find_module, load_module
@@ -18,7 +18,7 @@ from asyncssh import SSHServerProcess
 from sqlalchemy import func
 
 # local
-from .. import config, locks, log as syslog
+from .. import config, locks, log
 from ..events import EventQueue
 from ..exceptions import Goto, ProcessClosing
 from ..models import User
@@ -28,34 +28,39 @@ from .lock_manager import _LockManager
 from .log_filter import ContextLogFilter
 
 
-class Context(object):
+class Context:
+
     """Context object for SSH sessions"""
 
     stack = []
     """Script stack"""
 
-    user: User
-    """User object (assigned at _init)"""
-
     term: ProxyTerminal
     """Context terminal object"""
 
-    _sid: Final[str]
-    """Internal session ID"""
+    user: User
+    """Context user object"""
 
     def __init__(self, proc, encoding="utf-8"):
-        _peername = proc.get_extra_info("peername")
-        _username = proc.get_extra_info("username")
-        self._sid = "{}:{}".format(*_peername)
+        self._peername: Final[list[str]] = proc.get_extra_info("peername")
+
+        self.sid: Final = "{}:{}".format(*self._peername)
+        """Internal session ID"""
+
+        self.username: Final = proc.get_extra_info("username")
+        """Connected user's name"""
+
+        self.ip: Final = self._peername[0]
+        """Remote IP address"""
+
+        self.whoami: Final = f"{self.username}@{self.ip}"
+        """Connected user's username@host string"""
 
         self.proc: SSHServerProcess = proc
         """SSHServerProcess for session"""
 
         self.encoding: str = encoding
         """Encoding for session"""
-
-        self.ip: str = _peername[0]
-        """Remote IP address"""
 
         self.log: logging.Logger = logging.getLogger(self.sid)
         """Logging facility"""
@@ -68,37 +73,24 @@ class Context(object):
 
         # set up logging
         if not self.log.filters:
-            self.log.addFilter(ContextLogFilter(_username, self.ip))
+            self.log.addFilter(ContextLogFilter(self.whoami))
             streamHandler = logging.StreamHandler(sys.stdout)
             streamHandler.setFormatter(
                 logging.Formatter(
-                    "{asctime} {levelname:<7} {module}.{funcName}: "
-                    "{username}@{ip} {message}",
+                    "{asctime} {levelname:<7} <{module}.{funcName}> {whoami} "
+                    "{message}",
                     style="{",
                 )
             )
             self.log.addHandler(streamHandler)
-            self.log.setLevel(syslog.getEffectiveLevel())
+            self.log.setLevel(log.getEffectiveLevel())
 
     async def _init(self):
-        """Asynchronous initialization routine"""
+        """Asynchronous initialization routine."""
 
-        _username = self.proc.get_extra_info("username")
-        """Internal username"""
-
-        self.user: User = await User.query.where(
-            func.lower(User.name) == _username.lower()
+        self.user = await User.query.where(
+            func.lower(User.name) == self.username.lower()
         ).gino.first()
-        """Session user object"""
-
-        self.log.debug(repr(self.user))
-
-    # read-only
-    @property
-    def sid(self) -> str:
-        """Session ID (IP:PORT)"""
-
-        return self._sid
 
     def echo(self, text: str, encoding: Optional[str] = None):
         """
@@ -114,7 +106,7 @@ class Context(object):
             return
 
         if encoding is not None:
-            text = decode(bytes(text, encoding), encoding)
+            text = decode(bytes(text, encoding), encoding=encoding)
 
         self.proc.stdout.write(text.encode(self.encoding))
 
@@ -259,4 +251,4 @@ class Context(object):
                     f"\r\nException in {script.name}\r\n"
                 )
             )
-            await aio.sleep(3)
+            await sleep(3)
