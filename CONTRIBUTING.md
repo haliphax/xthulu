@@ -70,6 +70,48 @@ services:
       - ./xthulu:/app/xthulu
 ```
 
+## Unit tests
+
+The project's chosen testing framework is the standard library's own `unittest`.
+
+```shell
+python -m unittest discover -s tests
+```
+
+A convenience method exists in the root of the testing module that can be used
+to await asynchronous method calls in test cases.
+
+<details>
+<summary>Example</summary>
+
+```python
+"""Example tests"""
+
+# stdlib
+from unittest import TestCase
+from unittest.mock import Mock, patch
+
+# target
+from xthulu.some_package import some_asynchronous_method
+
+# local
+from tests import run_coroutine
+
+
+class TestExample(TestCase):
+
+  """Example test case"""
+
+  @patch("xthulu.some_package.some_method")
+  def test_something_asynchronous(self, mock_method: Mock):
+    result = run_coroutine(some_asynchronous_method())
+
+    assert result == "expected result"
+    mock_method.assert_called_once()
+```
+
+</details>
+
 [pyenv]: https://github.com/pyenv/pyenv
 [dev containers]: https://containers.dev/
 [node.js]: https://nodejs.org
