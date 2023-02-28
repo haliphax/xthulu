@@ -11,6 +11,7 @@ from wrapt import ObjectProxy
 
 
 class TerminalProxyCall(ObjectProxy):
+
     """Wrapped terminal call to be proxied"""
 
     def __init__(self, wrapped: Callable, attr: str, pipe_master: Connection):
