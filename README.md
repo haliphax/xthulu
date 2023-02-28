@@ -4,6 +4,8 @@ Python 3 asyncio terminal server
 
 ![Header image](https://github.com/haliphax/xthulu/raw/assets/xthulu.jpg)
 
+[![Coverage Status](https://coveralls.io/repos/github/haliphax/xthulu/badge.svg?branch=master)](https://coveralls.io/github/haliphax/xthulu?branch=master)
+
 ## Progress
 
 - [x] SSH server

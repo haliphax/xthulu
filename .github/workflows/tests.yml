@@ -24,7 +24,21 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install -U pip setuptools
-          pip install -e .
+          pip install -e .[dev]
 
       - name: Unit tests
-        run: python -m unittest
+        run: coverage run --source=xthulu --omit="xthulu/__main__.py"
+          -m unittest discover -s tests -v
+
+      - name: Coverage report
+        run: |
+          total=$(coverage report --format=total)
+          echo "**:test_tube: Total coverage: ${total}%**" \
+            >> $GITHUB_STEP_SUMMARY
+          coverage report --format=markdown >> $GITHUB_STEP_SUMMARY
+
+      - name: Coveralls
+        if: github.ref == 'refs/heads/master'
+        run: |
+          pip install coveralls
+          COVERALLS_REPO_TOKEN=${{ secrets.COVERALLS_TOKEN }} coveralls
