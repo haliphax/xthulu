@@ -9,8 +9,13 @@ Python 3 asyncio terminal server
 ## Progress
 
 - [x] SSH server
-- [ ] SFTP server
+  - [x] PROXY v1 support
+  - [ ] <s>PROXY v2 support</s> _not required for initial release_
+  - [ ] SCP subsystem
+  - [ ] SFTP subsystem
 - [ ] HTTP server
+  - [ ] Static files
+  - [ ] REST API
 - [x] Userland script stack with goto, gosub, exception handling
 - [ ] IPC
   - [x] Session events queue
