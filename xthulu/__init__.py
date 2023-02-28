@@ -4,13 +4,13 @@
 from typing import Any
 
 # stdlib
-import logging
+from logging import DEBUG, INFO
 from os import environ
 from os.path import exists, join
 
 # 3rd party
 from gino import Gino
-import toml
+from toml import load
 
 # local
 from .encodings import register_encodings
@@ -27,15 +27,11 @@ config_file = (
 """xthulu configuration file"""
 
 if exists(config_file):
-    config = toml.load(config_file)
+    config = load(config_file)
 else:
     log.warn(f"Configuration file not found: {config_file}")
 
-log.setLevel(
-    logging.DEBUG
-    if config.get("debug", {}).get("enabled", False)
-    else logging.INFO
-)
+log.setLevel(DEBUG if config.get("debug", {}).get("enabled", False) else INFO)
 
 db = Gino()
 """Gino database API instance"""
