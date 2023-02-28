@@ -61,9 +61,9 @@ should be sufficient to pick up any changes.
 
 version: "3"
 services:
-	app:
-		volumes:
-			- ./xthulu:/app/xthulu
+  app:
+    volumes:
+      - ./xthulu:/app/xthulu
 ```
 
 [pyenv]: https://github.com/pyenv/pyenv
