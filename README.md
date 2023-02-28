@@ -8,9 +8,9 @@ Python 3 asyncio terminal server
 
 ## Progress
 
-- [x] SSH server
+- [ ] Terminal server
+  - [x] SSH server
   - [x] PROXY v1 support
-  - [ ] <s>PROXY v2 support</s> _not required for initial release_
   - [ ] SCP subsystem
   - [ ] SFTP subsystem
 - [ ] HTTP server
