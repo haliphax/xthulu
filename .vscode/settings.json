@@ -2,6 +2,7 @@
 	"files.exclude": {
 		"*.egg-info/": true,
 		".*": true,
+		"node_modules/": true,
 		"package*.json": true
 	},
 	"black-formatter.importStrategy": "fromEnvironment",
