@@ -76,7 +76,7 @@ root directory.
 ### Build the docker image
 
 ```shell
-DOCKER_BUILDKIT=1 docker-compose build app
+DOCKER_BUILDKIT=1 docker-compose build ssh
 ```
 
 ### Create a configuration file and generate host keys
@@ -89,9 +89,9 @@ ssh-keygen -f data/ssh_host_key -t rsa -b 4096  # do not use a key password
 ### Create and seed the database
 
 ```shell
-docker-compose run --rm app db-create
-docker-compose run --rm app db-init
-docker-compose run --rm --entrypoint python app -m userland.cli.seed
+docker-compose run --rm ssh db-create
+docker-compose run --rm ssh db-init
+docker-compose run --rm --entrypoint python ssh -m userland.cli.seed
 ```
 
 ### Start the services
