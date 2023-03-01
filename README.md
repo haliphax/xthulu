@@ -100,11 +100,19 @@ docker-compose run --rm --entrypoint python ssh -m userland.cli.seed
 docker-compose up -d
 ```
 
-### Connect to the guest account
+### Connect to the terminal server
+
+There is a `guest` account which demonstrates the ability for some accounts to
+bypass authentication.
 
 ```shell
 ssh guest@localhost
 ```
+
+There is also an account with a password for testing password authentication.
+
+- username: `user`
+- password: `user`
 
 [bulletin boards]: https://archive.org/details/BBS.The.Documentary
 [dos]: https://en.wikipedia.org/wiki/MS-DOS
