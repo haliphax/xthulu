@@ -1,11 +1,11 @@
 """Userland entry point"""
 
-# local
-from xthulu.context import Context
-from xthulu.ui import show_art
+# api
+from xthulu.ssh.context import SSHContext
+from xthulu.ssh.ui import show_art
 
 
-async def main(cx: Context):
+async def main(cx: SSHContext):
     if cx.encoding == "utf-8":
         cx.echo("\x1b%G")
     elif cx.env["TERM"] != "ansi":

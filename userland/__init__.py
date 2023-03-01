@@ -1,1 +1,1 @@
-"""xthulu default userland"""
+"""Default userland"""

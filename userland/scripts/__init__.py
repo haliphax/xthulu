@@ -1,1 +1,1 @@
-"""xthulu default userland scripts"""
+"""Default userland scripts"""

@@ -1,10 +1,10 @@
-"""xthulu lock example"""
+"""Lock example"""
 
 # api
-from xthulu.context import Context
+from xthulu.ssh.context import SSHContext
 
 
-async def main(cx: Context):
+async def main(cx: SSHContext):
     with cx.lock("testing") as l:
         if not l:
             cx.echo("Unable to acquire lock\r\n")

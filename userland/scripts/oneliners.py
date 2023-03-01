@@ -1,8 +1,8 @@
-"""oneliners script"""
+"""Oneliners script"""
 
 # api
-from xthulu.context import Context
-from xthulu.ui.editors import LineEditor
+from xthulu.ssh.context import SSHContext
+from xthulu.ssh.ui.editors import LineEditor
 
 # local
 from userland.models import Oneliner
@@ -14,7 +14,7 @@ DISPLAY_LIMIT = 10
 """Number of oneliners to display on screen"""
 
 
-async def main(cx: Context):
+async def main(cx: SSHContext):
     async def get_oneliners():
         recent = (
             Oneliner.select("id")
