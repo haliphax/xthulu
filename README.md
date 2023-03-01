@@ -52,7 +52,8 @@ advantage of.
 - [ ] IPC
   - [x] Session events queue
   - [x] Methods for manipulating queue (querying specific events, etc.)
-  - [ ] Can target other sessions and send them events (gosub/goto, chat requests, IM, etc.)
+  - [ ] Can target other sessions and send them events (gosub/goto, chat
+        requests, IM, etc.)
   - [ ] Server events queue (IPC coordination, etc.)
   - [x] Locks (IPC semaphore)
   - [ ] External-to-session IPC (CLI, web, etc.) via Redis PubSub
