@@ -28,4 +28,4 @@ asgi_app = WsgiToAsgi(app)
 def start_server():
     """Run web server via uvicorn server."""
 
-    run(asgi_app, host="0.0.0.0")
+    run("xthulu.web:asgi_app", host="0.0.0.0")
