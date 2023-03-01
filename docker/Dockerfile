@@ -19,5 +19,5 @@ COPY --chown=xthulu:xthulu ./requirements /app/requirements
 COPY --chown=xthulu:xthulu ./xthulu /app/xthulu
 USER xthulu
 RUN --mount=type=cache,target=/app/.cache/pip,uid=1000,gid=1000,sharing=locked \
-	pip install -e .
+	pip install -e .[hiredis]
 ENTRYPOINT ["/usr/local/bin/python3", "/app/entrypoint.py"]

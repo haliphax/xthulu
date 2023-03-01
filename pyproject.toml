@@ -16,6 +16,7 @@ dependencies = { file = "requirements/_.txt" }
 
 [tool.setuptools.dynamic.optional-dependencies]
 dev = { file = "requirements/dev.txt" }
+hiredis = { file = "requirements/hiredis.txt" }
 
 [tool.black]
 line-length = 80

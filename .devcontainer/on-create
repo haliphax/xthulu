@@ -30,7 +30,7 @@ pyenv install 3.11
 pyenv virtualenv 3.11 xthulu
 echo "pyenv activate xthulu" >> /home/$USER/.bashrc
 cp .devcontainer/docker-compose.override.yml .
-pip install -Ue .[dev]
+pip install -Ue .[dev,hiredis]
 pre-commit install --install-hooks
 docker-compose build
 docker-compose pull

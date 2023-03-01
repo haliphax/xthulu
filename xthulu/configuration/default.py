@@ -7,6 +7,10 @@ loaded configuration is layered over the top of it.
 """
 
 default_config = {
+    "cache": {
+        "host": "redis",
+        "port": 6379,
+    },
     "db": {
         "bind": "postgres://xthulu:xthulu@db:5432/xthulu",
     },

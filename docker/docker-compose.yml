@@ -1,6 +1,9 @@
 version: "3"
 
+# configuration common to all services using the xthulu image
 x-xthulu-common: &xthulu-common
+  environment:
+    TERM: xterm-256color
   image: xthulu
   restart: unless-stopped
   tty: true
@@ -13,27 +16,11 @@ networks:
   proxy:
 
 services:
-  ssh:
-    build:
-      context: ..
-      dockerfile: ./docker/Dockerfile
-    command: ssh
-    depends_on:
-      - db
-    environment:
-      TERM: xterm-256color
-    expose:
-      - 8022
-    labels:
-      - traefik.enable=true
-      - traefik.tcp.routers.ssh.entrypoints=ssh
-      - traefik.tcp.routers.ssh.rule=HostSNI(`*`)
-      - traefik.tcp.routers.ssh.service=ssh
-      - traefik.tcp.services.ssh.loadbalancer.proxyprotocol.version=1
+  cache:
+    image: redis:alpine
     networks:
       - internal
-      - proxy
-    <<: *xthulu-common
+    restart: unless-stopped
 
   db:
     environment:
@@ -62,6 +49,27 @@ services:
       - ./traefik/traefik.yml:/traefik.yml:ro
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  ssh:
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    command: ssh
+    depends_on:
+      - cache
+      - db
+    expose:
+      - 8022
+    labels:
+      - traefik.enable=true
+      - traefik.tcp.routers.ssh.entrypoints=ssh
+      - traefik.tcp.routers.ssh.rule=HostSNI(`*`)
+      - traefik.tcp.routers.ssh.service=ssh
+      - traefik.tcp.services.ssh.loadbalancer.proxyprotocol.version=1
+    networks:
+      - internal
+      - proxy
+    <<: *xthulu-common
 
   web:
     command: web
