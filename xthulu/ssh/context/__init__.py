@@ -18,17 +18,17 @@ from asyncssh import SSHServerProcess
 from sqlalchemy import func
 
 # local
-from .. import config, locks, log
-from ..events import EventQueue
+from ... import config, locks, log
+from ...events import EventQueue
+from ...models import User
 from ..exceptions import Goto, ProcessClosing
-from ..models import User
 from ..structs import Script
 from ..terminal.proxy_terminal import ProxyTerminal
 from .lock_manager import _LockManager
 from .log_filter import ContextLogFilter
 
 
-class Context:
+class SSHContext:
 
     """Context object for SSH sessions"""
 

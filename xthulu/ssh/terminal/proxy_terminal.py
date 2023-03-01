@@ -14,9 +14,9 @@ from blessed.keyboard import Keystroke
 from blessed.formatters import FormattingOtherString, ParameterizingString
 
 # local
-from ..configuration import get_config
+from ...configuration import get_config
+from ...logger import log
 from ..exceptions import ProcessClosing
-from ..logger import log
 from .proxy_call import TerminalProxyCall
 
 debug_term = bool(get_config("debug.term", False))

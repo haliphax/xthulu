@@ -15,7 +15,6 @@ from toml import load
 # local
 from .configuration import deep_update
 from .configuration.default import default_config
-from .encodings import register_encodings
 from .logger import log
 
 config: dict[str, Any] = default_config.copy()
@@ -38,5 +37,3 @@ log.info(config)
 
 db = Gino()
 """Gino database API instance"""
-
-register_encodings()

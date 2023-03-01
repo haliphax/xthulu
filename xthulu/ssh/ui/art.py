@@ -11,11 +11,11 @@ from blessed.keyboard import Keystroke
 from blessed.sequences import SequenceTextWrapper
 
 # local
-from ..context import Context
+from ..context import SSHContext
 
 
 async def show_art(
-    cx: Context,
+    cx: SSHContext,
     filename: str,
     delay=0.125,
     dismissable=True,

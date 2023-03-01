@@ -13,6 +13,7 @@ from asyncssh import listen
 from .. import db
 from ..configuration import get_config
 from ..logger import log
+from .encodings import register_encodings
 from .process_factory import handle_client
 from .proxy_protocol import ProxyProtocolListener
 from .server import SSHServer
@@ -21,6 +22,7 @@ from .server import SSHServer
 async def start_server():
     """Run init tasks and throw SSH server into asyncio event loop."""
 
+    register_encodings()
     await db.set_bind(get_config("db.bind"))
     ssh_config: dict[str, Any] = get_config("ssh")
     host: str = ssh_config["host"]

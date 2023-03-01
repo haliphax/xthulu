@@ -1,5 +1,6 @@
-"""xthulu exceptions module"""
+"""SSH server exceptions"""
 
+# local
 from .structs import Script
 
 

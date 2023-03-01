@@ -11,12 +11,13 @@ from asyncssh import SSHServerProcess, TerminalSizeChanged
 
 # local
 from ..configuration import get_config
-from ..context import Context
-from ..exceptions import Goto, ProcessClosing
+from ..events.structs import EventData
 from ..logger import log
-from ..structs import EventData, Script
-from ..terminal import terminal_process
-from ..terminal.proxy_terminal import ProxyTerminal
+from .context import SSHContext
+from .exceptions import Goto, ProcessClosing
+from .structs import Script
+from .terminal import terminal_process
+from .terminal.proxy_terminal import ProxyTerminal
 
 
 async def handle_client(proc: SSHServerProcess):
@@ -27,7 +28,7 @@ async def handle_client(proc: SSHServerProcess):
         proc: The server process responsible for the client.
     """
 
-    cx = Context(proc=proc)
+    cx = SSHContext(proc=proc)
     await cx._init()
 
     if proc.subsystem:

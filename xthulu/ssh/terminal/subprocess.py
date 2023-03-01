@@ -10,7 +10,7 @@ from blessed.keyboard import resolve_sequence
 from blessed.terminal import Terminal
 
 # local
-from ..logger import log
+from ...logger import log
 
 
 class SubprocessTerminal(Terminal):

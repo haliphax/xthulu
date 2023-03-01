@@ -1,6 +1,6 @@
 """Context specific lock management"""
 
-from .. import locks
+from ... import locks
 
 
 class _LockManager:

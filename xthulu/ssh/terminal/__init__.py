@@ -10,8 +10,8 @@ from multiprocessing.connection import Connection
 import os
 
 # local
-from ..configuration import get_config
-from ..logger import log
+from ...configuration import get_config
+from ...logger import log
 from .subprocess import SubprocessTerminal
 
 debug_term = bool(get_config("debug.term", False))

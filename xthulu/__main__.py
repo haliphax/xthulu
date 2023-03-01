@@ -20,11 +20,11 @@ loop = get_event_loop()
 
 @click.group()
 def cli():
-    """xthulu terminal server command line utility"""
+    """xthulu community server command line utility"""
 
 
 @cli.command()
-def start():
+def ssh():
     """Start SSH server process"""
 
     def shutdown():
