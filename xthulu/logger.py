@@ -2,15 +2,19 @@
 
 # stdlib
 from sys import stdout
-import logging
+from logging import DEBUG, Formatter, getLogger, INFO, StreamHandler
 
-log = logging.getLogger(__name__)
+# local
+from .configuration import get_config
+
+log = getLogger(__name__)
 """Root logger instance"""
 
-streamHandler = logging.StreamHandler(stdout)
+streamHandler = StreamHandler(stdout)
 streamHandler.setFormatter(
-    logging.Formatter(
+    Formatter(
         "{asctime} {levelname:<7} <{module}.{funcName}> {message}", style="{"
     )
 )
 log.addHandler(streamHandler)
+log.setLevel(DEBUG if bool(get_config("debug.enabled", False)) else INFO)

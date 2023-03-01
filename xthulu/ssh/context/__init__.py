@@ -18,8 +18,9 @@ from asyncssh import SSHServerProcess
 from sqlalchemy import func
 
 # local
-from ... import config, locks, log
+from ... import config, locks
 from ...events import EventQueue
+from ...logger import log
 from ...models import User
 from ..exceptions import Goto, ProcessClosing
 from ..structs import Script

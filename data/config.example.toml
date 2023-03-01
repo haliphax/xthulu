@@ -1,4 +1,5 @@
 [cache]
+db = 0
 host = "redis"
 port = 6379
 
