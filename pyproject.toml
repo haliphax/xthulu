@@ -22,8 +22,8 @@ line-length = 80
 
 [tool.ruff]
 ignore = [
-	"E741", # ambiguous variable name
-
+	"E741"
+	# ambiguous variable name
 ]
 line-length = 80
 target-version = "py311"
