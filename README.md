@@ -32,7 +32,7 @@ advantage of.
   - [x] Exception handling
 - [x] Isolated `blessed.Terminal` process and proxy
 - [ ] UI components
-  - [ ] Block editor
+  - [x] Block editor
   - [x] Line editor (block editor with a single line)
   - [ ] Lightbar
   - [ ] Vertical lightbar
