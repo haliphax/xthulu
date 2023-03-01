@@ -3,7 +3,6 @@
 FROM python:3.11-alpine
 WORKDIR /app
 STOPSIGNAL SIGTERM
-EXPOSE 8022
 ENV ENV=/app/.profile
 RUN --mount=type=cache,target=/var/cache/apk,sharing=locked \
 <<-EOF

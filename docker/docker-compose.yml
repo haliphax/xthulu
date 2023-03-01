@@ -1,35 +1,39 @@
 version: "3"
 
+x-xthulu-common: &xthulu-common
+  image: xthulu
+  restart: unless-stopped
+  tty: true
+  volumes:
+    - ../data:/app/data:ro
+    - ../userland:/app/userland:ro
+
 networks:
   internal:
   proxy:
 
 services:
-  app:
+  ssh:
     build:
       context: ..
       dockerfile: ./docker/Dockerfile
-    command: start
+    command: ssh
     depends_on:
       - db
     environment:
       TERM: xterm-256color
-    image: xthulu
+    expose:
+      - 8022
     labels:
       - traefik.enable=true
       - traefik.tcp.routers.ssh.entrypoints=ssh
       - traefik.tcp.routers.ssh.rule=HostSNI(`*`)
       - traefik.tcp.routers.ssh.service=ssh
       - traefik.tcp.services.ssh.loadbalancer.proxyprotocol.version=1
-      - traefik.tcp.services.ssh.loadbalancer.server.port=8022
     networks:
       - internal
       - proxy
-    restart: unless-stopped
-    tty: true
-    volumes:
-      - ../data:/app/data:ro
-      - ../userland:/app/userland:ro
+    <<: *xthulu-common
 
   db:
     environment:
@@ -40,22 +44,56 @@ services:
       - internal
     restart: unless-stopped
     volumes:
-      - db:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql/data
 
   proxy:
-    depends_on:
-      - app
     image: traefik:2.9
     networks:
       - proxy
     ports:
       - "22:22"
+      - 80:80
+      - 443:443
       - 127.0.0.1:8080:8080
     restart: unless-stopped
     volumes:
+      - proxy-acme:/etc/traefik/acme
+      - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
       - ./traefik/traefik.yml:/traefik.yml:ro
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
+  web:
+    command: web
+    depends_on:
+      - db
+    expose:
+      - 8000
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.web.entrypoints=https
+      - traefik.http.routers.web.middlewares=no-server-header@file
+      - traefik.http.routers.web.rule=PathPrefix(`/api`)
+      - traefik.http.routers.web.tls=true
+    networks:
+      - internal
+      - proxy
+    <<: *xthulu-common
+
+  web-static:
+    image: nginx
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.web-static.entrypoints=https
+      - traefik.http.routers.web-static.middlewares=no-server-header@file
+      - traefik.http.routers.web-static.rule=PathPrefix(`/`)
+      - traefik.http.routers.web-static.tls=true
+    networks:
+      - proxy
+    restart: unless-stopped
+    volumes:
+      - ../xthulu/web/static:/usr/share/nginx/html:ro
+
 volumes:
-  db:
+  db-data:
+  proxy-acme:

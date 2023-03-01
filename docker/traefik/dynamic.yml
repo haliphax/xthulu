@@ -1,0 +1,8 @@
+# traefik file-provided dynamic configuration
+
+http:
+  middlewares:
+    no-server-header:
+      headers:
+        customResponseHeaders:
+          Server: ""

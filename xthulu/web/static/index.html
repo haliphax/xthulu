@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en_US">
+	<head>
+		<title>xthulu static web server</title>
+	</head>
+	<body>
+		<h1>xthulu</h1>
+		<p>This page is being served by the static web server component.</p>
+		<p>The API service is <b id="connect">disconnected.</b></p>
+		<script type="module">
+			await fetch("/api/")
+				.then((r) => r.json())
+				.then((d) => {
+					if (d.xthulu === true) {
+						document.getElementById("connect").innerHTML = "connected!";
+					}
+				});
+		</script>
+	</body>
+</html>

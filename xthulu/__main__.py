@@ -13,7 +13,8 @@ import click
 from . import db
 from .configuration import get_config
 from .logger import log
-from .ssh import start_server
+from .ssh import start_server as start_ssh
+from .web import start_server as start_web
 
 loop = get_event_loop()
 
@@ -34,7 +35,7 @@ def ssh():
     loop.add_signal_handler(SIGTERM, shutdown)
 
     try:
-        loop.run_until_complete(start_server())
+        loop.run_until_complete(start_ssh())
     except (OSError, asyncssh.Error) as exc:
         sys.exit(f"Error: {exc}")
 
@@ -44,6 +45,13 @@ def ssh():
         pass
 
     shutdown()
+
+
+@cli.command()
+def web():
+    """Start web server process"""
+
+    start_web()
 
 
 @cli.command()
