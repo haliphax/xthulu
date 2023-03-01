@@ -364,7 +364,7 @@ class BlockEditor:
 
         strlen = len(self.value[self.pos[1] + self.cursor[1]])
 
-        if self.pos[0] + self.cursor[0] > strlen:
+        if self.pos[0] + self.cursor[0] >= strlen:
             log.debug("already at end of line")
             return ""
 
