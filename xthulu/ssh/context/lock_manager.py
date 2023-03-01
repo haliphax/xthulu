@@ -1,6 +1,7 @@
 """Context specific lock management"""
 
-from ... import locks
+# local
+from ...locks import get, release
 
 
 class _LockManager:
@@ -11,7 +12,7 @@ class _LockManager:
         self.name = name
 
     def __enter__(self, *args, **kwargs):
-        return locks.get(self.sid, self.name)
+        return get(self.sid, self.name)
 
     def __exit__(self, *args, **kwargs):
-        return locks.release(self.sid, self.name)
+        return release(self.sid, self.name)

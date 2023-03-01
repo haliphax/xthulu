@@ -1,21 +1,22 @@
-"""xthulu shared locks"""
+"""Shared lock semaphore methods"""
 
 # stdlib
 from contextlib import contextmanager
-from functools import partial
+
+# 3rd party
+from redis.lock import Lock
 
 # local
+from . import cache
 from .logger import log
 
 
-class Locks:
+class _Locks:
 
-    """Lock storage singleton"""
+    """Internal lock storage mechanism"""
 
-    locks: set[str] = set([])
-    """Existing locks"""
-
-    owned: dict[str, set[str]] = {}
+    locks: dict[str, dict[str, Lock]] = {}
+    """Mapping of lock keys to lock objects"""
 
 
 def get(owner: str, name: str) -> bool:
@@ -23,28 +24,25 @@ def get(owner: str, name: str) -> bool:
     Acquire and hold lock on behalf of user/system.
 
     Args:
-        owner: The name of the owner.
+        owner: The sid of the owner.
         name: The name of the lock.
 
     Returns:
         Whether or not the lock was granted.
     """
 
-    log.debug(f"{owner} getting lock {name}")
+    log.debug(f"{owner} acquiring lock {name}")
+    lock = cache.lock(f"locks.{name}", thread_local=False)
 
-    if name in Locks.locks:
-        log.debug(f"{name} lock already exists")
+    if not lock.acquire(blocking=False):
+        log.debug(f"{owner} failed to acquire lock {name}")
 
         return False
 
-    Locks.locks.add(name)
-    owned = set([])
-
-    if owner in Locks.owned:
-        owned = Locks.owned[owner]
-
-    owned.add(name)
-    Locks.owned[owner] = owned
+    log.debug(f"{owner} acquired lock {name}")
+    locks = _Locks.locks[owner] if owner in _Locks.locks else {}
+    locks[name] = lock
+    _Locks.locks[owner] = locks
 
     return True
 
@@ -54,7 +52,7 @@ def release(owner: str, name: str) -> bool:
     Release a lock owned by user/system.
 
     Args:
-        owner: The name of the owner.
+        owner: The sid of the owner.
         name: The name of the lock.
 
     Returns:
@@ -62,21 +60,33 @@ def release(owner: str, name: str) -> bool:
     """
 
     log.debug(f"{owner} releasing lock {name}")
+    locks = _Locks.locks[owner] if owner in _Locks.locks else {}
 
-    if name not in Locks.locks:
-        log.debug(f"{name} lock does not exist")
-
-        return False
-
-    if owner not in Locks.owned or name not in Locks.owned[owner]:
-        log.debug(f"{owner} does not own lock {name}")
+    if not locks:
+        log.debug(f"{owner} failed to release lock {name}; no locks owned")
 
         return False
 
-    Locks.locks.remove(name)
-    owned = Locks.owned[owner]
-    owned.remove(name)
-    Locks.owned[owner] = owned
+    if name not in locks:
+        log.debug(f"{owner} failed to release lock {name}; not owned")
+
+        return False
+
+    lock = locks[name]
+
+    if not lock.locked():
+        log.debug(f"{owner} failed to release lock {name}; not locked")
+
+        return False
+
+    lock.release()
+    log.debug(f"{owner} released lock {name}")
+    del locks[name]
+
+    if not locks:
+        del _Locks.locks[owner]
+    else:
+        _Locks.locks[owner] = locks
 
     return True
 
@@ -87,7 +97,7 @@ def hold(owner: str, name: str):
     Session-agnostic lock context manager.
 
     Args:
-        owner: The name of the owner.
+        owner: The sid of the owner.
         name: The name of the lock.
 
     Returns:
@@ -102,23 +112,19 @@ def hold(owner: str, name: str):
 
 def expire(owner: str):
     """
-    Remove all locks owned by user.
+    Remove all locks owned by user for this connection.
 
     Args:
-        owner: The name of the owner.
+        owner: The sid of the owner.
     """
 
     log.debug(f"Releasing locks owned by {owner}")
+    locks = _Locks.locks[owner] if owner in _Locks.locks else {}
 
-    if owner not in Locks.owned:
-        log.debug(f"No lock storage for {owner}")
+    if not locks:
+        log.debug(f"No locks owned by {owner}")
+
         return
 
-    owned: set[str] = Locks.owned[owner].copy()
-
-    if not owned:
-        log.debug(f"No remaining locks for {owner}")
-    else:
-        map(partial(release, (owner,)), owned)
-
-    del Locks.owned[owner]
+    for lock in locks.copy():
+        release(owner, lock)

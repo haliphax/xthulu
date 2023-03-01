@@ -10,17 +10,21 @@ from tracemalloc import start
 from asyncssh import listen
 
 # local
-from .. import db
-from ..configuration import get_config
-from ..logger import log
-from .encodings import register_encodings
-from .process_factory import handle_client
-from .proxy_protocol import ProxyProtocolListener
-from .server import SSHServer
+from .. import bind_redis, db
 
 
 async def start_server():
     """Run init tasks and throw SSH server into asyncio event loop."""
+
+    # bind redis before importing anything to do with shared locks
+    bind_redis()
+
+    from ..configuration import get_config
+    from ..logger import log
+    from .encodings import register_encodings
+    from .process_factory import handle_client
+    from .proxy_protocol import ProxyProtocolListener
+    from .server import SSHServer
 
     register_encodings()
     await db.set_bind(get_config("db.bind"))

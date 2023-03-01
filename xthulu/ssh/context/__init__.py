@@ -18,7 +18,7 @@ from asyncssh import SSHServerProcess
 from sqlalchemy import func
 
 # local
-from ... import config, locks
+from ...configuration import get_config
 from ...events import EventQueue
 from ...logger import log
 from ...models import User
@@ -161,6 +161,8 @@ class SSHContext:
             Whether or not the lock was granted.
         """
 
+        from ... import locks
+
         return locks.get(self.sid, name)
 
     def release_lock(self, name: str) -> bool:
@@ -173,6 +175,8 @@ class SSHContext:
         Returns:
             Whether or not the lock was valid to begin with.
         """
+
+        from ... import locks
 
         return locks.release(self.sid, name)
 
@@ -236,7 +240,7 @@ class SSHContext:
             if mod is not None:
                 found = find_module(seg, list(mod.__path__))
             else:
-                found = find_module(seg, config["ssh"]["userland"]["paths"])
+                found = find_module(seg, get_config("ssh.userland.paths"))
 
             mod = load_module(seg, *found)  # type: ignore
 
@@ -245,11 +249,18 @@ class SSHContext:
             return await main(self, *script.args, **script.kwargs)
         except (ProcessClosing, Goto):
             raise
-        except Exception as exc:
-            self.log.exception(exc)
+        except Exception:
+            message = f"Exception in script {script.name}"
+            self.log.exception(message)
             self.echo(
-                self.term.bold_red_on_black(  # type: ignore
-                    f"\r\nException in {script.name}\r\n"
+                "".join(
+                    (
+                        self.term.normal,
+                        "\r\n",
+                        self.term.bold_white_on_red(f" {message} "),
+                        self.term.normal,
+                        "\r\n",
+                    )
                 )
             )
             await sleep(3)

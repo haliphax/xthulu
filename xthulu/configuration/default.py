@@ -8,7 +8,7 @@ loaded configuration is layered over the top of it.
 
 default_config = {
     "cache": {
-        "host": "redis",
+        "host": "cache",
         "port": 6379,
     },
     "db": {
