@@ -17,14 +17,14 @@ class TestStartServer(TestCase):
 
     """Test that the server starts up with the appropriate configuration."""
 
-    default_ssh_config = {
+    test_ssh_config = {
         "host": "0.0.0.0",
         "host_keys": "/test",
         "port": "8022",
     }
     """Default SSH configuration for testing"""
 
-    default_config = {"db": {"bind": "test"}, "ssh": default_ssh_config}
+    test_config = {"db": {"bind": "test"}, "ssh": test_ssh_config}
     """Default overall configuration for testing"""
 
     def setUp(self):
@@ -38,18 +38,18 @@ class TestStartServer(TestCase):
         self._patch_db.stop()
         self._patch_listen.stop()
 
-    @patch("xthulu.configuration.config", default_config)
+    @patch("xthulu.configuration.config", test_config)
     def test_db_bind(self):
         run_coroutine(start_server())
 
         set_bind: AsyncMock = self.mock_db.set_bind
         set_bind.assert_awaited_once_with("test")
 
-    @patch("xthulu.configuration.config", default_config)
+    @patch("xthulu.configuration.config", test_config)
     def test_server_args(self):
         run_coroutine(start_server())
 
-        ssh_config = self.default_config["ssh"]
+        ssh_config = self.test_config["ssh"]
         self.mock_listen.assert_awaited_once_with(
             **{
                 "host": ssh_config["host"],
@@ -64,8 +64,8 @@ class TestStartServer(TestCase):
     @patch(
         "xthulu.configuration.config",
         {
-            **default_config,
-            "ssh": {**default_ssh_config, "proxy_protocol": True},
+            **test_config,
+            "ssh": {**test_ssh_config, "proxy_protocol": True},
         },
     )
     @patch("xthulu.ssh.ProxyProtocolListener")
