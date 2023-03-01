@@ -33,7 +33,6 @@ else:
     log.warn(f"Configuration file not found: {config_file}")
 
 log.setLevel(DEBUG if config.get("debug", {}).get("enabled", False) else INFO)
-log.info(config)
 
 db = Gino()
 """Gino database API instance"""
