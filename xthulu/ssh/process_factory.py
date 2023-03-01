@@ -142,6 +142,11 @@ async def handle_client(proc: SSHServerProcess):
             # send sentinel to close child 'term_pipe' process
             proxy_pipe.send((None, (), {}))
 
+            if proc.channel:
+                proc.channel.close()
+
+            proc.close()
+
     log.info(f"{cx.whoami} starting terminal session")
 
     try:
