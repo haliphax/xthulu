@@ -5,9 +5,8 @@ from unittest import TestCase
 from unittest.mock import AsyncMock, Mock, patch
 
 # target
+from xthulu import bind_redis
 from xthulu.ssh import start_server
-from xthulu.ssh.server import SSHServer
-from xthulu.ssh.process_factory import handle_client
 
 # local
 from tests import run_coroutine
@@ -24,10 +23,16 @@ class TestStartServer(TestCase):
     }
     """Default SSH configuration for testing"""
 
-    test_config = {"db": {"bind": "test"}, "ssh": test_ssh_config}
+    test_config = {
+        "cache": {"host": "test", "port": 1234},
+        "db": {"bind": "test"},
+        "ssh": test_ssh_config,
+    }
     """Default overall configuration for testing"""
 
     def setUp(self):
+        bind_redis()
+
         self._patch_db = patch("xthulu.ssh.db")
         self.mock_db = self._patch_db.start()
 
@@ -47,6 +52,9 @@ class TestStartServer(TestCase):
 
     @patch("xthulu.config", test_config)
     def test_server_args(self):
+        from xthulu.ssh.server import SSHServer
+        from xthulu.ssh.process_factory import handle_client
+
         run_coroutine(start_server())
 
         ssh_config = self.test_config["ssh"]
@@ -68,7 +76,7 @@ class TestStartServer(TestCase):
             "ssh": {**test_ssh_config, "proxy_protocol": True},
         },
     )
-    @patch("xthulu.ssh.ProxyProtocolListener")
+    @patch("xthulu.ssh.proxy_protocol.ProxyProtocolListener")
     def test_proxy_procotol(self, mock_listener: Mock):
         run_coroutine(start_server())
 
