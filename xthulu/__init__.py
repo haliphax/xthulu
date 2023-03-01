@@ -13,10 +13,12 @@ from gino import Gino
 from toml import load
 
 # local
+from .configuration import deep_update
+from .configuration.default import default_config
 from .encodings import register_encodings
 from .logger import log
 
-config: dict[str, Any] = {}
+config: dict[str, Any] = default_config.copy()
 """xthulu configuration"""
 
 config_file = (
@@ -27,11 +29,12 @@ config_file = (
 """xthulu configuration file"""
 
 if exists(config_file):
-    config = load(config_file)
+    deep_update(config, load(config_file))
 else:
     log.warn(f"Configuration file not found: {config_file}")
 
 log.setLevel(DEBUG if config.get("debug", {}).get("enabled", False) else INFO)
+log.info(config)
 
 db = Gino()
 """Gino database API instance"""

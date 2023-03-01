@@ -1,10 +1,22 @@
 """Configuration utilities"""
 
 # type checking
-from typing import Any
+from typing import Any, Mapping
 
-# local
-from . import config
+
+def deep_update(source: dict, overrides: Mapping):
+    """
+    Update a nested dictionary in place.
+    """
+
+    for key, value in overrides.items():
+        if isinstance(value, Mapping) and value:
+            returned = deep_update(source.get(key, {}), value)
+            source[key] = returned
+        else:
+            source[key] = overrides[key]
+
+    return source
 
 
 def get_config(path: str, default: Any = None) -> Any:
@@ -19,6 +31,9 @@ def get_config(path: str, default: Any = None) -> Any:
         The configuration value or the provided default if the path does not
         exist.
     """
+
+    # local
+    from .. import config
 
     store = config
     steps = path.split(".")
