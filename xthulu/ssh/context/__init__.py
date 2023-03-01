@@ -1,14 +1,15 @@
 """xthulu context class module"""
 
 # type checking
-from typing import IO, Any, Callable, Final, NoReturn, Optional
+from typing import Any, Callable, Final, NoReturn, Optional
 from types import ModuleType
 
 # stdlib
 from asyncio import sleep
 from codecs import decode
 from functools import partial, singledispatch
-from imp import find_module, load_module
+from importlib.abc import Loader
+from importlib.machinery import PathFinder
 import logging
 import subprocess
 import sys
@@ -27,6 +28,9 @@ from ..structs import Script
 from ..terminal.proxy_terminal import ProxyTerminal
 from .lock_manager import _LockManager
 from .log_filter import ContextLogFilter
+
+pathfinder = PathFinder()
+"""PathFinder for loading userland script modules"""
 
 
 class SSHContext:
@@ -233,16 +237,19 @@ class SSHContext:
 
         self.log.info(f"Running {script}")
         split: list[str] = script.name.split(".")
-        found: tuple[IO[Any], str, tuple[str, str, int]] | None = None
+        found: Loader | None = None
         mod: ModuleType | None = None
 
         for seg in split:
             if mod is not None:
-                found = find_module(seg, list(mod.__path__))
+                found = pathfinder.find_module(seg, list(mod.__path__))
             else:
-                found = find_module(seg, get_config("ssh.userland.paths"))
+                found = pathfinder.find_module(
+                    seg, get_config("ssh.userland.paths")
+                )
 
-            mod = load_module(seg, *found)  # type: ignore
+            if found is not None:
+                mod = found.load_module(seg)
 
         try:
             main: Callable[..., Any] = getattr(mod, "main")
