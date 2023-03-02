@@ -101,6 +101,14 @@ class BlockEditor:
             and len(self.value[self.pos[1]]) >= self.limit[0]
         )
 
+    @property
+    def edge_diff(self) -> int:
+        """How far the cursor is from the edge of the current row."""
+
+        strlen = len(self.value[self.cursor[1] + self.pos[1]])
+
+        return self.pos[0] + self.cursor[0] - strlen
+
     def redraw(self, redraw_cursor=True, anchor=True) -> str:
         """
         Output sequence to redraw editor.
@@ -277,6 +285,134 @@ class BlockEditor:
 
         return self.color(after + self.term.move_left(len(after)))
 
+    def _horizontal(self, distance: int) -> str:
+        """
+        Horizontal movement helper method; handles shifting visible area.
+
+        Args:
+            distance: -1 for left, 1 for right.
+
+        Returns:
+            The output sequence for updating the screen.
+        """
+
+        if distance == 0:
+            return ""
+
+        shift = False
+        move: Callable[..., str]
+        strlen = len(self.value[self.pos[1] + self.cursor[1]])
+        new_cursor = self.cursor[0] + distance
+        abs_distance = abs(distance)
+
+        if distance < 0:
+            if new_cursor < 0:
+                log.debug("shifting visible area left")
+                self.pos[0] = max(
+                    0, self.pos[0] + self.cursor[0] - abs_distance
+                )
+                new_cursor = 0
+                shift = True
+
+            move = self.term.move_left
+
+        else:
+            if new_cursor > self.columns - 1:
+                log.debug("shifting visible area right")
+                self.pos[0] = min(
+                    strlen - self.columns + 1, self.pos[0] + abs_distance
+                )
+                new_cursor = self.columns - 1
+                shift = True
+
+            move = self.term.move_right
+
+        out: list[str] = [move(abs(self.cursor[0] - new_cursor))]
+        self.cursor[0] = new_cursor
+
+        if shift:
+            out.append(self.redraw())
+
+        log.debug(
+            f"{'left' if distance < 0 else 'right'} {self.pos} {self.cursor}"
+        )
+
+        return "".join(out)
+
+    def _vertical(self, distance: int) -> str:
+        """
+        Vertical motion helper method; handles shifting visible area and
+        snapping the cursor to the edge of the destination row's text.
+
+        Args:
+            distance: -1 for up, 1 for down.
+
+        Returns:
+            The output sequence for updating the screen.
+        """
+
+        if distance == 0:
+            return ""
+
+        abs_distance = abs(distance)
+        snap_to_edge = self.edge_diff >= 0
+        shift = False
+        new_cursor = self.cursor[1] + distance
+
+        if distance < 0:
+            if new_cursor < 0:
+                log.debug("shifting visible area up")
+                shift = True
+                self.pos[1] = max(0, self.pos[1] - abs_distance)
+                new_cursor = 0
+
+            move = self.term.move_up
+
+        else:
+            if new_cursor >= self.rows:
+                log.debug("shifting visible area down")
+                shift = True
+                self.pos[1] = min(self.rows - 1, self.pos[1] + abs_distance)
+                new_cursor = self.rows - 1
+
+            move = self.term.move_down
+
+        self.cursor[1] = new_cursor
+        out = []
+        diff = self.edge_diff
+
+        if not snap_to_edge and diff > 0:
+            log.debug("past end of line")
+            snap_to_edge = True
+
+        if snap_to_edge:
+            log.debug("snapping to edge")
+            self.cursor[0] -= diff
+
+            if self.cursor[0] < 0 or self.cursor[0] >= self.columns:
+                log.debug("edge is out of view")
+                strlen = len(self.value[self.pos[1] + self.cursor[1]])
+                self.pos[0] = max(0, strlen - self.columns + 1)
+                self.cursor[0] = self.columns - 1
+
+                if not shift:
+                    out.append(move())
+
+                shift = True
+
+            elif diff > 0:
+                out.append(self.term.move_left(diff))
+
+            elif diff < 0:
+                out.append(self.term.move_right(-diff))
+
+        log.debug(
+            f"{'up' if distance < 0 else 'down'} {self.pos} {self.cursor}"
+        )
+        out.append(self.redraw() if shift else move())
+
+        return "".join(out)
+
     def kp_left(self) -> str:
         """
         Handle KEY_LEFT.
@@ -285,21 +421,12 @@ class BlockEditor:
             The output sequence for screen updates.
         """
 
-        shift = False
+        if self.cursor[0] <= 0 and self.pos[0] <= 0:
+            log.debug("already at start of line")
 
-        if self.cursor[0] <= 0:
-            if self.pos[0] <= 0:
-                log.debug("already at start of line")
-                return ""
+            return ""
 
-            shift = True
-            self.pos[0] -= 1
-            log.debug("shifting visible area left")
-
-        self.cursor[0] = max(0, self.cursor[0] - 1)
-        log.debug(f"left {self.pos} {self.cursor}")
-
-        return self.redraw() if shift else self.term.move_left()
+        return self._horizontal(-1)
 
     def kp_right(self) -> str:
         """
@@ -309,23 +436,12 @@ class BlockEditor:
             The output sequence for screen updates.
         """
 
-        if self.pos[0] + self.cursor[0] >= len(
-            self.value[self.pos[1] + self.cursor[1]]
-        ):
+        if self.edge_diff >= 0:
             log.debug("already at end of line")
+
             return ""
 
-        shift = False
-
-        if self.cursor[0] >= self.columns - 1:
-            shift = True
-            self.pos[0] += 1
-            log.debug("shifting visible area right")
-
-        self.cursor[0] = min(self.columns - 1, self.cursor[0] + 1)
-        log.debug(f"right {self.pos} {self.cursor}")
-
-        return self.redraw() if shift else self.term.move_right()
+        return self._horizontal(1)
 
     def kp_home(self) -> str:
         """
@@ -335,24 +451,12 @@ class BlockEditor:
             The output sequence for screen updates.
         """
 
-        shift = False
-
-        if self.pos[0] > 0:
-            shift = True
-            log.debug("shifting visible area left")
-        elif self.cursor[0] <= 0:
+        if self.pos[0] <= 0 and self.cursor[0] <= 0:
             log.debug("already at start of line")
+
             return ""
 
-        lastpos = self.pos.copy()
-        lastcurs = self.cursor.copy()
-        out = self.term.move_left(self.cursor[0])
-        self.pos[0] = 0
-        self.cursor[0] = 0
-        out += self.redraw() if shift else ""
-        log.debug(f"home {lastpos} {lastcurs} => {self.pos} {self.cursor}")
-
-        return out
+        return self._horizontal(-(self.pos[0] + self.cursor[0]))
 
     def kp_end(self) -> str:
         """
@@ -362,28 +466,13 @@ class BlockEditor:
             The output sequence for screen updates.
         """
 
-        strlen = len(self.value[self.pos[1] + self.cursor[1]])
+        distance = self.edge_diff
 
-        if self.pos[0] + self.cursor[0] >= strlen:
+        if distance >= 0:
             log.debug("already at end of line")
             return ""
 
-        shift = False
-
-        if strlen - self.pos[0] > self.columns:
-            shift = True
-            self.pos[0] = max(0, strlen - self.columns + 1)
-            log.debug("shifting visible area right")
-
-        prev = self.cursor[0]
-        self.cursor[0] = min(strlen - self.pos[0], self.columns - 1)
-        log.debug(f"end {self.pos}")
-
-        return (
-            self.redraw()
-            if shift
-            else self.term.move_right(self.cursor[0] - prev)
-        )
+        return self._horizontal(abs(distance))
 
     def kp_up(self) -> str:
         """
@@ -397,49 +486,7 @@ class BlockEditor:
             log.debug("already at start of editor")
             return ""
 
-        shift = False
-        strlen = len(self.value[self.pos[1] + self.cursor[1]])
-        snap_to_edge = self.pos[0] + self.cursor[0] >= strlen
-
-        if self.cursor[1] <= 0:
-            shift = True
-            self.pos[1] -= 1
-            log.debug("shifting visible area up")
-
-        self.cursor[1] = max(0, self.cursor[1] - 1)
-        out = ""
-        strlen = len(self.value[self.pos[1] + self.cursor[1]])
-
-        if not snap_to_edge and self.pos[0] + self.cursor[0] >= strlen:
-            log.debug("past end of line")
-            snap_to_edge = True
-
-        if snap_to_edge:
-            log.debug("snapping to edge")
-            old_cursor = self.cursor[0]
-            self.cursor[0] = strlen - self.pos[0]
-            diff = old_cursor - self.cursor[0]
-
-            if self.cursor[0] < 0 or self.cursor[0] >= self.columns:
-                log.debug("edge is not visible")
-                self.pos[0] = max(0, strlen - self.columns + 1)
-                self.cursor[0] = self.columns - 1
-
-                if not shift:
-                    out += self.term.move_up()
-
-                shift = True
-
-            elif diff > 0:
-                out += self.term.move_left(diff)
-
-            elif diff < 0:
-                out += self.term.move_right(-diff)
-
-        log.debug(f"up {self.pos} {self.cursor}")
-        out += self.redraw() if shift else self.term.move_up()
-
-        return out
+        return self._vertical(-1)
 
     def kp_down(self) -> str:
         """
@@ -453,49 +500,7 @@ class BlockEditor:
             log.debug("already at end of editor")
             return ""
 
-        shift = False
-        strlen = len(self.value[self.pos[1] + self.cursor[1]])
-        snap_to_edge = self.pos[0] + self.cursor[0] >= strlen
-        log.debug(f"snapped to edge: {snap_to_edge} {strlen}")
-
-        if self.cursor[1] >= self.rows - 1:
-            shift = True
-            self.pos[1] += 1
-            log.debug("shifting visible area down")
-
-        self.cursor[1] = min(self.rows - 1, self.cursor[1] + 1)
-        out = ""
-        strlen = len(self.value[self.pos[1] + self.cursor[1]])
-
-        if not snap_to_edge and self.pos[0] + self.cursor[0] >= strlen:
-            log.debug("past end of line")
-            snap_to_edge = True
-
-        if snap_to_edge:
-            log.debug("snapping to edge")
-            old_cursor = self.cursor[0]
-            self.cursor[0] = strlen - self.pos[0]
-            diff = old_cursor - self.cursor[0]
-            log.debug(f"diff: {diff}")
-
-            if self.cursor[0] < 0 or self.cursor[0] >= self.columns:
-                log.debug("edge is not visible")
-                self.pos[0] = max(0, strlen - self.columns + 1)
-                self.cursor[0] = self.columns - 1
-
-                if not shift:
-                    out += self.term.move_down()
-
-                shift = True
-            elif diff > 0:
-                out += self.term.move_left(diff)
-            elif diff < 0:
-                out += self.term.move_right(-diff)
-
-        log.debug(f"down {self.pos} {self.cursor}")
-        out += self.redraw() if shift else self.term.move_down()
-
-        return out
+        return self._vertical(1)
 
     def process_keystroke(self, ks: Keystroke) -> str:
         """
@@ -527,7 +532,7 @@ class BlockEditor:
             }
 
         # TODO general: tab
-        # TODO multiline: up/down, under/overflow, enter
+        # TODO multiline: under/overflow, enter
 
         if ks.code in handlers:
             return handlers[ks.code]()
