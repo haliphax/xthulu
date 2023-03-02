@@ -97,7 +97,7 @@ class SSHContext:
             func.lower(User.name) == self.username.lower()
         ).gino.first()
 
-    def echo(self, text: str, encoding: Optional[str] = None):
+    def echo(self, *args: str, encoding: Optional[str] = None):
         """
         Echo text to the terminal.
 
@@ -107,13 +107,20 @@ class SSHContext:
                 context's encoding will be used.
         """
 
-        if text is None:
+        if not str:
             return
 
-        if encoding is not None:
-            text = decode(bytes(text, encoding), encoding=encoding)
+        text: list[str] = []
 
-        self.proc.stdout.write(text.encode(self.encoding))
+        for string in args:
+            encoded = (
+                decode(bytes(string, encoding), encoding=encoding)
+                if encoding is not None
+                else string
+            )
+            text.append(encoded)
+
+        self.proc.stdout.write("".join(text).encode(self.encoding))
 
     async def gosub(self, script: str, *args, **kwargs) -> Any:
         """
@@ -260,14 +267,10 @@ class SSHContext:
             message = f"Exception in script {script.name}"
             self.log.exception(message)
             self.echo(
-                "".join(
-                    (
-                        self.term.normal,
-                        "\r\n",
-                        self.term.bold_white_on_red(f" {message} "),
-                        self.term.normal,
-                        "\r\n",
-                    )
-                )
+                self.term.normal,
+                "\r\n",
+                self.term.bold_white_on_red(f" {message} "),
+                self.term.normal,
+                "\r\n",
             )
             await sleep(3)

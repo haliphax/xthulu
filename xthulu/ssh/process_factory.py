@@ -82,15 +82,11 @@ async def handle_client(proc: SSHServerProcess):
             except TimeoutError:
                 log.warning(f"{cx.whoami} timed out")
                 cx.echo(
-                    "".join(
-                        (
-                            cx.term.normal,
-                            "\r\n",
-                            cx.term.bold_white_on_red(" TIMED OUT "),
-                            cx.term.normal,
-                            "\r\n",
-                        )
-                    )
+                    cx.term.normal,
+                    "\r\n",
+                    cx.term.bold_white_on_red(" TIMED OUT "),
+                    cx.term.normal,
+                    "\r\n",
                 )
                 proc.channel.close()
                 proc.close()
