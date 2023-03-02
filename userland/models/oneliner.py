@@ -7,8 +7,10 @@ from datetime import datetime
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 
 # api
-from xthulu import db
 from xthulu.models import User
+from xthulu.resources import Resources
+
+db = Resources().db
 
 
 class Oneliner(db.Model):

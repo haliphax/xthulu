@@ -6,25 +6,25 @@ from signal import SIGTERM
 import sys
 
 # 3rd party
-import asyncssh
-import click
+from asyncssh import Error as AsyncSSHError
+from click import echo, group
 
 # local
-from . import db
-from .configuration import get_config
 from .logger import log
+from .resources import Resources
 from .ssh import start_server as start_ssh
 from .web import start_server as start_web
 
 loop = get_event_loop()
+db = Resources().db
 
 
-@click.group()
-def cli():
+@group()
+def main():
     """xthulu community server command line utility"""
 
 
-@cli.command()
+@main.command()
 def ssh():
     """Start SSH server process"""
 
@@ -42,7 +42,7 @@ def ssh():
 
     try:
         loop.run_until_complete(start_ssh())
-    except (OSError, asyncssh.Error) as exc:
+    except (OSError, AsyncSSHError) as exc:
         sys.exit(f"Error: {exc}")
 
     try:
@@ -51,34 +51,34 @@ def ssh():
         pass
 
 
-@cli.command()
+@main.command()
 def web():
     """Start web server process"""
 
     start_web()
 
 
-@cli.command()
+@main.command()
 def db_create():
     """Create database tables"""
 
     from . import models  # noqa: F401
 
     async def f():
-        click.echo("Creating database")
-        await db.gino.create_all()  # type: ignore
+        echo("Creating database")
+        await Resources().db.gino.create_all()  # type: ignore
 
     loop.run_until_complete(f())
 
 
-@cli.command()
+@main.command()
 def db_init():
     """Initialize database with starter data"""
 
     from .models.user import User
 
     async def f():
-        click.echo("Creating guest user")
+        echo("Creating guest user")
         pwd, salt = User.hash_password("guest")
         await User.create(
             name="guest",
@@ -86,7 +86,7 @@ def db_init():
             password=pwd,
             salt=salt,
         )
-        click.echo("Creating user with password")
+        echo("Creating user with password")
         pwd, salt = User.hash_password("user")
         await User.create(
             name="user",
@@ -96,16 +96,6 @@ def db_init():
         )
 
     loop.run_until_complete(f())
-
-
-def main():
-    """Main method for CLI; binds to the database before invoking methods."""
-
-    async def f():
-        await db.set_bind(get_config("db.bind"))
-
-    loop.run_until_complete(f())
-    cli()
 
 
 if __name__ == "__main__":

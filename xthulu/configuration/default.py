@@ -8,6 +8,7 @@ loaded configuration is layered over the top of it.
 
 default_config = {
     "cache": {
+        "db": 0,
         "host": "cache",
         "port": 6379,
     },

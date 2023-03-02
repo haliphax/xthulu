@@ -16,7 +16,9 @@ from sqlalchemy import (
 )
 
 # local
-from .. import db
+from ..resources import Resources
+
+db = Resources().db
 
 
 class User(db.Model):

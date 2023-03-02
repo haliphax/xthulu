@@ -1,11 +1,14 @@
 """Web server module"""
 
 # 3rd party
-from apiflask import APIBlueprint, APIFlask
+from apiflask import APIBlueprint
 from asgiref.wsgi import WsgiToAsgi
 from uvicorn import run
 
-app = APIFlask(__name__)
+# local
+from ..resources import Resources
+
+app = Resources().app
 """Web application"""
 
 bp = APIBlueprint("root", __name__, url_prefix="/api")

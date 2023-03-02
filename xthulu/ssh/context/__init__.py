@@ -93,9 +93,11 @@ class SSHContext:
     async def _init(self):
         """Asynchronous initialization routine."""
 
+        self.log.debug("hjkl")
         self.user = await User.query.where(
             func.lower(User.name) == self.username.lower()
         ).gino.first()
+        self.log.debug("asdf")
 
     def echo(self, *args: str, encoding: Optional[str] = None):
         """

@@ -1,6 +1,5 @@
-"""xthulu default userland models"""
+"""Default userland models"""
 
-# local
 from .oneliner import Oneliner
 
 __all__ = ("Oneliner",)

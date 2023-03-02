@@ -1,63 +1,59 @@
 """SSH server startup tests"""
 
+# type checking
+from typing import Any
+
 # stdlib
 from unittest import TestCase
 from unittest.mock import AsyncMock, Mock, patch
 
+# 3rd party
+from apiflask import APIFlask
+from gino import Gino
+from redis import Redis
+
 # target
-from xthulu import bind_redis
-from xthulu.ssh import start_server
+from xthulu.ssh import SSHServer, start_server
+from xthulu.ssh.process_factory import handle_client
 
 # local
 from tests import run_coroutine
+from tests.mocks.config import patch_get_config, test_config, test_ssh_config
+
+
+class Resources:
+    app = Mock(APIFlask)
+    cache = Mock(Redis)
+    config: dict[str, Any]
+    db = Mock(Gino)
 
 
 class TestStartServer(TestCase):
 
     """Test that the server starts up with the appropriate configuration."""
 
-    test_ssh_config = {
-        "host": "0.0.0.0",
-        "host_keys": "/test",
-        "port": "8022",
-    }
-    """Default SSH configuration for testing"""
-
-    test_config = {
-        "cache": {"host": "test", "port": 1234},
-        "db": {"bind": "test"},
-        "ssh": test_ssh_config,
-    }
-    """Default overall configuration for testing"""
-
     def setUp(self):
-        bind_redis()
-
-        self._patch_db = patch("xthulu.ssh.db")
-        self.mock_db = self._patch_db.start()
+        self._patch_resources = patch("xthulu.ssh.Resources", Resources)
+        self.mock_resources = self._patch_resources.start()
 
         self._patch_listen = patch("xthulu.ssh.listen", AsyncMock())
         self.mock_listen = self._patch_listen.start()
 
     def tearDown(self):
-        self._patch_db.stop()
+        self._patch_resources.stop()
         self._patch_listen.stop()
 
-    @patch("xthulu.config", test_config)
+    @patch("xthulu.ssh.get_config", patch_get_config(test_config))
     def test_db_bind(self):
         run_coroutine(start_server())
 
-        set_bind: AsyncMock = self.mock_db.set_bind
-        set_bind.assert_awaited_once_with("test")
+        self.mock_resources.db.set_bind.assert_awaited_once_with("test")
 
-    @patch("xthulu.config", test_config)
+    @patch("xthulu.ssh.get_config", patch_get_config(test_config))
     def test_server_args(self):
-        from xthulu.ssh.server import SSHServer
-        from xthulu.ssh.process_factory import handle_client
-
         run_coroutine(start_server())
 
-        ssh_config = self.test_config["ssh"]
+        ssh_config = test_config["ssh"]
         self.mock_listen.assert_awaited_once_with(
             **{
                 "host": ssh_config["host"],
@@ -70,13 +66,12 @@ class TestStartServer(TestCase):
         )
 
     @patch(
-        "xthulu.config",
-        {
-            **test_config,
-            "ssh": {**test_ssh_config, "proxy_protocol": True},
-        },
+        "xthulu.ssh.get_config",
+        patch_get_config(
+            {**test_config, "ssh": {**test_ssh_config, "proxy_protocol": True}}
+        ),
     )
-    @patch("xthulu.ssh.proxy_protocol.ProxyProtocolListener")
+    @patch("xthulu.ssh.ProxyProtocolListener")
     def test_proxy_procotol(self, mock_listener: Mock):
         run_coroutine(start_server())
 
