@@ -1,7 +1,7 @@
 """xthulu main entry point"""
 
 # stdlib
-from asyncio import get_event_loop
+from asyncio import new_event_loop
 from signal import SIGTERM
 import sys
 
@@ -10,13 +10,18 @@ from asyncssh import Error as AsyncSSHError
 from click import echo, group
 
 # local
+from .configuration import get_config
 from .logger import log
 from .resources import Resources
 from .ssh import start_server as start_ssh
 from .web import start_server as start_web
 
-loop = get_event_loop()
+loop = new_event_loop()
 db = Resources().db
+
+
+async def bind_db():
+    await db.set_bind(get_config("db.bind"))
 
 
 @group()
@@ -65,8 +70,9 @@ def db_create():
     from . import models  # noqa: F401
 
     async def f():
-        echo("Creating database")
-        await Resources().db.gino.create_all()  # type: ignore
+        echo("Creating database and tables")
+        await bind_db()
+        await db.gino.create_all()  # type: ignore
 
     loop.run_until_complete(f())
 
@@ -75,10 +81,11 @@ def db_create():
 def db_init():
     """Initialize database with starter data"""
 
-    from .models.user import User
+    from .models import User
 
     async def f():
         echo("Creating guest user")
+        await bind_db()
         pwd, salt = User.hash_password("guest")
         await User.create(
             name="guest",
