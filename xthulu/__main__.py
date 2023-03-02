@@ -29,7 +29,13 @@ def ssh():
     """Start SSH server process"""
 
     def shutdown():
+        from .locks import _Locks, expire
+
         log.info("Shutting down")
+
+        for owner in _Locks.locks.copy().keys():
+            expire(owner)
+
         loop.stop()
 
     loop.add_signal_handler(SIGTERM, shutdown)
@@ -43,8 +49,6 @@ def ssh():
         loop.run_forever()
     except KeyboardInterrupt:
         pass
-
-    shutdown()
 
 
 @cli.command()
