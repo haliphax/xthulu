@@ -4,6 +4,7 @@ Python 3 asyncio community server
 
 ![Header image](https://github.com/haliphax/xthulu/raw/assets/xthulu.jpg)
 
+[![Tests](https://github.com/haliphax/xthulu/actions/workflows/tests.yml/badge.svg)](https://github.com/haliphax/xthulu/actions/workflows/tests.yml)
 [![Coverage Status](https://coveralls.io/repos/github/haliphax/xthulu/badge.svg?branch=master)](https://coveralls.io/github/haliphax/xthulu?branch=master)
 
 While **xthulu** is intended to be a _community_ server which will provide
