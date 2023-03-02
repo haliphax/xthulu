@@ -31,12 +31,23 @@ async def main(cx: SSHContext):
 
         return oneliners, count, offset
 
+    def display_oneliners():
+        for ol in oneliners[offset : offset + DISPLAY_LIMIT]:
+            cx.echo(
+                cx.term.clear_eol(),
+                cx.term.move_x(0),
+                ol.message[: cx.term.width - 1],
+                "\r\n",
+            )
+
     def done():
         cx.echo("\r\n")
 
+    banner = (cx.term.bold_white_on_cyan_underline(" Oneliners "), "\r\n\r\n")
+    cx.echo(*("\r\n", *banner))
     oneliners, count, offset = await get_oneliners()
     first = True
-    led = LineEditor(cx.term, min(78, cx.term.width - 1), limit=78)
+    editor = LineEditor(cx.term, cx.term.width - 1, limit=79)
 
     while True:
         if not first:
@@ -46,25 +57,13 @@ async def main(cx: SSHContext):
             if up > 0:
                 cx.echo(cx.term.move_up(up))
 
+        display_oneliners()
         first = False
-
-        for ol in oneliners[offset : offset + DISPLAY_LIMIT]:
-            cx.echo(
-                "".join(
-                    (
-                        cx.term.clear_eol(),
-                        cx.term.move_x(0),
-                        ol.message[: cx.term.width - 1],
-                        "\r\n",
-                    )
-                )
-            )
-
         dirty = True
 
         while True:
             if dirty:
-                cx.echo(cx.term.move_x(0) + led.redraw())
+                cx.echo(cx.term.move_x(0) + editor.redraw())
                 dirty = False
 
             ks = None
@@ -74,7 +73,10 @@ async def main(cx: SSHContext):
 
                 if ev:
                     dirty = True
-                    led.columns = cx.term.width - 1
+                    editor.columns = cx.term.width - 1
+                    editor.cursor[0] = min(editor.cursor[0], editor.columns)
+                    cx.echo(*(cx.term.clear(), *banner))
+                    display_oneliners()
 
                     break
 
@@ -105,15 +107,15 @@ async def main(cx: SSHContext):
                 return done()
 
             if ks.code == cx.term.KEY_ENTER:
-                val = led.value[0].strip()
+                val = editor.value[0].strip()
 
                 if len(val) == 0:
                     return done()
 
                 await Oneliner.create(user_id=cx.user.id, message=val)
                 oneliners, count, offset = await get_oneliners()
-                led.reset()
+                editor.reset()
 
                 break
 
-            cx.echo(led.process_keystroke(ks))
+            cx.echo(editor.process_keystroke(ks))

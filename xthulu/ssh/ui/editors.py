@@ -406,10 +406,10 @@ class BlockEditor:
             elif diff < 0:
                 out.append(self.term.move_right(-diff))
 
+        out.append(self.redraw() if shift else move())
         log.debug(
             f"{'up' if distance < 0 else 'down'} {self.pos} {self.cursor}"
         )
-        out.append(self.redraw() if shift else move())
 
         return "".join(out)
 
