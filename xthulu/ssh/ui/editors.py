@@ -218,14 +218,7 @@ class BlockEditor:
 
         return row, before, after
 
-    def kp_backspace(self) -> str:
-        """
-        Handle `KEY_BACKSPACE`.
-
-        Returns:
-            The output sequence for screen updates.
-        """
-
+    def _kp_backspace(self) -> str:
         _, before, after = self._row_vars
 
         if self.pos[0] <= 0 and self.cursor[0] == 0:
@@ -260,14 +253,7 @@ class BlockEditor:
 
         return out
 
-    def kp_delete(self) -> str:
-        """
-        Handle `KEY_DELETE`.
-
-        Returns:
-            The output sequence for screen updates.
-        """
-
+    def _kp_delete(self) -> str:
         _, before, after = self._row_vars
 
         if self.pos[0] >= len(self.value[self.pos[1]]):
@@ -449,85 +435,29 @@ class BlockEditor:
 
         return "".join(out)
 
-    def kp_left(self) -> str:
-        """
-        Handle `KEY_LEFT`.
-
-        Returns:
-            The output sequence for screen updates.
-        """
-
+    def _kp_left(self) -> str:
         return self._horizontal(-1)
 
-    def kp_right(self) -> str:
-        """
-        Handle `KEY_RIGHT`.
-
-        Returns:
-            The output sequence for screen updates.
-        """
-
+    def _kp_right(self) -> str:
         return self._horizontal(1)
 
-    def kp_home(self) -> str:
-        """
-        Handle `KEY_HOME`.
-
-        Returns:
-            The output sequence for screen updates.
-        """
-
+    def _kp_home(self) -> str:
         return self._horizontal(-(self.pos[0] + self.cursor[0]))
 
-    def kp_end(self) -> str:
-        """
-        Handle `KEY_END`.
-
-        Returns:
-            The output sequence for screen updates.
-        """
-
+    def _kp_end(self) -> str:
         return self._horizontal(-self.edge_diff)
 
-    def kp_up(self) -> str:
-        """
-        Handle `KEY_UP`.
-
-        Returns:
-            The output sequence for screen updates.
-        """
-
+    def _kp_up(self) -> str:
         return self._vertical(-1)
 
-    def kp_down(self) -> str:
-        """
-        Handle `KEY_DOWN`.
-
-        Returns:
-            The output sequence for screen updates.
-        """
-
+    def _kp_down(self) -> str:
         return self._vertical(1)
 
-    def kp_pgup(self) -> str:
-        """
-        Handle `KEY_PGUP`.
+    def _kp_pgup(self) -> str:
+        return self._vertical(-(self.rows - 1))
 
-        Returns:
-            The output sequence for screen updates.
-        """
-
-        return self._vertical(-max(1, self.rows - 1))
-
-    def kp_pgdown(self) -> str:
-        """
-        Handle `KEY_PGDOWN`.
-
-        Returns:
-            The output sequence for screen updates.
-        """
-
-        return self._vertical(max(1, self.rows - 1))
+    def _kp_pgdown(self) -> str:
+        return self._vertical(self.rows - 1)
 
     def process_keystroke(self, ks: Keystroke) -> str:
         """
@@ -541,22 +471,22 @@ class BlockEditor:
         """
 
         handlers = {
-            self.term.KEY_BACKSPACE: self.kp_backspace,
-            self.term.KEY_DELETE: self.kp_delete,
-            self.term.KEY_LEFT: self.kp_left,
-            self.term.KEY_RIGHT: self.kp_right,
-            self.term.KEY_HOME: self.kp_home,
-            self.term.KEY_END: self.kp_end,
+            self.term.KEY_BACKSPACE: self._kp_backspace,
+            self.term.KEY_DELETE: self._kp_delete,
+            self.term.KEY_LEFT: self._kp_left,
+            self.term.KEY_RIGHT: self._kp_right,
+            self.term.KEY_HOME: self._kp_home,
+            self.term.KEY_END: self._kp_end,
         }
 
         if self.rows > 1:
             handlers = {
                 **handlers,
                 **{
-                    self.term.KEY_UP: self.kp_up,
-                    self.term.KEY_DOWN: self.kp_down,
-                    self.term.KEY_PGUP: self.kp_pgup,
-                    self.term.KEY_PGDOWN: self.kp_pgdown,
+                    self.term.KEY_UP: self._kp_up,
+                    self.term.KEY_DOWN: self._kp_down,
+                    self.term.KEY_PGUP: self._kp_pgup,
+                    self.term.KEY_PGDOWN: self._kp_pgdown,
                 },
             }
 
