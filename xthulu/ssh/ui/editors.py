@@ -72,9 +72,9 @@ class BlockEditor:
             self.cursor[0] = min(self.columns - 1, max(0, strlen))
             self.cursor[1] = min(self.rows - 1, max(0, len(self.value) - 1))
 
-        log.debug(f"corner = {self.corner}")
-        log.debug(f"pos = {self.pos}")
-        log.debug(f"cursor = {self.cursor}")
+        log.debug(f"corner: {self.corner}")
+        log.debug(f"pos: {self.pos}")
+        log.debug(f"cursor: {self.cursor}")
 
     @property
     def color(self) -> Callable:
@@ -109,12 +109,12 @@ class BlockEditor:
 
         return self.pos[0] + self.cursor[0] - strlen
 
-    def redraw(self, redraw_cursor=True, anchor=True) -> str:
+    def redraw(self, cursor=True, anchor=True) -> str:
         """
         Output sequence to redraw editor.
 
         Args:
-            redraw_cursor: Redraw cursor position as well.
+            cursor: Redraw cursor position as well.
             anchor: Reset anchor position as well.
 
         Returns:
@@ -144,7 +144,7 @@ class BlockEditor:
 
         log.debug("redrawing editor")
 
-        if redraw_cursor:
+        if cursor:
             if travel > 0:
                 out += self.term.move_up(travel)
 
@@ -220,7 +220,7 @@ class BlockEditor:
 
     def kp_backspace(self) -> str:
         """
-        Handle KEY_BACKSPACE.
+        Handle `KEY_BACKSPACE`.
 
         Returns:
             The output sequence for screen updates.
@@ -262,7 +262,7 @@ class BlockEditor:
 
     def kp_delete(self) -> str:
         """
-        Handle KEY_DELETE.
+        Handle `KEY_DELETE`.
 
         Returns:
             The output sequence for screen updates.
@@ -290,7 +290,7 @@ class BlockEditor:
         Horizontal movement helper method; handles shifting visible area.
 
         Args:
-            distance: -1 for left, 1 for right.
+            distance: The distance to travel. Negative = left, positive = right.
 
         Returns:
             The output sequence for updating the screen.
@@ -299,9 +299,19 @@ class BlockEditor:
         if distance == 0:
             return ""
 
+        if distance < 0 and self.cursor[0] <= 0 and self.pos[0] <= 0:
+            log.debug("already at start of line")
+
+            return ""
+
+        if distance > 0 and self.edge_diff >= 0:
+            log.debug("already at end of line")
+
+            return ""
+
+        strlen = len(self.value[self.pos[1] + self.cursor[1]])
         shift = False
         move: Callable[..., str]
-        strlen = len(self.value[self.pos[1] + self.cursor[1]])
         new_cursor = self.cursor[0] + distance
         abs_distance = abs(distance)
 
@@ -341,11 +351,11 @@ class BlockEditor:
 
     def _vertical(self, distance: int) -> str:
         """
-        Vertical motion helper method; handles shifting visible area and
+        Vertical movement helper method; handles shifting visible area and
         snapping the cursor to the edge of the destination row's text.
 
         Args:
-            distance: -1 for up, 1 for down.
+            distance: The distance to travel. Negative = up, positive = down.
 
         Returns:
             The output sequence for updating the screen.
@@ -354,31 +364,57 @@ class BlockEditor:
         if distance == 0:
             return ""
 
-        abs_distance = abs(distance)
+        if distance < 0 and self.cursor[1] <= 0 and self.pos[1] <= 0:
+            log.debug("already at start of editor")
+
+            return ""
+
+        if distance > 0 and self.pos[1] + self.cursor[1] >= len(self.value) - 1:
+            log.debug("already at end of editor")
+
+            return ""
+
         snap_to_edge = self.edge_diff >= 0
         shift = False
+        vallen = len(self.value)
+        clamp_low = -(self.pos[1] + self.cursor[1])
+        clamp_high = vallen - self.pos[1] - self.cursor[1]
+        log.debug(f"distance clamp: {clamp_low} - {clamp_high}")
+        distance = min(clamp_high, max(clamp_low, distance))
         new_cursor = self.cursor[1] + distance
+        log.debug(f"new cursor: {new_cursor}")
+        out = []
 
         if distance < 0:
             if new_cursor < 0:
                 log.debug("shifting visible area up")
-                shift = True
-                self.pos[1] = max(0, self.pos[1] - abs_distance)
                 new_cursor = 0
+                shift = True
 
             move = self.term.move_up
 
         else:
             if new_cursor >= self.rows:
                 log.debug("shifting visible area down")
-                shift = True
-                self.pos[1] = min(self.rows - 1, self.pos[1] + abs_distance)
                 new_cursor = self.rows - 1
+                shift = True
 
             move = self.term.move_down
 
+        if shift:
+            self.pos[1] = max(
+                0,
+                min(self.pos[1] + distance, vallen - self.rows),
+            )
+
+        log.debug(f"clamped new cursor: {new_cursor}")
+        cursor_shift = abs(self.cursor[1] - new_cursor)
+        log.debug(f"cursor shift: {cursor_shift}")
+
+        if shift and cursor_shift > 0:
+            out.append(move(cursor_shift))
+
         self.cursor[1] = new_cursor
-        out = []
         diff = self.edge_diff
 
         if not snap_to_edge and diff > 0:
@@ -396,7 +432,7 @@ class BlockEditor:
                 self.cursor[0] = self.columns - 1
 
                 if not shift:
-                    out.append(move())
+                    out.append(move(cursor_shift))
 
                 shift = True
 
@@ -406,7 +442,7 @@ class BlockEditor:
             elif diff < 0:
                 out.append(self.term.move_right(-diff))
 
-        out.append(self.redraw() if shift else move())
+        out.append(self.redraw() if shift else move(cursor_shift))
         log.debug(
             f"{'up' if distance < 0 else 'down'} {self.pos} {self.cursor}"
         )
@@ -415,92 +451,83 @@ class BlockEditor:
 
     def kp_left(self) -> str:
         """
-        Handle KEY_LEFT.
+        Handle `KEY_LEFT`.
 
         Returns:
             The output sequence for screen updates.
         """
-
-        if self.cursor[0] <= 0 and self.pos[0] <= 0:
-            log.debug("already at start of line")
-
-            return ""
 
         return self._horizontal(-1)
 
     def kp_right(self) -> str:
         """
-        Handle KEY_RIGHT.
+        Handle `KEY_RIGHT`.
 
         Returns:
             The output sequence for screen updates.
         """
-
-        if self.edge_diff >= 0:
-            log.debug("already at end of line")
-
-            return ""
 
         return self._horizontal(1)
 
     def kp_home(self) -> str:
         """
-        Handle KEY_HOME.
+        Handle `KEY_HOME`.
 
         Returns:
             The output sequence for screen updates.
         """
-
-        if self.pos[0] <= 0 and self.cursor[0] <= 0:
-            log.debug("already at start of line")
-
-            return ""
 
         return self._horizontal(-(self.pos[0] + self.cursor[0]))
 
     def kp_end(self) -> str:
         """
-        Handle KEY_END.
+        Handle `KEY_END`.
 
         Returns:
             The output sequence for screen updates.
         """
 
-        distance = self.edge_diff
-
-        if distance >= 0:
-            log.debug("already at end of line")
-            return ""
-
-        return self._horizontal(abs(distance))
+        return self._horizontal(-self.edge_diff)
 
     def kp_up(self) -> str:
         """
-        Handle KEY_UP.
+        Handle `KEY_UP`.
 
         Returns:
             The output sequence for screen updates.
         """
-
-        if self.cursor[1] <= 0 and self.pos[1] <= 0:
-            log.debug("already at start of editor")
-            return ""
 
         return self._vertical(-1)
 
     def kp_down(self) -> str:
         """
-        Handle KEY_DOWN.
+        Handle `KEY_DOWN`.
 
         Returns:
             The output sequence for screen updates.
         """
 
-        if self.pos[1] + self.cursor[1] >= len(self.value) - 1:
-            log.debug("already at end of editor")
-            return ""
-
         return self._vertical(1)
+
+    def kp_pgup(self) -> str:
+        """
+        Handle `KEY_PGUP`.
+
+        Returns:
+            The output sequence for screen updates.
+        """
+
+        return self._vertical(-max(1, self.rows - 1))
+
+    def kp_pgdown(self) -> str:
+        """
+        Handle `KEY_PGDOWN`.
+
+        Returns:
+            The output sequence for screen updates.
+        """
+
+        return self._vertical(max(1, self.rows - 1))
 
     def process_keystroke(self, ks: Keystroke) -> str:
         """
@@ -528,6 +555,8 @@ class BlockEditor:
                 **{
                     self.term.KEY_UP: self.kp_up,
                     self.term.KEY_DOWN: self.kp_down,
+                    self.term.KEY_PGUP: self.kp_pgup,
+                    self.term.KEY_PGDOWN: self.kp_pgdown,
                 },
             }
 
