@@ -47,6 +47,7 @@ advantage of.
 
 ### Miscellaneous
 
+- [x] Container proxy ([Traefik])
 - [ ] HTTP server
   - [x] Static files
   - [ ] REST API
@@ -121,5 +122,6 @@ There is also an account with a password for testing password authentication.
 [dos]: https://en.wikipedia.org/wiki/MS-DOS
 [terminal capabilities]: https://en.wikipedia.org/wiki/Terminal_capabilities
 [contributor guide]: ./CONTRIBUTING.md
+[traefik]: https://traefik.io/traefik
 [apiflask]: https://apiflask.com
 [gino]: https://python-gino.org
