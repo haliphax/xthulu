@@ -48,8 +48,10 @@ advantage of.
 ### Miscellaneous
 
 - [ ] HTTP server
-  - [ ] Static files
+  - [x] Static files
   - [ ] REST API
+    - [x] Web framework ([APIFlask])
+    - [ ] Implementation
 - [ ] IPC
   - [x] Session events queue
   - [x] Methods for manipulating queue (querying specific events, etc.)
@@ -57,13 +59,13 @@ advantage of.
         requests, IM, etc.)
   - [ ] Server events queue (IPC coordination, etc.)
   - [x] Locks (IPC semaphore)
-  - [ ] External-to-session IPC (CLI, web, etc.) via Redis PubSub
+  - [ ] Global IPC (CLI, web, etc.) via Redis PubSub
 - [ ] Data layer
   - [x] PostgreSQL for data
   - [x] Asynchronous ORM ([GINO])
   - [x] User model
   - [ ] Message bases
-  - [ ] Simple pickle table for things like oneliners, automsg, etc.
+  - [ ] Simple pickle table ("The Pile") for miscellaneous data storage
 
 </details>
 
@@ -119,4 +121,5 @@ There is also an account with a password for testing password authentication.
 [dos]: https://en.wikipedia.org/wiki/MS-DOS
 [terminal capabilities]: https://en.wikipedia.org/wiki/Terminal_capabilities
 [contributor guide]: ./CONTRIBUTING.md
+[apiflask]: https://apiflask.com
 [gino]: https://python-gino.org
