@@ -71,22 +71,19 @@ advantage of.
 
 </details>
 
-## Usage
-
-ℹ️ Commands which involve `docker` or `docker-compose` must be run from the
-`docker/` directory of the repository in order for the command to locate the
-appropriate file(s). Other commands assume you are in the repository's root
-directory.
+## Setup
 
 ### Build the docker image
 
 ```shell
+# in the docker/ directory
 DOCKER_BUILDKIT=1 docker-compose build
 ```
 
 ### Create a configuration file and generate host keys
 
 ```shell
+# in the repository root
 cp data/config.example.toml data/config.toml
 ssh-keygen -f data/ssh_host_key -t rsa -b 4096  # do not use a passphrase
 ```
@@ -94,6 +91,7 @@ ssh-keygen -f data/ssh_host_key -t rsa -b 4096  # do not use a passphrase
 ### Create and seed the database
 
 ```shell
+# in the docker/ directory
 docker-compose run --rm ssh db-create
 docker-compose run --rm ssh db-init
 docker-compose run --rm --entrypoint python ssh -m userland.cli.seed
@@ -102,6 +100,7 @@ docker-compose run --rm --entrypoint python ssh -m userland.cli.seed
 ### Start the services
 
 ```shell
+# in the docker/ directory
 docker-compose up -d
 ```
 
