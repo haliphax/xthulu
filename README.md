@@ -1,6 +1,6 @@
 # xthulu
 
-Python 3 asyncio community server
+xthulu _("ch-thoo-loo")_ Python 3 asyncio community server
 
 ![Header image](https://github.com/haliphax/xthulu/raw/assets/xthulu.jpg)
 
