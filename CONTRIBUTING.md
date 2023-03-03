@@ -117,7 +117,6 @@ class TestExample(TestCase):
 
     @patch("xthulu.some_package.a_different_asynchronous_method")
     def test_something_asynchronous(self, mock_method: AsyncMock):
-
         """Asynchronous method A should await asynchronous method B."""
 
         result = run_coroutine(some_asynchronous_method())
