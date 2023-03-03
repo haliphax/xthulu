@@ -31,7 +31,8 @@ advantage of.
   - [x] Goto
   - [x] Gosub
   - [x] Exception handling
-- [x] Isolated `blessed.Terminal` process and proxy
+- [x] Terminal library ([Blessed])
+  - [x] Process-isolated `Terminal` to circumvent atomic `TERM`
 - [ ] UI components
   - [x] Block editor
   - [x] Line editor (block editor with a single line)
@@ -122,6 +123,7 @@ There is also an account with a password for testing password authentication.
 [dos]: https://en.wikipedia.org/wiki/MS-DOS
 [terminal capabilities]: https://en.wikipedia.org/wiki/Terminal_capabilities
 [contributor guide]: ./CONTRIBUTING.md
+[blessed]: https://blessed.readthedocs.io/en/latest/intro.html
 [traefik]: https://traefik.io/traefik
 [apiflask]: https://apiflask.com
 [gino]: https://python-gino.org
