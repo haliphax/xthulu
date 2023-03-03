@@ -32,17 +32,21 @@ class TestResources(TestCase):
     def mock_exists(self):
         return True
 
-    @patch("xthulu.resources.exists", new=mock_exists)
+    @patch("xthulu.resources.exists", mock_exists)
     @patch("xthulu.resources.load")
     def test_config_file_loaded(self, mock_load: Mock):
+        """Constructor should load the configuration file."""
+
         Resources()
 
         mock_load.assert_called_once_with("data/config.toml")
 
-    @patch("xthulu.resources.exists", new=mock_exists)
-    @patch("xthulu.resources.environ", new=Mock(get=lambda *_: "test"))
+    @patch("xthulu.resources.exists", mock_exists)
+    @patch("xthulu.resources.environ", Mock(get=lambda *_: "test"))
     @patch("xthulu.resources.load")
     def test_config_file_from_env_used(self, mock_load: Mock):
+        """Constructor should use the filename from environ if available."""
+
         Resources()
 
         mock_load.assert_called_once_with("test")
@@ -50,9 +54,11 @@ class TestResources(TestCase):
     @parameterized.expand(
         (("app", APIFlask), ("cache", Redis), ("db", Gino)),
     )
-    @patch("xthulu.resources.load", new=lambda *_: {})
-    @patch("xthulu.resources.exists", new=mock_exists)
+    @patch("xthulu.resources.load", lambda *_: {})
+    @patch("xthulu.resources.exists", mock_exists)
     def test_property_assignment(self, name: str, cls: Type):
+        """Constructor should assign properties to singleton appropriately."""
+
         resources = Resources()
 
         assert isinstance(getattr(resources, name), cls)

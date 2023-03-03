@@ -28,9 +28,9 @@ class Resources:
     db = Mock(Gino)
 
 
-class TestStartServer(TestCase):
+class TestStartSSHServer(TestCase):
 
-    """Test that the server starts up with the appropriate configuration."""
+    """Test SSH server startup"""
 
     def setUp(self):
         self._patch_resources = patch("xthulu.ssh.Resources", Resources)
@@ -45,12 +45,16 @@ class TestStartServer(TestCase):
 
     @patch("xthulu.ssh.get_config", patch_get_config(test_config))
     def test_db_bind(self):
+        """Server should bind database connection during startup."""
+
         run_coroutine(start_server())
 
         self.mock_resources.db.set_bind.assert_awaited_once_with("test")
 
     @patch("xthulu.ssh.get_config", patch_get_config(test_config))
     def test_server_args(self):
+        """Server should bind SSH server to values from configuration."""
+
         run_coroutine(start_server())
 
         ssh_config = test_config["ssh"]
@@ -73,6 +77,8 @@ class TestStartServer(TestCase):
     )
     @patch("xthulu.ssh.ProxyProtocolListener")
     def test_proxy_procotol(self, mock_listener: Mock):
+        """Server should use a PROXY tunnel if configured to do so."""
+
         run_coroutine(start_server())
 
         mock_listener.assert_called_once()
