@@ -36,7 +36,7 @@ advantage of.
 - [ ] UI components
   - [x] Block editor
   - [x] Line editor (block editor with a single line)
-  - [ ] Lightbar
+  - [ ] Horizontal lightbar
   - [ ] Vertical lightbar
   - [ ] Matrix (vertical/horizontal lightbar)
   - [ ] Panel (scrollable boundary)
