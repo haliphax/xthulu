@@ -81,7 +81,7 @@ directory.
 ### Build the docker image
 
 ```shell
-DOCKER_BUILDKIT=1 docker-compose build ssh
+DOCKER_BUILDKIT=1 docker-compose build
 ```
 
 ### Create a configuration file and generate host keys
