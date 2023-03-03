@@ -42,7 +42,7 @@ class TestResources(TestCase):
     @patch("xthulu.resources.exists", new=mock_exists)
     @patch("xthulu.resources.environ", new=Mock(get=lambda *_: "test"))
     @patch("xthulu.resources.load")
-    def test_config_file_from_env_used(self, mock_load):
+    def test_config_file_from_env_used(self, mock_load: Mock):
         Resources()
 
         mock_load.assert_called_once_with("test")
