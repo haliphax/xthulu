@@ -116,8 +116,9 @@ ssh guest@localhost
 
 There is also an account with a password for testing password authentication.
 
-- username: `user`
-- password: `user`
+```shell
+ssh user@localhost  # password is also "user"
+```
 
 ### Connect to the web server
 
