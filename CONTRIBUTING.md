@@ -54,19 +54,24 @@ pre-commit install --install-hooks
 
 ### docker-compose
 
-In order to avoid the need to rebuild the service container's base image each
+In order to avoid the need to rebuild the service containers' base image each
 time you make changes to the source code, you can create an override
 configuration for the `docker-compose` stack. This configuration will mount the
-live source code directory into the running container so that restarting it
-should be sufficient to pick up any changes.
+live source code directory into the running `ssh` and `web` containers so that
+restarting them should be sufficient to pick up any changes.
 
 <details>
 <summary>docker/docker-compose.override.yml</summary>
 
 ```yaml
 version: "3"
+
 services:
-  app:
+  ssh:
+    volumes:
+      - ./xthulu:/app/xthulu
+
+  web:
     volumes:
       - ./xthulu:/app/xthulu
 ```
@@ -75,10 +80,13 @@ services:
 
 ## Unit tests
 
+### Framework
+
 The project's chosen testing framework is the standard library's own `unittest`.
 
 ```shell
-python -m unittest discover -s tests
+python -m unittest     # run all tests
+python -m unittest -h  # list test runner options
 ```
 
 ### Testing asynchronous code
@@ -109,6 +117,9 @@ class TestExample(TestCase):
 
     @patch("xthulu.some_package.a_different_asynchronous_method")
     def test_something_asynchronous(self, mock_method: AsyncMock):
+
+        """Asynchronous method A should await asynchronous method B."""
+
         result = run_coroutine(some_asynchronous_method())
 
         assert result == "expected result"
@@ -120,10 +131,10 @@ class TestExample(TestCase):
 ### Test coverage
 
 The [coverage] application is used to calculate test coverage after unit tests
-have been run:
+have been run.
 
 ```shell
-coverage run --source=xthulu --omit="xthulu/__main__.py" -m unittest discover -s tests
+coverage run --source=xthulu --omit="xthulu/__main__.py" -m unittest
 coverage report
 ```
 
