@@ -123,7 +123,8 @@ ssh user@localhost  # password is also "user"
 
 For the time being, the web server only demonstrates simple interopability
 between the REST API and static pages. It is available at https://localhost.
-Note: [Traefik] will be using an untrusted certificate, and you will likely be
+
+⚠️ [Traefik] will be using an untrusted certificate, and you will likely be
 presented with a warning.
 
 [bulletin boards]: https://archive.org/details/BBS.The.Documentary
