@@ -23,7 +23,7 @@ advantage of.
 
 ### Terminal server
 
-- [x] SSH server
+- [x] SSH server ([AsyncSSH])
 - [x] PROXY v1 support
 - [ ] SCP subsystem
 - [ ] SFTP subsystem
@@ -130,6 +130,7 @@ presented with a warning.
 [dos]: https://en.wikipedia.org/wiki/MS-DOS
 [terminal capabilities]: https://en.wikipedia.org/wiki/Terminal_capabilities
 [contributor guide]: ./CONTRIBUTING.md
+[asyncssh]: https://asyncssh.readthedocs.io/en/latest/
 [blessed]: https://blessed.readthedocs.io/en/latest/intro.html
 [traefik]: https://traefik.io/traefik
 [apiflask]: https://apiflask.com
