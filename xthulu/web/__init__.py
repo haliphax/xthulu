@@ -31,7 +31,9 @@ def start_server():
     async def bind_db():
         await Resources().db.set_bind(get_config("db.bind"))
 
-    new_event_loop().run_until_complete(bind_db())
+    loop = new_event_loop()
+    loop.run_until_complete(bind_db())
+    loop.close()
     run(
         "xthulu.web.asgi:asgi_app",
         host=get_config("web.host"),
