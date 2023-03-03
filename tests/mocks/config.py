@@ -7,16 +7,24 @@ from typing import Any
 from xthulu.configuration import get_config
 
 test_ssh_config = {
-    "host": "0.0.0.0",
+    "host": "1.2.3.4",
     "host_keys": "/test",
-    "port": "8022",
+    "port": 9999,
 }
 """Default SSH configuration for testing"""
 
+test_web_config = {
+    "host": "1.2.3.4",
+    "port": 9999,
+    "userland": {"paths": "/test"},
+}
+"""Default web server configuration for testing"""
+
 test_config = {
-    "cache": {"host": "test", "port": 1234},
+    "cache": {"host": "test", "port": 9999},
     "db": {"bind": "test"},
     "ssh": test_ssh_config,
+    "web": test_web_config,
 }
 """Default overall configuration for testing"""
 

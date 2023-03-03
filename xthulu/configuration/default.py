@@ -35,5 +35,12 @@ default_config = {
             "top": ["top"],
         },
     },
+    "web": {
+        "host": "0.0.0.0",
+        "port": 5000,
+        "userland": {
+            "paths": ["userland/web"],
+        },
+    },
 }
 """Default configuration"""
