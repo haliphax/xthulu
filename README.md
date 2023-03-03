@@ -75,8 +75,8 @@ advantage of.
 
 ℹ️ Commands which involve `docker` or `docker-compose` must be run from the
 `docker/` directory of the repository in order for the command to locate the
-YAML configuration file(s). Other commands assume you are in the repository's
-root directory.
+appropriate file(s). Other commands assume you are in the repository's root
+directory.
 
 ### Build the docker image
 
