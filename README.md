@@ -119,6 +119,13 @@ There is also an account with a password for testing password authentication.
 - username: `user`
 - password: `user`
 
+### Connect to the web server
+
+For the time being, the web server only demonstrates simple interopability
+between the REST API and static pages. It is available at https://localhost.
+Note: [Traefik] will be using an untrusted certificate, and you will likely be
+presented with a warning.
+
 [bulletin boards]: https://archive.org/details/BBS.The.Documentary
 [dos]: https://en.wikipedia.org/wiki/MS-DOS
 [terminal capabilities]: https://en.wikipedia.org/wiki/Terminal_capabilities
