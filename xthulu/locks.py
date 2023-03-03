@@ -34,7 +34,7 @@ def get(owner: str, name: str) -> bool:
     """
 
     log.debug(f"{owner} acquiring lock {name}")
-    lock = cache.lock(f"locks.{name}", thread_local=False)
+    lock = cache.lock(f"locks.{name}")
 
     if not lock.acquire(blocking=False):
         log.debug(f"{owner} failed to acquire lock {name}")
