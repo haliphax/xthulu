@@ -23,8 +23,10 @@ test_config = {
 
 def patch_get_config(config: dict[str, Any]):
     """
-    Used for patching the `get_config` method. The returned decorator takes a
-    mocked configuration dict as its only argument.
+    Used for patching the `get_config` method.
+
+    Args:
+        config: The configuration dictionary to use in place of the default.
     """
 
     def wrapped(
