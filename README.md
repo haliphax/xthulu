@@ -88,7 +88,7 @@ DOCKER_BUILDKIT=1 docker-compose build
 
 ```shell
 cp data/config.example.toml data/config.toml
-ssh-keygen -f data/ssh_host_key -t rsa -b 4096  # do not use a key password
+ssh-keygen -f data/ssh_host_key -t rsa -b 4096  # do not use a passphrase
 ```
 
 ### Create and seed the database
