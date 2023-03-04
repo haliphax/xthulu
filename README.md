@@ -4,6 +4,7 @@ xthulu _("ch-thoo-loo")_ Python 3 asyncio community server
 
 ![Header image](https://github.com/haliphax/xthulu/raw/assets/xthulu.jpg)
 
+[![Checks](https://img.shields.io/github/actions/workflow/status/haliphax/xthulu/checks.yml?label=Checks)](https://github.com/haliphax/xthulu/actions/workflows/checks.yml)
 [![Tests](https://img.shields.io/github/actions/workflow/status/haliphax/xthulu/tests.yml?label=Tests)](https://github.com/haliphax/xthulu/actions/workflows/tests.yml)
 [![Coverage](https://img.shields.io/coverallsCoverage/github/haliphax/xthulu?label=Coverage)](https://coveralls.io/github/haliphax/xthulu)
 
