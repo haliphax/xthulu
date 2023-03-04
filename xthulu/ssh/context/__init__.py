@@ -1,7 +1,7 @@
 """xthulu context class module"""
 
 # type checking
-from typing import Any, Callable, Final, NoReturn, Optional
+from typing import Any, Callable, NoReturn, Optional
 from types import ModuleType
 
 # stdlib
@@ -37,44 +37,71 @@ class SSHContext:
 
     """Context object for SSH sessions"""
 
-    stack = []
+    proc: SSHServerProcess
+    """This context's containing process"""
+
+    stack: list[Script] = []
     """Script stack"""
 
     term: ProxyTerminal
     """Context terminal object"""
 
+    encoding: str
+    """Encoding for session"""
+
     user: User
     """Context user object"""
 
-    def __init__(self, proc, encoding="utf-8"):
-        self._peername: Final[list[str]] = proc.get_extra_info("peername")
+    username: str
+    """Connected user's name"""
 
-        self.sid: Final = "{}:{}".format(*self._peername)
-        """Internal session ID"""
+    ip: str
+    """Remote IP address"""
 
-        self.username: Final = proc.get_extra_info("username")
-        """Connected user's name"""
+    sid: str
+    """Internal session ID"""
 
-        self.ip: Final = self._peername[0]
-        """Remote IP address"""
+    whoami: str
+    """username@host string for session"""
 
-        self.whoami: Final = f"{self.username}@{self.ip}"
-        """Connected user's username@host string"""
+    log: logging.Logger
+    """Context logger instance"""
 
-        self.proc: SSHServerProcess = proc
-        """SSHServerProcess for session"""
+    events: EventQueue
+    """Events queue for session"""
 
-        self.encoding: str = encoding
-        """Encoding for session"""
+    env: dict[str, str]
+    """Environment variables"""
 
-        self.log: logging.Logger = logging.getLogger(self.sid)
-        """Logging facility"""
+    _peername: list[str]
 
-        self.events: EventQueue = EventQueue(self.sid)
-        """Events queue"""
+    @classmethod
+    async def create(cls, proc: SSHServerProcess, encoding="utf-8"):
+        """
+        Factory method for instantiating a new context asynchronously.
 
-        self.env: dict[str, str] = proc.env.copy()
-        """Environment variables"""
+        Args:
+            proc: The parent process.
+            encoding: The session encoding.
+
+        Returns:
+            A new `SSHContext` object.
+        """
+
+        self = SSHContext()
+        self._peername = proc.get_extra_info("peername")
+        self.sid = "{}:{}".format(*self._peername)
+        self.username = proc.get_extra_info("username")
+        self.ip = self._peername[0]
+        self.whoami = f"{self.username}@{self.ip}"
+        self.proc = proc
+        self.encoding = encoding
+        self.log = logging.getLogger(self.sid)
+        self.events = EventQueue(self.sid)
+        self.env = dict(proc.env)
+        self.user = await User.query.where(
+            func.lower(User.name) == self.username.lower()
+        ).gino.first()
 
         # set up logging
         if not self.log.filters:
@@ -90,12 +117,7 @@ class SSHContext:
             self.log.addHandler(streamHandler)
             self.log.setLevel(log.getEffectiveLevel())
 
-    async def _init(self):
-        """Asynchronous initialization routine."""
-
-        self.user = await User.query.where(
-            func.lower(User.name) == self.username.lower()
-        ).gino.first()
+        return self
 
     def echo(self, *args: str, encoding: Optional[str] = None):
         """

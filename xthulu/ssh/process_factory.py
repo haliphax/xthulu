@@ -28,8 +28,7 @@ async def handle_client(proc: SSHServerProcess):
         proc: The server process responsible for the client.
     """
 
-    cx = SSHContext(proc=proc)
-    await cx._init()
+    cx = await SSHContext.create(proc)
 
     if proc.subsystem:
         log.error(
