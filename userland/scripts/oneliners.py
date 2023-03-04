@@ -69,7 +69,7 @@ async def main(cx: SSHContext):
             ks = None
 
             while not ks:
-                ev = await cx.events.poll("resize", flush=True, get_last=True)
+                ev = cx.events.get("resize")
 
                 if ev:
                     dirty = True

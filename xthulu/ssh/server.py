@@ -1,8 +1,5 @@
 """SSH server implementation"""
 
-# stdlib
-from asyncio import Queue
-
 # 3rd party
 from asyncssh import SSHServer as AsyncSSHServer, SSHServerConnection
 from sqlalchemy import func
@@ -10,7 +7,7 @@ from sqlalchemy import func
 # local
 from .. import locks
 from ..configuration import get_config
-from ..events import EventQueues
+from ..events import EventQueue, EventQueues
 from ..logger import log
 from ..models import User
 
@@ -38,7 +35,7 @@ class SSHServer(AsyncSSHServer):
 
         self._peername = conn.get_extra_info("peername")
         self._sid = "{}:{}".format(*self._peername)
-        EventQueues.q[self._sid] = Queue()
+        EventQueues.q[self._sid] = EventQueue()
         log.info(f"{self._peername[0]} connecting")
 
     def connection_lost(self, exc: Exception):

@@ -51,7 +51,7 @@ async def main(cx: SSHContext):
         ks: Keystroke | None = None
 
         while not ks:
-            ev = await cx.events.poll("resize", flush=True, get_last=True)
+            ev = cx.events.get("resize")
 
             if ev:
                 dirty = True

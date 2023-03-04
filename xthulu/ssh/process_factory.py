@@ -100,7 +100,7 @@ async def handle_client(proc: SSHServerProcess):
                 cx.term._height = sz.height
                 cx.term._pixel_width = sz.pixwidth
                 cx.term._pixel_height = sz.pixheight
-                await cx.events.put(EventData("resize", (sz.width, sz.height)))
+                cx.events.add(EventData("resize", (sz.width, sz.height)))
 
     async def main_process():
         """Userland script stack; main process."""
