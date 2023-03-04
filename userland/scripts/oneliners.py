@@ -5,6 +5,7 @@ from xthulu.ssh.context import SSHContext
 from xthulu.ssh.ui.editors import LineEditor
 
 # local
+from userland.handle_events import handle_events
 from userland.models import Oneliner
 
 LIMIT = 200
@@ -69,10 +70,9 @@ async def main(cx: SSHContext):
             ks = None
 
             while not ks:
-                ev = cx.events.get("resize")
+                _, dirty = handle_events(cx)
 
-                if ev:
-                    dirty = True
+                if dirty:
                     editor.columns = cx.term.width - 1
                     editor.cursor[0] = min(editor.cursor[0], editor.columns)
                     cx.echo(*(cx.term.clear(), *banner))

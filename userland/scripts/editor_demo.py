@@ -7,6 +7,9 @@ from blessed.keyboard import Keystroke
 from xthulu.ssh.context import SSHContext
 from xthulu.ssh.ui.editors import BlockEditor
 
+# local
+from userland.handle_events import handle_events
+
 
 async def main(cx: SSHContext):
     banner = (
@@ -51,10 +54,9 @@ async def main(cx: SSHContext):
         ks: Keystroke | None = None
 
         while not ks:
-            ev = cx.events.get("resize")
+            _, dirty = handle_events(cx)
 
-            if ev:
-                dirty = True
+            if dirty:
                 editor.columns = cx.term.width - 1
                 editor.cursor[0] = min(editor.cursor[0], editor.columns - 1)
                 cx.echo(*(cx.term.clear(), *banner))
