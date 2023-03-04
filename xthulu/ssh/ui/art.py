@@ -84,6 +84,7 @@ async def show_art(
             if did_wrap:
                 # if this line wrapped, we know it's at least maxwidth
                 longest_line = maxwidth
+
             else:
                 # strip sequences to get true length
                 stripped = re.sub(r"\x1b\[[;0-9]+m", "", first)
@@ -106,15 +107,23 @@ async def show_art(
 
         if preload is not None and row < preload:
             newline()
+
             continue
 
         if delay is not None and delay > 0:
+            if cx.events.get("resize"):
+                newline()
+
+                return
+
             if dismissable:
                 ks: Keystroke = await cx.term.inkey(timeout=delay)
 
                 if ks.code is not None:
                     newline()
+
                     return ks
+
             else:
                 await sleep(delay)
 
