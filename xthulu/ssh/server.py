@@ -7,7 +7,7 @@ from sqlalchemy import func
 # local
 from .. import locks
 from ..configuration import get_config
-from ..events import EventQueue, EventQueues
+from ..events import EventQueues
 from ..logger import log
 from ..models import User
 
@@ -35,7 +35,6 @@ class SSHServer(AsyncSSHServer):
 
         self._peername = conn.get_extra_info("peername")
         self._sid = "{}:{}".format(*self._peername)
-        EventQueues.q[self._sid] = EventQueue()
         log.info(f"{self._peername[0]} connecting")
 
     def connection_lost(self, exc: Exception):
@@ -46,7 +45,9 @@ class SSHServer(AsyncSSHServer):
             exc: The exception that caused the connection loss, if any.
         """
 
-        del EventQueues.q[self._sid]
+        if self._sid in EventQueues.q.keys():
+            del EventQueues.q[self._sid]
+
         locks.expire(self._sid)
 
         if exc:
