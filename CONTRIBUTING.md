@@ -1,7 +1,8 @@
 # Contributor guide
 
 ⚠️ Contribution at this point is not recommended, but isn't necessarily
-unwelcome.
+unwelcome. Please [open an issue] with the `enhancement` label with your
+proposed changes before beginning any work in earnest.
 
 ## Virtual environment
 
@@ -135,6 +136,7 @@ coverage run --source=xthulu --omit="xthulu/__main__.py" -m unittest
 coverage report
 ```
 
+[open an issue]: https://github.com/haliphax/xthulu/issues/new?labels=enhancement&title=Proposal:%20
 [pyenv]: https://github.com/pyenv/pyenv
 [dev containers]: https://containers.dev/
 [node.js]: https://nodejs.org
