@@ -14,8 +14,7 @@ from redis import Redis
 
 # local
 from tests.mocks.config import patch_get_config, test_config, test_web_config
-from xthulu.web import start_server
-from xthulu.web.asgi import main
+from xthulu.web import create_app, start_server
 
 
 class Resources:
@@ -25,6 +24,7 @@ class Resources:
     db = Mock(Gino)
 
 
+@patch("xthulu.web.get_event_loop", Mock())
 @patch("xthulu.web.get_config", patch_get_config(test_config))
 class TestStartWebServer(TestCase):
 
@@ -34,36 +34,46 @@ class TestStartWebServer(TestCase):
         self._patch_resources = patch("xthulu.web.Resources", Resources)
         self.mock_resources = self._patch_resources.start()
 
-        self._patch_run = patch("xthulu.web.run")
-        self.mock_run = self._patch_run.start()
+        self._patch_import = patch("xthulu.web.import_module")
+        self.mock_import: Mock = self._patch_import.start()
 
     def tearDown(self):
         self._patch_resources.stop()
-        self._patch_run.stop()
+        self._patch_import.stop()
 
-    def test_uses_config(self):
-        """Server should bind using loaded configuration."""
+    @patch("xthulu.web.run")
+    def test_uses_config(self, mock_run: Mock):
+        """Server should bind listener using loaded configuration."""
 
         start_server()
 
-        self.mock_run.assert_called_once_with(
+        mock_run.assert_called_once_with(
             "xthulu.web.asgi:asgi_app",
             host=test_web_config["host"],
             port=test_web_config["port"],
         )
 
     def test_db_bind(self):
-        """Server should bind database connection during startup."""
+        """Server should bind database connection."""
 
-        start_server()
+        create_app()
 
-        self.mock_resources.db.set_bind.assert_awaited_once_with("test")
+        self.mock_resources.db.set_bind.assert_called_once_with(
+            test_config["db"]["bind"]
+        )
 
     @patch("xthulu.web.api")
-    @patch("xthulu.web.app")
-    def test_registers_blueprint(self, mock_app: Mock, mock_api: Mock):
-        """ASGI entrypoint should register the API blueprint."""
+    def test_registers_blueprint(self, mock_api: Mock):
+        """Server should register the API blueprint."""
 
-        main()
+        create_app()
 
-        mock_app.register_blueprint.assert_called_once_with(mock_api)
+        self.mock_resources.app.register_blueprint.assert_called_with(mock_api)
+
+    def test_imports_userland_modules(self):
+        """Server should import userland modules."""
+
+        create_app()
+
+        for mod in test_web_config["userland"]["modules"]:
+            self.mock_import.assert_called_with(mod)

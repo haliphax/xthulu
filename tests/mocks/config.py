@@ -16,7 +16,7 @@ test_ssh_config = {
 test_web_config = {
     "host": "1.2.3.4",
     "port": 9999,
-    "userland": {"paths": "/test"},
+    "userland": {"modules": ["testland.web"]},
 }
 """Default web server configuration for testing"""
 
