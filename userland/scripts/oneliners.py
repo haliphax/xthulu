@@ -3,6 +3,7 @@
 # api
 from xthulu.ssh.context import SSHContext
 from xthulu.ssh.ui.editors import LineEditor
+from xthulu.ssh.terminal.constants import CTRL_C
 
 # local
 from userland.handle_events import handle_events
@@ -103,7 +104,7 @@ async def main(cx: SSHContext):
 
                 continue
 
-            if ks.code == cx.term.KEY_ESCAPE:
+            if ks.code == cx.term.KEY_ESCAPE or ks == CTRL_C:
                 return done()
 
             if ks.code == cx.term.KEY_ENTER:

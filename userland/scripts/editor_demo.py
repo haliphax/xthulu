@@ -6,6 +6,7 @@ from blessed.keyboard import Keystroke
 # api
 from xthulu.ssh.context import SSHContext
 from xthulu.ssh.ui.editors import BlockEditor
+from xthulu.ssh.terminal.constants import CTRL_C
 
 # local
 from userland.handle_events import handle_events
@@ -68,7 +69,7 @@ async def main(cx: SSHContext):
         if ks is None:
             continue
 
-        if ks.code == cx.term.KEY_ESCAPE:
+        if ks.code == cx.term.KEY_ESCAPE or ks == CTRL_C:
             # move cursor after the last row of the editor before exiting
             out = (cx.term.normal, "\r\n" * (editor.rows - editor.cursor[1]))
 
