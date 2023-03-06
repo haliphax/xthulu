@@ -3,7 +3,7 @@
 # type checking
 from typing import Any
 
-# target
+# local
 from xthulu.configuration import get_config
 
 test_ssh_config = {

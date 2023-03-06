@@ -12,12 +12,10 @@ from apiflask import APIFlask
 from gino import Gino
 from redis import Redis
 
-# target
-from xthulu.web import start_server
-from xthulu.web.asgi import main
-
 # local
 from tests.mocks.config import patch_get_config, test_config, test_web_config
+from xthulu.web import start_server
+from xthulu.web.asgi import main
 
 
 class Resources:

@@ -13,7 +13,7 @@ from gino import Gino
 from redis import Redis
 from parameterized import parameterized
 
-# target
+# local
 from xthulu.resources import Resources
 
 
