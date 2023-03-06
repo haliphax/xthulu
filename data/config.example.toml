@@ -20,12 +20,12 @@ proxy_protocol = true
 bad_usernames = ["admin", "administrator", "root", "system", "god"]
 no_password = ["guest"]
 
+[ssh.session]
+timeout = 180
+
 [ssh.userland]
 paths = ["userland/scripts"]
 top = ["top"]
-
-[ssh.session]
-timeout = 180
 
 [web]
 host = "0.0.0.0"
