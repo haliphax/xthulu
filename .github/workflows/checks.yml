@@ -32,15 +32,15 @@ jobs:
               - "**.yml"
             py:
               - "**.py"
-              - "requirements/"
-              - "pyproject.toml"
+              - requirements/
+              - pyproject.toml
 
   # formatting
 
   black:
     name: Black (formatter)
     needs: changes
-    if: ${{ needs.changes.outputs.py == 'true' }}
+    if: needs.changes.outputs.py == 'true' || github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       - name: Check out
@@ -62,7 +62,8 @@ jobs:
   prettier:
     name: Prettier (formatter)
     needs: changes
-    if: ${{ needs.changes.outputs.misc == 'true' }}
+    if: |
+      needs.changes.outputs.misc == 'true' || github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       - name: Check out
@@ -85,7 +86,7 @@ jobs:
   ruff:
     name: Ruff (linter)
     needs: changes
-    if: ${{ needs.changes.outputs.py == 'true' }}
+    if: needs.changes.outputs.py == 'true' || github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       - name: Check out

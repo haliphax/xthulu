@@ -9,8 +9,32 @@ on:
   workflow_dispatch:
 
 jobs:
+  changes:
+    name: Change detection
+    runs-on: ubuntu-latest
+    outputs:
+      src: ${{ steps.changes.outputs.src }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+
+      - name: Detect changed files
+        id: changes
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            src:
+              - .editorconfig
+              - .prettier-ignore
+              - pyproject.toml
+              - requirements/
+              - tests/
+              - xthulu/
+
   tests:
     name: Unit tests
+    needs: changes
+    if: needs.changes.outputs.src == 'true' || github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       - name: Check out
