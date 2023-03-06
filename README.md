@@ -127,7 +127,8 @@ ssh user@localhost  # password is also "user"
 ### Connect to the web server
 
 For the time being, the web server only demonstrates simple interoperability
-between the REST API and static pages. It is available at https://localhost.
+between the REST API and static pages. It is available at https://localhost. The
+userland web interface is at https://localhost/user.
 
 ⚠️ [Traefik] will be using an untrusted certificate, and you will likely be
 presented with a warning.
