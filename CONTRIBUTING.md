@@ -91,8 +91,8 @@ python -m unittest -h  # list test runner options
 
 ### Testing asynchronous code
 
-The convenience method `run_coroutine` in the root of the `tests` module can be
-used to await asynchronous method calls in test cases.
+The convenience method `run_coroutine` in the `util` module can be used to await
+asynchronous method calls in test cases.
 
 <details>
 <summary>Example</summary>
@@ -104,11 +104,9 @@ used to await asynchronous method calls in test cases.
 from unittest import TestCase
 from unittest.mock import AsyncMock, patch
 
-# target
-from xthulu.some_package import some_asynchronous_method
-
 # local
-from tests import run_coroutine
+from xthulu.some_package import some_asynchronous_method
+from xthulu.util import run_coroutine
 
 
 class TestExample(TestCase):

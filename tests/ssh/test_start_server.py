@@ -12,13 +12,11 @@ from apiflask import APIFlask
 from gino import Gino
 from redis import Redis
 
-# target
+# local
+from tests.mocks.config import patch_get_config, test_config, test_ssh_config
 from xthulu.ssh import SSHServer, start_server
 from xthulu.ssh.process_factory import handle_client
-
-# local
-from tests import run_coroutine
-from tests.mocks.config import patch_get_config, test_config, test_ssh_config
+from xthulu.util import run_coroutine
 
 
 class Resources:
