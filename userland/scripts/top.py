@@ -17,7 +17,7 @@ async def main(cx: SSHContext):
     cx.echo(
         cx.term.normal,
         "\r\n",
-        "🐙 " if cx.encoding == "utf-8" else "",
+        "💀 " if cx.encoding == "utf-8" else "",
         cx.term.bold_green("x"),
         cx.term.green("thulu"),
         " terminal server ",
