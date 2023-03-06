@@ -25,6 +25,9 @@ advantage of.
 ### Terminal server
 
 - [x] SSH server ([AsyncSSH])
+  - [x] Password authentication
+  - [x] Guest (no-auth) users
+  - [ ] Key authentication
 - [x] PROXY v1 support
 - [ ] SCP subsystem
 - [ ] SFTP subsystem
