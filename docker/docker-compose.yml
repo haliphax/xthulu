@@ -76,7 +76,7 @@ services:
     depends_on:
       - db
     expose:
-      - 8000
+      - 5000
     labels:
       - traefik.enable=true
       - traefik.http.routers.web.entrypoints=https
