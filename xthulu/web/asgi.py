@@ -25,7 +25,6 @@ def main():
             api.register_blueprint(mod_api)
 
     app.register_blueprint(api)
-    log.info(app.url_map)
 
     return WsgiToAsgi(app)
 
