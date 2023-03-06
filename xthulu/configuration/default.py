@@ -39,7 +39,7 @@ default_config = {
         "host": "0.0.0.0",
         "port": 5000,
         "userland": {
-            "paths": ["userland/web"],
+            "modules": ["userland.web"],
         },
     },
 }

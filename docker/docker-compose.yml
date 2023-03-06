@@ -100,7 +100,8 @@ services:
       - proxy
     restart: unless-stopped
     volumes:
-      - ../xthulu/web/static:/usr/share/nginx/html:ro
+      - ../xthulu/web/static:/usr/share/nginx/html
+      - ../userland/web/static:/usr/share/nginx/html/user
 
 volumes:
   db-data:
