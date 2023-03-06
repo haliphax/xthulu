@@ -1,0 +1,31 @@
+name: Docker build
+
+on:
+  pull_request:
+
+  push:
+    branches: [master]
+
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+
+      - name: Validate docker-compose configuration
+        run: docker-compose -f docker/docker-compose.yml config
+
+  build:
+    name: Build
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+
+      - name: Build docker image
+        run: DOCKER_BUILDKIT=1 docker-compose -f docker/docker-compose.yml build
