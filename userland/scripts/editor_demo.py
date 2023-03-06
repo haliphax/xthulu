@@ -21,19 +21,21 @@ async def main(cx: SSHContext):
 
     # demonstration text
     text_to_repeat = [
-        "abc" * 200,
-        "bcd" * 200,
-        "cde" * 200,
-        "def" * 200,
-        "efg" * 200,
-        "fgh" * 200,
-        "ghi" * 200,
-        "hij" * 200,
+        "one " * 200,
+        "two " * 200,
+        "three " * 200,
+        "four " * 200,
+        "five " * 200,
+        "six " * 200,
+        "seven " * 200,
+        "eight " * 200,
+        "",
     ]
     text: list[str] = []
 
     for _ in range(10):
-        text += text_to_repeat
+        for line in text_to_repeat:
+            text.append(line.strip())
 
     editor = BlockEditor(
         term=cx.term,
