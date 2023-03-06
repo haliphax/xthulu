@@ -19,6 +19,7 @@ from asyncssh import SSHServerProcess
 from sqlalchemy import func
 
 # local
+from ... import locks
 from ...configuration import get_config
 from ...events import EventQueue
 from ...logger import log
@@ -194,8 +195,6 @@ class SSHContext:
             Whether or not the lock was granted.
         """
 
-        from ... import locks
-
         return locks.get(self.sid, name)
 
     def release_lock(self, name: str) -> bool:
@@ -208,8 +207,6 @@ class SSHContext:
         Returns:
             Whether or not the lock was valid to begin with.
         """
-
-        from ... import locks
 
         return locks.release(self.sid, name)
 
