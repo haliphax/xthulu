@@ -83,7 +83,7 @@ async def handle_client(proc: SSHServerProcess):
                 cx.echo(
                     cx.term.normal,
                     "\r\n",
-                    cx.term.bold_white_on_red(" TIMED OUT "),
+                    cx.term.bright_white_on_red(" TIMED OUT "),
                     cx.term.normal,
                     "\r\n",
                 )

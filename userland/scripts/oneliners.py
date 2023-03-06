@@ -44,7 +44,7 @@ async def main(cx: SSHContext):
     def done():
         cx.echo("\r\n")
 
-    banner = (cx.term.bold_white_on_cyan_underline(" Oneliners "), "\r\n\r\n")
+    banner = (cx.term.bright_white_on_cyan_underline(" Oneliners "), "\r\n\r\n")
     cx.echo(*("\r\n", *banner))
     oneliners, count, offset = await get_oneliners()
     first = True

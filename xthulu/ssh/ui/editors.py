@@ -31,7 +31,7 @@ class BlockEditor:
     """Position within corpus of corner of editor (x, y)"""
 
     # internals
-    _color_str = "bold_white_on_blue"
+    _color_str = "bright_white_on_blue"
     _color = None
 
     def __init__(self, term: ProxyTerminal, rows: int, columns: int, **kwargs):

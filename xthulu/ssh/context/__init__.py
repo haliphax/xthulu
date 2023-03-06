@@ -291,7 +291,7 @@ class SSHContext:
             self.echo(
                 self.term.normal,
                 "\r\n",
-                self.term.bold_white_on_red(f" {message} "),
+                self.term.bright_white_on_red(f" {message} "),
                 self.term.normal,
                 "\r\n",
             )

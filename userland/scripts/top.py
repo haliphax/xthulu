@@ -18,21 +18,21 @@ async def main(cx: SSHContext):
         cx.term.normal,
         "\r\n",
         "💀 " if cx.encoding == "utf-8" else "",
-        cx.term.bold_green("x"),
+        cx.term.bright_green("x"),
         cx.term.green("thulu"),
         " terminal server ",
         cx.term.italic("v1.0.0a0"),
         "\r\n",
-        cx.term.bold_black("https://github.com/haliphax/xthulu"),
+        cx.term.bright_black("https://github.com/haliphax/xthulu"),
         "\r\n\r\n",
-        cx.term.bold_white("Connecting: "),
-        cx.term.bold_cyan_underline(cx.user.name),
+        cx.term.bright_white("Connecting: "),
+        cx.term.bright_cyan_underline(cx.user.name),
         "@",
         cx.term.cyan(cx.ip),
         " ",
     )
 
-    for color in ("bold_black", "white", "bold_white"):
+    for color in ("bright_black", "white", "bright_white"):
         colorfunc = getattr(cx.term, color)
         await sleep(0.5)
         cx.echo(colorfunc("."))

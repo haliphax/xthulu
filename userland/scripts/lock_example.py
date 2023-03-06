@@ -11,7 +11,7 @@ async def main(cx: SSHContext):
     cx.echo(
         cx.term.normal,
         "\r\n\r\n",
-        cx.term.bold_white_on_yellow_underline(" Shared locks demo "),
+        cx.term.bright_white_on_yellow_underline(" Shared locks demo "),
         "\r\n\r\n",
     )
 

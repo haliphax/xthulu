@@ -13,7 +13,7 @@ from userland.handle_events import handle_events
 
 async def main(cx: SSHContext):
     banner = (
-        cx.term.bold_white_on_magenta_underline(" Editor demo "),
+        cx.term.bright_white_on_magenta_underline(" Editor demo "),
         "\r\n\r\n",
     )
     cx.echo(*("\r\n\r\n", *banner))
