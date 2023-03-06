@@ -28,7 +28,6 @@ async def main(cx: SSHContext):
         "five " * 200,
         "six " * 200,
         "seven " * 200,
-        "eight " * 200,
         "",
     ]
     text: list[str] = []
