@@ -143,10 +143,12 @@ async def handle_client(proc: SSHServerProcess):
 
             proc.close()
 
-    log.info(f"{cx.whoami} starting terminal session")
+    log.info(f"{cx.whoami} Starting terminal session")
 
     try:
         await gather(input_loop(), main_process())
+    except Exception:
+        log.exception(f"{cx.whoami} Exception in handler process")
     finally:
         if proc.channel:
             proc.channel.close()
