@@ -1,21 +1,24 @@
 """xthulu main entry point"""
 
 # stdlib
-from asyncio import new_event_loop
+from asyncio import new_event_loop, set_event_loop_policy
 from signal import SIGTERM
 import sys
 
 # 3rd party
 from asyncssh import Error as AsyncSSHError
 from click import echo, group
+from uvloop import EventLoopPolicy
 
 # local
 from .configuration import get_config
+from .locks import _Locks, expire
 from .logger import log
 from .resources import Resources
 from .ssh import start_server as start_ssh
 from .web import start_server as start_web
 
+set_event_loop_policy(EventLoopPolicy())
 loop = new_event_loop()
 db = Resources().db
 
@@ -34,8 +37,6 @@ def ssh():
     """Start SSH server process"""
 
     def shutdown():
-        from .locks import _Locks, expire
-
         log.info("Shutting down")
 
         for owner in _Locks.locks.copy().keys():

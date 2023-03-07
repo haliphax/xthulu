@@ -8,4 +8,5 @@ gino==1.0.1
 redis==4.5.1
 toml==0.10.2
 uvicorn[standard]==0.20.0
+uvloop==0.17.0
 wrapt==1.15.0
