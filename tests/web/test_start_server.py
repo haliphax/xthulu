@@ -51,6 +51,7 @@ class TestStartWebServer(TestCase):
             "xthulu.web.asgi:asgi_app",
             host=test_web_config["host"],
             port=test_web_config["port"],
+            lifespan="off",
         )
 
     def test_db_bind(self):

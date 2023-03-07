@@ -53,4 +53,5 @@ def start_server():
         "xthulu.web.asgi:asgi_app",
         host=get_config("web.host"),
         port=int(get_config("web.port")),
+        lifespan="off",
     )
