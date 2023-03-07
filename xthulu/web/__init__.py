@@ -38,6 +38,8 @@ def create_app():
             log.info(f"Loading userland web module: {mod}")
             mod_api: APIBlueprint = getattr(loaded, "api")
             api.register_blueprint(mod_api)
+        else:
+            log.warn(f"No api object found for userland web module: {mod}")
 
     app.register_blueprint(api)
 
