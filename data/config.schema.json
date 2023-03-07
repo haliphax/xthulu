@@ -1,0 +1,140 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema",
+	"title": "xthulu configuration",
+	"description": "xthulu community server configuration schema",
+	"type": "object",
+	"properties": {
+		"cache": {
+			"type": "object",
+			"properties": {
+				"db": {
+					"type": "integer",
+					"minimum": 0,
+					"default": 0
+				},
+				"host": {
+					"type": "string"
+				},
+				"port": {
+					"type": "integer",
+					"minimum": 1,
+					"default": 6379
+				}
+			}
+		},
+		"db": {
+			"type": "object",
+			"properties": {
+				"bind": {
+					"type": "string",
+					"minLength": 1
+				}
+			}
+		},
+		"debug": {
+			"type": "object",
+			"properties": {
+				"enabled": {
+					"type": "boolean",
+					"default": false
+				},
+				"term": {
+					"type": "boolean",
+					"default": false
+				}
+			}
+		},
+		"ssh": {
+			"type": "object",
+			"properties": {
+				"host": {
+					"type": "string",
+					"format": "ipv4"
+				},
+				"host_keys": {
+					"type": "array",
+					"items": {
+						"type": "string",
+						"minLength": 1
+					},
+					"minItems": 1
+				},
+				"port": {
+					"type": "integer",
+					"minimum": 1
+				},
+				"proxy_protocol": {
+					"type": "boolean",
+					"default": true
+				},
+				"auth": {
+					"type": "object",
+					"properties": {
+						"bad_usernames": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						},
+						"no_password": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						}
+					}
+				},
+				"session": {
+					"type": "object",
+					"properties": {
+						"timeout": {
+							"type": "integer",
+							"minimum": 0
+						}
+					}
+				},
+				"userland": {
+					"type": "object",
+					"properties": {
+						"paths": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						},
+						"top": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						}
+					}
+				}
+			}
+		},
+		"web": {
+			"type": "object",
+			"properties": {
+				"host": {
+					"type": "string",
+					"format": "ipv4"
+				},
+				"port": {
+					"type": "integer",
+					"minimum": 1
+				},
+				"userland": {
+					"type": "object",
+					"properties": {
+						"modules": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

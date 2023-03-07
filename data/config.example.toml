@@ -1,3 +1,4 @@
+#:schema ./config.schema.json
 [cache]
 db = 0
 host = "redis"
