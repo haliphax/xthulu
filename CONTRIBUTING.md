@@ -58,8 +58,12 @@ pre-commit install --install-hooks
 In order to avoid the need to rebuild the service containers' base image each
 time you make changes to the source code, you can create an override
 configuration for the `docker-compose` stack. This configuration will mount the
-live source code directory into the running `ssh` and `web` containers so that
-restarting them should be sufficient to pick up any changes.
+live source code directory into the running containers so that restarting them
+should be sufficient to pick up any changes.
+
+ℹ️ Userland scripts do not require a restart; a new session will import a fresh
+copy of the file(s). Changes to static web resources (HTML, CSS, Javascript,
+images) should be reflected immediately upon reloading the browser.
 
 <details>
 <summary>docker/docker-compose.override.yml</summary>
@@ -75,6 +79,10 @@ services:
   web:
     volumes:
       - ./xthulu:/app/xthulu
+
+  web-static:
+    volumes:
+      - ./xthulu/web/static:/usr/share/nginx/html
 ```
 
 </details>

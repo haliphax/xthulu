@@ -89,7 +89,10 @@ services:
     <<: *xthulu-common
 
   web-static:
-    image: nginx
+    build:
+      context: .
+      dockerfile: nginx.Dockerfile
+    image: xthulu:nginx
     labels:
       - traefik.enable=true
       - traefik.http.routers.web-static.entrypoints=https
@@ -100,7 +103,6 @@ services:
       - proxy
     restart: unless-stopped
     volumes:
-      - ../xthulu/web/static:/usr/share/nginx/html
       - ../userland/web/static:/usr/share/nginx/html/user
 
 volumes:
