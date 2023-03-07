@@ -1,8 +1,8 @@
 """Logger setup"""
 
 # stdlib
-from sys import stdout
 from logging import DEBUG, Formatter, getLogger, INFO, StreamHandler
+from sys import stdout
 
 # local
 from .configuration import get_config

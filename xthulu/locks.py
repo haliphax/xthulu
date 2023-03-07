@@ -7,8 +7,8 @@ from contextlib import contextmanager
 from redis.lock import Lock
 
 # local
-from .resources import Resources
 from .logger import log
+from .resources import Resources
 
 cache = Resources().cache
 
