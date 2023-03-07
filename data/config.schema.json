@@ -13,7 +13,8 @@
 					"default": 0
 				},
 				"host": {
-					"type": "string"
+					"type": "string",
+					"format": "hostname"
 				},
 				"port": {
 					"type": "integer",
@@ -49,7 +50,7 @@
 			"properties": {
 				"host": {
 					"type": "string",
-					"format": "ipv4"
+					"format": "hostname"
 				},
 				"host_keys": {
 					"type": "array",
@@ -117,7 +118,7 @@
 			"properties": {
 				"host": {
 					"type": "string",
-					"format": "ipv4"
+					"format": "hostname"
 				},
 				"port": {
 					"type": "integer",
