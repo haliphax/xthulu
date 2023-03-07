@@ -1,6 +1,7 @@
 *.pyc
 /*.egg-info/
 /.coverage
+/.python-version
 /data/*.toml
 /data/ssh_host_key*
 /db/
