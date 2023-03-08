@@ -3,6 +3,7 @@ from typing import Callable
 
 # 3rd party
 from blessed.keyboard import Keystroke
+from wcwidth import wcswidth
 
 # local
 from ....logger import log
@@ -60,12 +61,12 @@ class BlockEditor:
                 if len(self.value[i]) > 0:
                     self.pos[1] = i
 
-            strlen = len(self.value[self.pos[1]])
+            strlen = wcswidth(self.value[self.pos[1]])
             self.pos[0] = max(0, strlen - self.columns)
 
         if "cursor" not in kwargs:
             if strlen == 0:
-                strlen = len(self.value[self.pos[1]])
+                strlen = wcswidth(self.value[self.pos[1]])
 
             self.cursor[0] = min(self.columns - 1, max(0, strlen))
             self.cursor[1] = min(self.rows - 1, max(0, len(self.value) - 1))
@@ -96,14 +97,14 @@ class BlockEditor:
 
         return (
             self.cursor[0] >= self.columns - 1
-            and len(self.value[self.pos[1]]) >= self.limit[0]
+            and wcswidth(self.value[self.pos[1]]) >= self.limit[0]
         )
 
     @property
     def edge_diff(self) -> int:
         """How far the cursor is from the edge of the current row."""
 
-        strlen = len(self.value[self.cursor[1] + self.pos[1]])
+        strlen = wcswidth(self.value[self.cursor[1] + self.pos[1]])
 
         return self.pos[0] + self.cursor[0] - strlen
 
@@ -137,7 +138,7 @@ class BlockEditor:
 
             text = self.value[top + i][left : left + self.columns]
             out += self.color(text)
-            out += self.color(" " * (self.columns - len(text)))
+            out += self.color(" " * (self.columns - wcswidth(text)))
             out += self.term.move_left(self.columns)
 
         log.debug("redrawing editor")
@@ -224,25 +225,31 @@ class BlockEditor:
             return ""
 
         shift = False
+        dist = wcswidth(before[-1])
         self.value[self.pos[1] + self.cursor[1]] = before[:-1] + after
         out = ""
 
-        after = after[: min(len(after), self.columns - self.cursor[0])]
+        after = after[: min(wcswidth(after), self.columns - self.cursor[0])]
 
-        if self.cursor[0] <= 0:
-            self.pos[0] = max(0, self.pos[0] - 1)
+        if self.cursor[0] < dist:
+            self.pos[0] = max(0, self.pos[0] - dist)
             self.cursor[0] = 0
             shift = True
+        else:
+            after += " " * dist
 
-        if self.cursor[0] > 0:
-            after += " "
-            out += self.term.move_left()
-            self.cursor[0] -= 1
+            if dist > 0:
+                out += self.term.move_left(dist)
+
+            self.cursor[0] -= dist
 
         if shift:
             out = self.redraw()
         else:
-            out += self.color(after + self.term.move_left(len(after)))
+            out += self.color(after)
+
+            if dist > 0:
+                out += self.term.move_left(dist)
 
         log.debug(
             f"backspace {self.pos} {self.cursor} "
@@ -254,20 +261,25 @@ class BlockEditor:
     def _kp_delete(self) -> str:
         _, before, after = self._row_vars
 
-        if self.pos[0] >= len(self.value[self.pos[1]]):
+        if self.pos[0] >= wcswidth(self.value[self.pos[1]]):
             log.debug("at end of line, nothing to delete")
             return ""
 
         after = after[1:]
+        dist = wcswidth(after)
         self.value[self.pos[1] + self.cursor[1]] = before + after
-        after = after[: min(len(after), self.columns - self.cursor[0])]
+        after = after[: self.columns - self.cursor[0]]
+        out = ""
 
-        if self.cursor[0] + len(after) <= self.columns - 1:
-            after += " "
+        if self.cursor[0] + dist <= self.columns - 1:
+            after += " " * (dist + 1)
+            out += self.term.move_left(dist + 1)
 
         log.debug(f'delete "{self.value[self.pos[1] + self.cursor[1]]}"')
 
-        return self.color(after + self.term.move_left(len(after)))
+        return self.color(
+            after + (self.term.move_left(dist) if dist > 0 else "") + out
+        )
 
     def _horizontal(self, distance: int) -> str:
         """
@@ -293,9 +305,11 @@ class BlockEditor:
 
             return ""
 
-        strlen = len(self.value[self.pos[1] + self.cursor[1]])
+        curline = self.value[self.pos[1] + self.cursor[1]]
+        strlen = wcswidth(curline)
         shift = False
         move: Callable[..., str]
+
         new_cursor = self.cursor[0] + distance
         abs_distance = abs(distance)
 
@@ -411,7 +425,7 @@ class BlockEditor:
 
             if self.cursor[0] < 0 or self.cursor[0] >= self.columns:
                 log.debug("edge is out of view")
-                strlen = len(self.value[self.pos[1] + self.cursor[1]])
+                strlen = wcswidth(self.value[self.pos[1] + self.cursor[1]])
                 self.pos[0] = max(0, strlen - self.columns + 1)
                 self.cursor[0] = self.columns - 1
 
@@ -434,10 +448,28 @@ class BlockEditor:
         return "".join(out)
 
     def _kp_left(self) -> str:
-        return self._horizontal(-1)
+        char_behind: str
+
+        try:
+            char_behind = self.value[self.pos[1] + self.cursor[1]][
+                self.pos[0] + self.cursor[0] - 1
+            ]
+        except IndexError:
+            char_behind = ""
+
+        return self._horizontal(min(-1, -wcswidth(char_behind)))
 
     def _kp_right(self) -> str:
-        return self._horizontal(1)
+        char_under: str
+
+        try:
+            char_under = self.value[self.pos[1] + self.cursor[1]][
+                self.pos[0] + self.cursor[0]
+            ]
+        except IndexError:
+            char_under = ""
+
+        return self._horizontal(max(1, wcswidth(char_under)))
 
     def _kp_home(self) -> str:
         return self._horizontal(-(self.pos[0] + self.cursor[0]))
@@ -505,31 +537,38 @@ class BlockEditor:
         ucs = str(ks)
 
         if not self.term.length(ucs):
-            log.debug("zero length ucs")
-            return ""
+            ordinal = ord(ucs)
+            log.debug(f"zero length ucs: {hex(ordinal)}")
+
+            # control characters; do not add to editor value
+            if 0 <= ordinal <= 31:
+                log.debug("discarding")
+                return ""
 
         # handle typed character
 
         _, before, after = self._row_vars
+        dist = wcswidth(ucs)
         self.value[self.pos[1] + self.cursor[1]] = before + ucs + after
-        self.cursor[0] += 1
+        self.cursor[0] += dist
         log.debug(f"{self.pos} {self.cursor} {self.value}")
 
         if not self.at_end and self.cursor[0] >= self.columns:
-            self.cursor[0] -= 1
-            self.pos[0] += 1
+            self.cursor[0] -= dist
+            self.pos[0] += dist
             log.debug("shifting visible area to right")
 
             return self.redraw()
 
-        after = after[: min(len(after), self.columns - self.cursor[0])]
+        after = after[: min(wcswidth(after), self.columns - self.cursor[0])]
+        afterlen = wcswidth(after)
         move_left = (
-            len(after)
+            afterlen
             if (
                 self.pos[0] + self.cursor[0]
-                < len(self.value[self.pos[1] + self.cursor[1]])
+                < wcswidth(self.value[self.pos[1] + self.cursor[1]])
             )
-            else len(after) - 1
+            else afterlen - 1
         )
 
         out = [ucs, after]

@@ -188,7 +188,7 @@ class ProxyTerminal:
         for c in self._kbdbuf:
             ucs += c
 
-        self._kbdbuf = []
+        self._kbdbuf.clear()
         ks: Keystroke = (
             self.resolve(text=ucs) if len(ucs) else Keystroke()
         )  # type: ignore
@@ -198,17 +198,35 @@ class ProxyTerminal:
         if not ks:
             while True:
                 try:
+                    inp: bytes
+
                     if timeout is None:
                         # don't actually wait indefinitely; wait in 0.1 second
                         # increments so that the coroutine can be aborted if
                         # the connection is dropped
                         inp = await wait_for(self.stdin.get(), 0.1)
-                        ucs += inp.decode(self.encoding)
                     else:
                         inp = await wait_for(self.stdin.get(), timeout)
-                        ucs += inp.decode(self.encoding)
 
-                    break
+                    try:
+                        ucs += inp.decode(self.encoding)
+                        break
+
+                    except UnicodeDecodeError:
+                        # possible multibyte unicode symbol
+                        bytebuf = [inp]
+
+                        while True:
+                            try:
+                                inp = await wait_for(
+                                    self.stdin.get(), esc_delay
+                                )
+                                bytebuf.append(inp)
+                            except TimeoutError:
+                                break
+
+                        ucs += b"".join(bytebuf).decode(self.encoding)
+                        break
 
                 except IncompleteReadError:
                     raise ProcessClosing()
