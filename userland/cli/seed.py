@@ -5,13 +5,14 @@ from asyncio import new_event_loop
 from inspect import isclass
 
 # local
-from xthulu import db
 from xthulu.configuration import get_config
+from xthulu.resources import Resources
 
 
 async def seed():
     """Seed userland model data."""
 
+    db = Resources().db
     await db.set_bind(get_config("db.bind"))
     models = __import__("userland.models", fromlist=("*",))
 
