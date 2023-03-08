@@ -34,7 +34,10 @@ services:
       - db-data:/var/lib/postgresql/data
 
   proxy:
-    image: traefik:2.9
+    build:
+      context: ./traefik
+      dockerfile: Dockerfile
+    image: xthulu:traefik
     networks:
       - proxy
     ports:
@@ -45,8 +48,6 @@ services:
     restart: unless-stopped
     volumes:
       - proxy-acme:/etc/traefik/acme
-      - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
-      - ./traefik/traefik.yml:/traefik.yml:ro
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
 

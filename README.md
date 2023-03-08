@@ -79,7 +79,7 @@ advantage of.
 
 ## Setup
 
-### Build the docker image
+### Build the docker images
 
 ```shell
 # in the docker/ directory

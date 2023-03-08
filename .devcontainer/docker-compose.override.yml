@@ -1,6 +1,11 @@
 version: "3"
 
 services:
+  proxy:
+    volumes:
+      - ./traefik/dynamic.yml:/dynamic.yml:ro
+      - ./traefik/traefik.yml:/traefik.yml:ro
+
   ssh:
     volumes:
       - ./xthulu:/app/xthulu
