@@ -55,7 +55,7 @@ services:
     build:
       context: ..
       dockerfile: ./docker/Dockerfile
-    command: ssh
+    command: ssh start
     depends_on:
       - cache
       - db
@@ -73,7 +73,7 @@ services:
     <<: *xthulu-common
 
   web:
-    command: web
+    command: web start
     depends_on:
       - db
     expose:
