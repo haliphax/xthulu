@@ -1,5 +1,10 @@
-# stdlib
+"""Block editor"""
+
+# type checking
 from typing import Callable
+
+# stdlib
+from re import findall, match, sub
 
 # 3rd party
 from blessed.keyboard import Keystroke
@@ -8,6 +13,24 @@ from wcwidth import wcswidth
 # local
 from ....logger import log
 from ...terminal.proxy_terminal import ProxyTerminal
+
+# grapheme cluster modifiers
+
+ZWJ = "\u200d"
+"""Zero-width join; next grapheme modifies the cluster"""
+
+VARIATION = r"[\ufe00-\ufe0f]"
+"""Variation; previous grapheme modifies the cluster"""
+
+SKIN_TONE = r"[\U0001f3fb-\U0001f3ff]"
+"""Skin tone modifiers; modifies previous grapheme (no join sequence)"""
+
+MODIFIERS = rf"{VARIATION}|{SKIN_TONE}|{ZWJ}"
+"""Grapheme modifiers commonly searched for while parsing"""
+
+
+def realwidth(ucs: str):
+    return wcswidth(sub(rf".{VARIATION}|(?=.){SKIN_TONE}|{ZWJ}.", "", ucs))
 
 
 class BlockEditor:
@@ -31,7 +54,9 @@ class BlockEditor:
 
     # internals
     _color_str = "bright_white_on_blue"
-    _color = None
+    _color: Callable[[str], str] | None = None
+    # used for tracking position re: visible sequence, not raw byte offset
+    _cursor_offset = 0
 
     def __init__(self, term: ProxyTerminal, rows: int, columns: int, **kwargs):
         self.term = term
@@ -61,12 +86,12 @@ class BlockEditor:
                 if len(self.value[i]) > 0:
                     self.pos[1] = i
 
-            strlen = wcswidth(self.value[self.pos[1]])
+            strlen = realwidth(self.value[self.pos[1]])
             self.pos[0] = max(0, strlen - self.columns)
 
         if "cursor" not in kwargs:
             if strlen == 0:
-                strlen = wcswidth(self.value[self.pos[1]])
+                strlen = realwidth(self.value[self.pos[1]])
 
             self.cursor[0] = min(self.columns - 1, max(0, strlen))
             self.cursor[1] = min(self.rows - 1, max(0, len(self.value) - 1))
@@ -74,6 +99,24 @@ class BlockEditor:
         log.debug(f"corner: {self.corner}")
         log.debug(f"pos: {self.pos}")
         log.debug(f"cursor: {self.cursor}")
+
+    @property
+    def _char_behind(self):
+        try:
+            return self.value[self.pos[1] + self.cursor[1]][
+                self.pos[0] + self.cursor[0] - 1
+            ]
+        except IndexError:
+            return ""
+
+    @property
+    def _char_under(self):
+        try:
+            return self.value[self.pos[1] + self.cursor[1]][
+                self.pos[0] + self.cursor[0]
+            ]
+        except IndexError:
+            return ""
 
     @property
     def color(self) -> Callable:
@@ -97,14 +140,14 @@ class BlockEditor:
 
         return (
             self.cursor[0] >= self.columns - 1
-            and wcswidth(self.value[self.pos[1]]) >= self.limit[0]
+            and realwidth(self.value[self.pos[1]]) >= self.limit[0]
         )
 
     @property
     def edge_diff(self) -> int:
         """How far the cursor is from the edge of the current row."""
 
-        strlen = wcswidth(self.value[self.cursor[1] + self.pos[1]])
+        strlen = realwidth(self.value[self.cursor[1] + self.pos[1]])
 
         return self.pos[0] + self.cursor[0] - strlen
 
@@ -138,7 +181,7 @@ class BlockEditor:
 
             text = self.value[top + i][left : left + self.columns]
             out += self.color(text)
-            out += self.color(" " * (self.columns - wcswidth(text)))
+            out += self.color(" " * (self.columns - realwidth(text)))
             out += self.term.move_left(self.columns)
 
         log.debug("redrawing editor")
@@ -212,44 +255,117 @@ class BlockEditor:
     @property
     def _row_vars(self):
         row = self.value[self.pos[1] + self.cursor[1]]
-        before = row[: self.pos[0] + self.cursor[0]]
-        after = row[self.pos[0] + self.cursor[0] :]
+        dist = 0
+        offset = 0
+        zwj = False
+        lastw = 0
+
+        for ucs in row:
+            if zwj:
+                zwj = False
+                log.debug(f"skipping {ucs!r} due to zwj")
+                continue
+
+            w = realwidth(ucs)
+            log.debug(f"ucs: {ucs!r}, width: {w}")
+
+            if match(VARIATION, ucs):
+                offset += 1
+                log.debug(f"offsetting variation: {ucs!r}")
+                dist -= lastw
+            elif match(ZWJ, ucs):
+                offset += 1
+                log.debug(f"offsetting zwj: {ucs!r}")
+                zwj = True
+            elif ucs.encode("utf8").startswith(b"\xf0\x9f\x8f"):
+                offset += 1
+                log.debug(f"offsetting skin tone: {ucs!r}")
+            else:
+                log.debug(f"width: {w}")
+                dist += w
+
+            if dist > self.pos[0] + self.cursor[0]:
+                break
+
+            lastw = w
+
+        log.debug(f"dist: {dist}")
+        log.debug(f"offset: {offset}")
+        self._cursor_offset = offset
+        before = row[: self.pos[0] + self.cursor[0] + self._cursor_offset]
+        after = row[self.pos[0] + self.cursor[0] + self._cursor_offset :]
 
         return row, before, after
 
     def _kp_backspace(self) -> str:
-        _, before, after = self._row_vars
+        log.debug(self._cursor_offset)
+        row, before, after = self._row_vars
+        log.debug((row, before, after))
+        log.debug(self._cursor_offset)
 
         if self.pos[0] <= 0 and self.cursor[0] == 0:
             log.debug("at start of line, nothing to backspace")
             return ""
 
         shift = False
-        dist = wcswidth(before[-1])
-        self.value[self.pos[1] + self.cursor[1]] = before[:-1] + after
+        offset = 0
+        behind = before
+
+        while True:
+            modifiers = findall(MODIFIERS, behind)
+
+            for m in modifiers:
+                encoded = m.encode("utf8")
+
+                if encoded.startswith(b"\xf0\x9f\x8f"):
+                    log.debug(f"skin tone: {m}")
+                    offset += 2
+                elif m == ZWJ:
+                    log.debug(f"zwj: {m!r}")
+                    offset += 2
+                else:
+                    log.debug(f"variation: {m!r}")
+                    offset += 2
+
+            if match(r".*(?!.{VARIATION}|{ZWJ}.)?$", behind):
+                log.debug("previous char is a variation/zwj")
+                offset += 1
+            elif match(SKIN_TONE, behind):
+                log.debug("previous char is skin tone modifier")
+                offset += 1
+            else:
+                break
+
+            behind = before[-offset]
+
+        dist = wcswidth(behind)
+
+        self.value[self.pos[1] + self.cursor[1]] = before[: -1 - offset] + after
         out = ""
 
-        after = after[: min(wcswidth(after), self.columns - self.cursor[0])]
+        after = after[: min(len(after), self.columns - self.cursor[0])]
+        total = dist + offset
 
         if self.cursor[0] < dist:
             self.pos[0] = max(0, self.pos[0] - dist)
             self.cursor[0] = 0
             shift = True
         else:
-            after += " " * dist
+            after += " " * total
 
-            if dist > 0:
-                out += self.term.move_left(dist)
+            if total > 0:
+                out += self.term.move_left(total)
 
             self.cursor[0] -= dist
+            self._cursor_offset -= offset
 
         if shift:
             out = self.redraw()
         else:
             out += self.color(after)
 
-            if dist > 0:
-                out += self.term.move_left(dist)
+            if total > 0:
+                out += self.term.move_left(total)
 
         log.debug(
             f"backspace {self.pos} {self.cursor} "
@@ -261,12 +377,12 @@ class BlockEditor:
     def _kp_delete(self) -> str:
         _, before, after = self._row_vars
 
-        if self.pos[0] >= wcswidth(self.value[self.pos[1]]):
+        if self.pos[0] >= realwidth(self.value[self.pos[1]]):
             log.debug("at end of line, nothing to delete")
             return ""
 
         after = after[1:]
-        dist = wcswidth(after)
+        dist = realwidth(after)
         self.value[self.pos[1] + self.cursor[1]] = before + after
         after = after[: self.columns - self.cursor[0]]
         out = ""
@@ -295,6 +411,40 @@ class BlockEditor:
         if distance == 0:
             return ""
 
+        row, before, after = self._row_vars
+        log.debug((row, before, after))
+        strlen = realwidth(row)
+        blen = len(before)
+        log.debug(f"before: {blen}")
+
+        if distance == 1 and after:
+            distance = realwidth(after[0])
+
+        elif distance == -1 and blen > 1:
+            idx = -1
+
+            while -idx < blen:
+                check = before[idx]
+                log.debug(f"check: {check!r}")
+
+                if match(VARIATION, check):
+                    log.debug("variation; skipping")
+                    idx -= 1
+                elif match(SKIN_TONE, check):
+                    log.debug("skin tone; skipping")
+                elif check == ZWJ:
+                    log.debug("zwj; skipping")
+                elif -idx < blen - 1 and before[idx - 1] == ZWJ:
+                    log.debug("zero-joined; skipping")
+                    idx -= 1
+                else:
+                    break
+
+                idx -= 1
+
+            distance = -realwidth(before[idx])
+            log.debug(f"distance: {distance}")
+
         if distance < 0 and self.cursor[0] <= 0 and self.pos[0] <= 0:
             log.debug("already at start of line")
 
@@ -305,8 +455,6 @@ class BlockEditor:
 
             return ""
 
-        curline = self.value[self.pos[1] + self.cursor[1]]
-        strlen = wcswidth(curline)
         shift = False
         move: Callable[..., str]
 
@@ -342,7 +490,8 @@ class BlockEditor:
             out.append(self.redraw())
 
         log.debug(
-            f"{'left' if distance < 0 else 'right'} {self.pos} {self.cursor}"
+            f"{'left' if distance < 0 else 'right'} {self.pos} {self.cursor} "
+            f"{self._char_under}"
         )
 
         return "".join(out)
@@ -425,7 +574,7 @@ class BlockEditor:
 
             if self.cursor[0] < 0 or self.cursor[0] >= self.columns:
                 log.debug("edge is out of view")
-                strlen = wcswidth(self.value[self.pos[1] + self.cursor[1]])
+                strlen = realwidth(self.value[self.pos[1] + self.cursor[1]])
                 self.pos[0] = max(0, strlen - self.columns + 1)
                 self.cursor[0] = self.columns - 1
 
@@ -448,28 +597,10 @@ class BlockEditor:
         return "".join(out)
 
     def _kp_left(self) -> str:
-        char_behind: str
-
-        try:
-            char_behind = self.value[self.pos[1] + self.cursor[1]][
-                self.pos[0] + self.cursor[0] - 1
-            ]
-        except IndexError:
-            char_behind = ""
-
-        return self._horizontal(min(-1, -wcswidth(char_behind)))
+        return self._horizontal(-1)
 
     def _kp_right(self) -> str:
-        char_under: str
-
-        try:
-            char_under = self.value[self.pos[1] + self.cursor[1]][
-                self.pos[0] + self.cursor[0]
-            ]
-        except IndexError:
-            char_under = ""
-
-        return self._horizontal(max(1, wcswidth(char_under)))
+        return self._horizontal(1)
 
     def _kp_home(self) -> str:
         return self._horizontal(-(self.pos[0] + self.cursor[0]))
@@ -538,37 +669,42 @@ class BlockEditor:
 
         if not self.term.length(ucs):
             ordinal = ord(ucs)
-            log.debug(f"zero length ucs: {hex(ordinal)}")
 
             # control characters; do not add to editor value
             if 0 <= ordinal <= 31:
-                log.debug("discarding")
+                log.debug(f"discarding: {hex(ordinal)}")
                 return ""
 
-        # handle typed character
+        # handle typed character or pasted grapheme
 
-        _, before, after = self._row_vars
-        dist = wcswidth(ucs)
+        # TODO fix bug when inserting behind graphemes
+
+        dist = realwidth(ucs)
+        ucslen = len(ucs)
+        row, before, after = self._row_vars
+        log.debug((row, before, after))
         self.value[self.pos[1] + self.cursor[1]] = before + ucs + after
         self.cursor[0] += dist
-        log.debug(f"{self.pos} {self.cursor} {self.value}")
+        log.debug(
+            f"{self.pos} {self.cursor} {self._cursor_offset} {self.value!r}"
+        )
 
         if not self.at_end and self.cursor[0] >= self.columns:
             self.cursor[0] -= dist
-            self.pos[0] += dist
+            self.pos[0] += ucslen
             log.debug("shifting visible area to right")
 
             return self.redraw()
 
-        after = after[: min(wcswidth(after), self.columns - self.cursor[0])]
-        afterlen = wcswidth(after)
+        after = after[: -ucslen - 1]
+        afterlen = realwidth(after)
         move_left = (
             afterlen
             if (
-                self.pos[0] + self.cursor[0]
-                < wcswidth(self.value[self.pos[1] + self.cursor[1]])
+                self.pos[0] + self.cursor[0] + self._cursor_offset
+                < realwidth(self.value[self.pos[1] + self.cursor[1]])
             )
-            else afterlen - 1
+            else afterlen
         )
 
         out = [ucs, after]

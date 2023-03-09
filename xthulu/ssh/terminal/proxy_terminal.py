@@ -213,7 +213,7 @@ class ProxyTerminal:
                         break
 
                     except UnicodeDecodeError:
-                        # possible multibyte unicode symbol
+                        # possible grapheme cluster or multibyte character
                         bytebuf = [inp]
 
                         while True:
@@ -225,8 +225,10 @@ class ProxyTerminal:
                             except TimeoutError:
                                 break
 
+                        log.debug(f"bytebuf: {bytebuf!r}")
                         ucs += b"".join(bytebuf).decode(self.encoding)
-                        break
+                        log.debug(f"ucs: {ucs!r}")
+                        return Keystroke(ucs)
 
                 except IncompleteReadError:
                     raise ProcessClosing()
