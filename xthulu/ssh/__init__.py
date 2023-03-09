@@ -13,7 +13,7 @@ from asyncssh import listen
 from ..configuration import get_config
 from ..logger import log
 from ..resources import Resources
-from .encodings import register_encodings
+from .codecs import register_encodings
 from .process_factory import handle_client
 from .proxy_protocol import ProxyProtocolListener
 from .server import SSHServer
