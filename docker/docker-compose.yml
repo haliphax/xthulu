@@ -16,6 +16,16 @@ networks:
   proxy:
 
 services:
+  # for docker image dependency
+  base-image:
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    entrypoint: /bin/false
+    image: xthulu
+    restart: disable
+    scale: 0
+
   cache:
     image: redis:alpine
     networks:
@@ -52,11 +62,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
   ssh:
-    build:
-      context: ..
-      dockerfile: ./docker/Dockerfile
     command: ssh start
     depends_on:
+      - base-image
       - cache
       - db
     expose:
@@ -75,6 +83,7 @@ services:
   web:
     command: web start
     depends_on:
+      - base-image
       - db
     expose:
       - 5000
@@ -93,6 +102,8 @@ services:
     build:
       context: .
       dockerfile: nginx.Dockerfile
+    depends_on:
+      - base-image
     image: xthulu:nginx
     labels:
       - traefik.enable=true
