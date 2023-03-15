@@ -3,7 +3,7 @@ repos:
     hooks:
       - id: ruff
         name: ruff
-        args: [check, --fix, --show-fixes]
+        args: [check, --target-version, py311, --fix, --show-fixes]
         entry: ruff
         language: system
         types: [python]

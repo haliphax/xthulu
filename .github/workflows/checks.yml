@@ -33,7 +33,7 @@ jobs:
               - "**.yml"
             py:
               - "**.py"
-              - requirements/
+              - "requirements/**"
               - pyproject.toml
 
   # formatting
@@ -58,7 +58,7 @@ jobs:
           pip install -e .[dev]
 
       - name: Black
-        run: black --check .
+        run: black -t py311 --check .
 
   prettier:
     name: Prettier (formatter)
@@ -104,4 +104,4 @@ jobs:
           pip install -e .[dev]
 
       - name: Ruff
-        run: ruff check .
+        run: ruff check --target-version py311 .
