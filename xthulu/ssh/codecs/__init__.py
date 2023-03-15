@@ -1,14 +1,14 @@
 """encodings module"""
 
+# stdlib
+from codecs import decode, register
+
+# local
+from . import cp437
+
 
 def register_encodings():
     """Register encodings to be used by the system."""
-
-    # stdlib
-    from codecs import decode, register
-
-    # local
-    from . import cp437
 
     _encodings = {
         "cp437": cp437.getregentry(),
