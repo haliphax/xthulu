@@ -1,20 +1,25 @@
 repos:
-  - repo: https://github.com/psf/black
-    rev: 23.1.0
-    hooks:
-      - id: black
-        language_version: python3.11
-
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.7.1
-    hooks:
-      - id: prettier
-        additional_dependencies:
-          - prettier@2.7.1
-          - prettier-plugin-toml@0.3.1
-
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.0.256
+  - repo: local
     hooks:
       - id: ruff
-        args: [--fix]
+        name: ruff
+        args: [check, --fix, --show-fixes]
+        entry: ruff
+        language: system
+        types: [python]
+        require_serial: true
+      - id: black
+        name: black
+        args: [-t, py311]
+        entry: black
+        language: system
+        types: [python]
+        require_serial: true
+      - id: prettier
+        name: prettier
+        args: [prettier, -c, -w]
+        entry: npx
+        exclude: \.py$
+        language: system
+        types: [text]
+        require_serial: true
