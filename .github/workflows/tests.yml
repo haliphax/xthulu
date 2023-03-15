@@ -28,9 +28,9 @@ jobs:
               - .editorconfig
               - .prettier-ignore
               - pyproject.toml
-              - requirements/
-              - tests/
-              - xthulu/
+              - "requirements/**"
+              - "tests/**"
+              - "xthulu/**"
 
   tests:
     name: Unit tests

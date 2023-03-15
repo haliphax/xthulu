@@ -25,10 +25,10 @@ jobs:
         with:
           filters: |
             src:
-              - docker/
+              - "docker/**"
               - pyproject.toml
-              - requirements/
-              - xthulu/
+              - "requirements/**"
+              - "xthulu/**"
 
   validate:
     name: Validate
