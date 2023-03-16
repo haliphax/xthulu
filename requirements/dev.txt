@@ -1,5 +1,5 @@
 black==23.1.0
-coverage==7.2.1
+coverage==7.2.2
 docker-compose==1.29.2
 nodeenv==1.7.0
 parameterized==0.8.1
