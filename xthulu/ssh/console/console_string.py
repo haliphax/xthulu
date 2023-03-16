@@ -42,6 +42,70 @@ class ConsoleString(list[Grapheme | None]):
     previous `Grapheme` has a `width` value greater than 1).
     """
 
+    def __repr__(self):
+        return f"ConsoleString({len(self)})"
+
+    def __str__(self):
+        return "".join(str(g) if g else "" for g in self)
+
+    @property
+    def count(self):
+        """The total number of `Grapheme` objects, excluding `None` values."""
+
+        return sum([1 if g else 0 for g in self])
+
+    @property
+    def raw(self):
+        """Console output as a `str` without forced-width adjustments."""
+
+        return "".join(g.raw if g else "" for g in self)
+
+    def _strip(self, lstrip: bool = False) -> ConsoleString:
+        length = len(self)
+
+        if length == 0:
+            return ConsoleString()
+
+        idx = -1 if lstrip else 0
+        limit = length + idx
+        step = 1 if lstrip else -1
+        grapheme: Grapheme | None = None
+        discard = set((" ", "\n"))
+        absidx = 0
+
+        while (grapheme is None or grapheme.char in discard) and absidx < limit:
+            idx += step
+            absidx = abs(idx)
+            grapheme = self[idx]
+
+        if not grapheme or absidx == limit:
+            log_debug("empty after strip")
+            return ConsoleString()
+
+        if not lstrip:
+            idx -= step * grapheme.width
+
+        if idx == 0:
+            return ConsoleString(self.copy())
+
+        log_debug(f"stripped: {idx}")
+        return ConsoleString(self[idx:] if lstrip else self[:idx])
+
+    def lstrip(self):
+        """Trim leading spaces/newlines."""
+
+        return self._strip(True)
+
+    def rstrip(self):
+        """Trim trailing spaces/newlines."""
+
+        return self._strip()
+
+    def strip(self):
+        """Trim leading and trailing spaces/newlines."""
+
+        return self._strip()._strip(True)
+
     def split(self, separator: Grapheme | str):
         """
         Split the segment into smaller segments, separated by `separator`.
@@ -87,6 +151,12 @@ class ConsoleString(list[Grapheme | None]):
 
         def _append_cell(cell: Grapheme, cells: ConsoleString):
             cells.append(cell)
+
+            # pad cells following wide graphemes with `None` filler
+            if cell.width > 1:
+                for _ in range(0, cell.width - 1):
+                    cells.append(None)
+
             return Grapheme()
 
         cell = Grapheme()
@@ -122,9 +192,18 @@ class ConsoleString(list[Grapheme | None]):
             if unicodedata.combining(c) != 0:
                 if cells:
                     log_debug(f"combining character: {'o' + c!r}")
-                    cell = cells.pop()
-                    assert cell is not None
-                    cell.mods.append(c)
+                    idx = -1
+                    prev: Grapheme | None = None
+
+                    while prev is None and -idx <= len(cells):
+                        prev = cells[idx]
+                        idx -= 1
+
+                    if prev is None:
+                        log_debug("walk ended unexpectedly")
+                    else:
+                        prev.mods.append(c)
+                        cell = Grapheme()
                 else:
                     log_debug("unexpected combining character")
 
@@ -194,13 +273,19 @@ class ConsoleString(list[Grapheme | None]):
 
             if was_emoji:
                 log_debug("end emoji")
-                last = cells[-1]
-                assert last is not None
+                idx = -1
+                prev: Grapheme | None = None
 
-                if not is_emoji(str(last).rstrip().rstrip(EMOJI_VS)):
-                    log_debug(f"invalid emoji: {last!r}")
+                while prev is None and -idx <= len(cells):
+                    prev = cells[idx]
+                    idx -= 1
+
+                if prev is None:
+                    log_debug("walk ended unexpectedly")
+                elif not is_emoji(str(prev).rstrip().rstrip(EMOJI_VS)):
+                    log_debug(f"invalid emoji: {prev!r}")
                     # strip all but base emoji character if invalid
-                    last.mods.clear()
+                    prev.mods.clear()
 
             was_emoji = False
 

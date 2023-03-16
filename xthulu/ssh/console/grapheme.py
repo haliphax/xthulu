@@ -1,5 +1,8 @@
 """Grapheme class"""
 
+# type checking
+from __future__ import annotations
+
 # 3rd party
 from wcwidth import wcswidth
 
@@ -18,16 +21,26 @@ class Grapheme:
 
     char: str
     mods: list[str]
-    width: int = 0
-    force_width: bool = False
+    width: int
+    force_width: bool
 
-    def __init__(self, char: str = ""):
+    def __init__(
+        self,
+        char: str = "",
+        mods: list[str] | None = None,
+        width: int = 1,
+        force_width: bool = False,
+    ):
         self.char = char
-        self.mods = []
-        self.width = 1
+        self.mods = mods if mods else []
+        self.width = width
+        self.force_width = force_width
 
     def _modstr(self, s):
         return "0x%04X" % ord(s) if wcswidth(s) <= 0 else s
+
+    def __eq__(self, other: Grapheme):
+        return str(self) == str(other)
 
     def __repr__(self):
         return (
