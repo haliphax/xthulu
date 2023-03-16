@@ -8,6 +8,7 @@ port = 6379
 bind = "postgres://xthulu:xthulu@localhost:5433/xthulu"
 
 [debug]
+console = false
 enabled = false
 term = false
 

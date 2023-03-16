@@ -35,6 +35,10 @@
 		"debug": {
 			"type": "object",
 			"properties": {
+				"console": {
+					"type": "boolean",
+					"default": false
+				},
 				"enabled": {
 					"type": "boolean",
 					"default": false
