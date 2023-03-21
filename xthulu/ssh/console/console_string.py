@@ -42,8 +42,38 @@ class ConsoleString(list[Grapheme | None]):
     previous `Grapheme` has a `width` value greater than 1).
     """
 
+    def __add__(self, other: ConsoleString | str | None):
+        updated = self.copy()
+
+        if other is None:
+            return ConsoleString(updated)
+
+        if isinstance(other, str):
+            other = ConsoleString.from_str(other)
+
+        for g in other:
+            updated.append(g)
+
+        return ConsoleString(updated)
+
+    def __iadd__(self, other: ConsoleString | str | None):
+        if other is None:
+            return
+
+        if isinstance(other, str):
+            other = ConsoleString.from_str(other)
+
+        for g in other:
+            self.append(g)
+
     def __repr__(self):
         return f"ConsoleString({len(self)})"
+
+    def __setitem__(self, key: int, value: Grapheme | str | None):
+        if isinstance(value, str):
+            value = ConsoleString.from_str(value)[0]
+
+        self[key] = value
 
     def __str__(self):
         return "".join(str(g) if g else "" for g in self)
