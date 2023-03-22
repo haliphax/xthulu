@@ -5,7 +5,7 @@ asyncssh==2.13.1
 bcrypt==4.0.1
 blessed==1.20.0
 gino==1.0.1
-redis==4.5.2
+redis==4.5.3
 toml==0.10.2
 uvicorn[standard]==0.21.1
 uvloop==0.17.0
