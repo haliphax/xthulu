@@ -3,6 +3,7 @@ black
 coverage
 nodeenv
 parameterized
+pip-tools
 pre-commit
 ruff
 
