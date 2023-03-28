@@ -1,6 +1,7 @@
 {
 	"devDependencies": {
-		"prettier": "2.8.7",
+		"gitmoji-cli": "^8.0.0",
+		"prettier": "^2.8.7",
 		"prettier-plugin-toml": "0.3.1"
 	}
 }
