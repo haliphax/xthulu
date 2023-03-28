@@ -12,7 +12,7 @@ dynamic = ["dependencies", "optional-dependencies"]
 packages = ["xthulu"]
 
 [tool.setuptools.dynamic]
-dependencies = { file = "requirements/_.txt" }
+dependencies = { file = "requirements/requirements.txt" }
 
 [tool.setuptools.dynamic.optional-dependencies]
 dev = { file = "requirements/dev.txt" }

@@ -17,7 +17,7 @@ repos:
         require_serial: true
       - id: prettier
         name: prettier
-        args: [prettier, -c, -w]
+        args: [prettier, -u, -c, -w]
         entry: npx
         exclude: \.py$
         language: system
