@@ -1,0 +1,8 @@
+-c requirements.in
+black
+coverage
+nodeenv
+parameterized
+pre-commit
+ruff
+
