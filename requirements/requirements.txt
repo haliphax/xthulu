@@ -7,23 +7,15 @@
 aiofiles==23.1.0
     # via -r requirements.in
 anyio==3.6.2
-    # via
-    #   -r requirements.in
-    #   watchfiles
+    # via watchfiles
 apiflask[async]==1.3.1
     # via -r requirements.in
 apispec==6.3.0
-    # via
-    #   -r requirements.in
-    #   apiflask
+    # via apiflask
 asgiref==3.6.0
-    # via
-    #   -r requirements.in
-    #   apiflask
+    # via apiflask
 asyncpg==0.27.0
-    # via
-    #   -r requirements.in
-    #   gino
+    # via gino
 asyncssh==2.13.1
     # via -r requirements.in
 bcrypt==4.0.1
@@ -31,105 +23,68 @@ bcrypt==4.0.1
 blessed==1.20.0
     # via -r requirements.in
 cffi==1.15.1
-    # via
-    #   -r requirements.in
-    #   cryptography
+    # via cryptography
 click==8.1.3
     # via
     #   -r requirements.in
     #   flask
     #   uvicorn
 cryptography==40.0.1
-    # via
-    #   -r requirements.in
-    #   asyncssh
-emoji==2.2.0
-    # via -r requirements.in
+    # via asyncssh
 flask==2.2.3
     # via
-    #   -r requirements.in
     #   apiflask
     #   flask-httpauth
     #   flask-marshmallow
 flask-httpauth==4.7.0
-    # via
-    #   -r requirements.in
-    #   apiflask
+    # via apiflask
 flask-marshmallow==0.14.0
-    # via
-    #   -r requirements.in
-    #   apiflask
+    # via apiflask
 gino==1.0.1
     # via -r requirements.in
 h11==0.14.0
-    # via
-    #   -r requirements.in
-    #   uvicorn
+    # via uvicorn
 httptools==0.5.0
-    # via
-    #   -r requirements.in
-    #   uvicorn
+    # via uvicorn
 idna==3.4
-    # via
-    #   -r requirements.in
-    #   anyio
+    # via anyio
 itsdangerous==2.1.2
-    # via
-    #   -r requirements.in
-    #   flask
+    # via flask
 jinja2==3.1.2
-    # via
-    #   -r requirements.in
-    #   flask
+    # via flask
 markupsafe==2.1.2
     # via
-    #   -r requirements.in
     #   jinja2
     #   werkzeug
 marshmallow==3.19.0
     # via
-    #   -r requirements.in
     #   flask-marshmallow
     #   webargs
 packaging==23.0
     # via
-    #   -r requirements.in
     #   apispec
     #   marshmallow
     #   webargs
 pycparser==2.21
-    # via
-    #   -r requirements.in
-    #   cffi
+    # via cffi
 python-dotenv==1.0.0
-    # via
-    #   -r requirements.in
-    #   uvicorn
+    # via uvicorn
 pyyaml==6.0
-    # via
-    #   -r requirements.in
-    #   uvicorn
+    # via uvicorn
 redis==4.5.3
     # via -r requirements.in
 six==1.16.0
     # via
-    #   -r requirements.in
     #   blessed
     #   flask-marshmallow
 sniffio==1.3.0
-    # via
-    #   -r requirements.in
-    #   anyio
+    # via anyio
 sqlalchemy==1.3.24
-    # via
-    #   -r requirements.in
-    #   gino
+    # via gino
 toml==0.10.2
     # via -r requirements.in
 typing-extensions==4.5.0
-    # via
-    #   -r requirements.in
-    #   asyncssh
+    # via asyncssh
 uvicorn[standard]==0.21.1
     # via -r requirements.in
 uvloop==0.17.0
@@ -137,24 +92,14 @@ uvloop==0.17.0
     #   -r requirements.in
     #   uvicorn
 watchfiles==0.19.0
-    # via
-    #   -r requirements.in
-    #   uvicorn
+    # via uvicorn
 wcwidth==0.2.6
-    # via
-    #   -r requirements.in
-    #   blessed
+    # via blessed
 webargs==8.2.0
-    # via
-    #   -r requirements.in
-    #   apiflask
+    # via apiflask
 websockets==10.4
-    # via
-    #   -r requirements.in
-    #   uvicorn
+    # via uvicorn
 werkzeug==2.2.3
-    # via
-    #   -r requirements.in
-    #   flask
+    # via flask
 wrapt==1.15.0
     # via -r requirements.in
