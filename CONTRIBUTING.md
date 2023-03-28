@@ -50,7 +50,17 @@ You must initialize the system and install the appropriate hooks. Once
 installed, they will be invoked automatically when you commit.
 
 ```shell
-pre-commit install --install-hooks
+pre-commit install
+```
+
+### gitmoji
+
+For conventional commit messages, this project has adopted the [gitmoji]
+standard. The `prepare-commit-msg` hook for crafting appropriately-categorized
+commit messages can be installed with the provided script.
+
+```shell
+etc/gitmoji-hook.sh
 ```
 
 ### docker-compose
@@ -152,4 +162,5 @@ coverage report
 [black]: https://black.readthedocs.io/en/stable/index.html
 [prettier]: https://prettier.io/
 [ruff]: https://beta.ruff.rs/docs/
+[gitmoji]: https://gitmoji.dev
 [coverage]: https://coverage.readthedocs.io/en/latest/

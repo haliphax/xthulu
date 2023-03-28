@@ -7,7 +7,7 @@
 			"dockerDashComposeVersion": "v2"
 		}
 	},
-	"onCreateCommand": "bash .devcontainer/on-create",
+	"onCreateCommand": "bash .devcontainer/on-create.sh",
 	"runArgs": ["--init", "--privileged", "--network=host"],
 	"extensions": [
 		"charliermarsh.ruff",

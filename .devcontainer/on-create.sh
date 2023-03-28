@@ -32,6 +32,8 @@ echo xthulu > .python-version
 cp .devcontainer/docker-compose.override.yml .
 pip install -Ue .[dev,hiredis]
 npm install
-pre-commit install --install-hooks
+pre-commit install
+etc/gitmoji-hook.sh
 docker-compose build
 docker-compose pull
+
