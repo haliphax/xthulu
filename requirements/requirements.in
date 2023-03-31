@@ -10,4 +10,3 @@ toml
 uvicorn[standard]
 uvloop
 wrapt
-

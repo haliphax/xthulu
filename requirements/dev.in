@@ -7,4 +7,3 @@ pip-tools
 pre-commit
 python-semantic-release
 ruff
-
