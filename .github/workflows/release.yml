@@ -1,0 +1,26 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          python -m pip install -U pip setuptools
+          pip install -e .[dev]
+
+      - name: Release
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: semantic-release publish
