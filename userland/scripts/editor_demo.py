@@ -4,6 +4,7 @@
 from blessed.keyboard import Keystroke
 
 # api
+from xthulu.ssh.console.console_string import GraphemeBuffer
 from xthulu.ssh.context import SSHContext
 from xthulu.ssh.ui.editors import BlockEditor
 from xthulu.ssh.terminal.constants import CTRL_C
@@ -21,20 +22,20 @@ async def main(cx: SSHContext):
 
     # demonstration text
     text_to_repeat = [
-        "one " * 200,
-        "two " * 200,
-        "three " * 200,
-        "four " * 200,
-        "five " * 200,
-        "six " * 200,
-        "seven " * 200,
-        "",
+        "4️⃣4️⃣ " * 200,
+        # "one ⚠️" * 200,
+        # "two " * 200,
+        # "three " * 200,
+        # "five " * 200,
+        # "six " * 200,
+        # "seven " * 200,
+        # "",
     ]
-    text: list[str] = []
+    text: list[GraphemeBuffer] = []
 
     for _ in range(10):
         for line in text_to_repeat:
-            text.append(line.strip())
+            text.append(GraphemeBuffer.from_str(line.strip()))
 
     editor = BlockEditor(
         term=cx.term,
@@ -76,4 +77,5 @@ async def main(cx: SSHContext):
 
             return cx.echo(*out)
 
-        cx.echo(editor.process_keystroke(ks))
+        if len(ks) > 0:
+            cx.echo(editor.process_keystroke(ks))

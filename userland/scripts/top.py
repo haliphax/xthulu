@@ -41,7 +41,7 @@ async def main(cx: SSHContext):
     cx.echo(f"{cx.term.normal}\r\n")
     await show_art(cx, "userland/artwork/login.ans")
 
-    await cx.gosub("oneliners")
-    cx.goto("logoff")
-    await cx.gosub("lock_example")
     await cx.gosub("editor_demo")
+    cx.goto("logoff")
+    await cx.gosub("oneliners")
+    await cx.gosub("lock_example")
