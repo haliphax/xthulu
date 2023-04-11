@@ -17,7 +17,7 @@ from .constants import (
     ASSUME_WIDE,
     EMOJI_VS,
     FORCE_EVS_WIDE,
-    SKIN_TONES,
+    MODIFIERS,
     VALID_ZWC,
     VARIATION_SELECTORS,
     ZWJ,
@@ -33,7 +33,7 @@ def log_debug(x):
         log.debug(x)
 
 
-class ConsoleString(list[Grapheme | None]):
+class GraphemeBuffer(list[Grapheme | None]):
 
     """
     A contiguous segment of cells for display on the console, each of which is
@@ -42,36 +42,38 @@ class ConsoleString(list[Grapheme | None]):
     previous `Grapheme` has a `width` value greater than 1).
     """
 
-    def __add__(self, other: ConsoleString | str | None):
+    def __add__(self, other: GraphemeBuffer | str | None):
         updated = self.copy()
 
         if other is None:
-            return ConsoleString(updated)
+            return GraphemeBuffer(updated)
 
         if isinstance(other, str):
-            other = ConsoleString.from_str(other)
+            other = GraphemeBuffer.from_str(other)
 
         for g in other:
             updated.append(g)
 
-        return ConsoleString(updated)
+        return GraphemeBuffer(updated)
 
-    def __iadd__(self, other: ConsoleString | str | None):
+    def __iadd__(self, other: GraphemeBuffer | str | None):
         if other is None:
             return
 
         if isinstance(other, str):
-            other = ConsoleString.from_str(other)
+            other = GraphemeBuffer.from_str(other)
 
         for g in other:
             self.append(g)
 
+        return self
+
     def __repr__(self):
-        return f"ConsoleString({len(self)})"
+        return f"GraphemeBuffer({len(self)})"
 
     def __setitem__(self, key: int, value: Grapheme | str | None):
         if isinstance(value, str):
-            value = ConsoleString.from_str(value)[0]
+            value = GraphemeBuffer.from_str(value)[0]
 
         self[key] = value
 
@@ -90,11 +92,11 @@ class ConsoleString(list[Grapheme | None]):
 
         return "".join(g.raw if g else "" for g in self)
 
-    def _strip(self, lstrip: bool = False) -> ConsoleString:
+    def _strip(self, lstrip: bool = False) -> GraphemeBuffer:
         length = len(self)
 
         if length == 0:
-            return ConsoleString()
+            return GraphemeBuffer()
 
         idx = -1 if lstrip else 0
         limit = length + idx
@@ -110,16 +112,16 @@ class ConsoleString(list[Grapheme | None]):
 
         if not grapheme or absidx == limit:
             log_debug("empty after strip")
-            return ConsoleString()
+            return GraphemeBuffer()
 
         if not lstrip:
             idx -= step * grapheme.width
 
         if idx == 0:
-            return ConsoleString(self.copy())
+            return GraphemeBuffer(self.copy())
 
         log_debug(f"stripped: {idx}")
-        return ConsoleString(self[idx:] if lstrip else self[:idx])
+        return GraphemeBuffer(self[idx:] if lstrip else self[:idx])
 
     def lstrip(self):
         """Trim leading spaces/newlines."""
@@ -148,8 +150,8 @@ class ConsoleString(list[Grapheme | None]):
         """
 
         is_grapheme = isinstance(separator, Grapheme)
-        result: list[ConsoleString] = []
-        segment = ConsoleString()
+        result: list[GraphemeBuffer] = []
+        segment = GraphemeBuffer()
 
         for g in self:
             if g and (
@@ -157,7 +159,7 @@ class ConsoleString(list[Grapheme | None]):
                 or (not is_grapheme and g.char == separator)
             ):
                 result.append(segment)
-                segment = ConsoleString()
+                segment = GraphemeBuffer()
                 continue
 
             segment.append(g)
@@ -168,7 +170,7 @@ class ConsoleString(list[Grapheme | None]):
         return result
 
     @classmethod
-    def from_str(cls, string: str) -> ConsoleString:
+    def from_str(cls, string: str) -> GraphemeBuffer:
         """
         Split a string into (potentially clustered) graphemes.
 
@@ -179,7 +181,8 @@ class ConsoleString(list[Grapheme | None]):
             A `ConsoleString` instance representing the input string.
         """
 
-        def _append_cell(cell: Grapheme, cells: ConsoleString):
+        def _append_cell(cell: Grapheme, cells: GraphemeBuffer):
+            log_debug(f"appending {cell!r}")
             cells.append(cell)
 
             # pad cells following wide graphemes with `None` filler
@@ -190,7 +193,7 @@ class ConsoleString(list[Grapheme | None]):
             return Grapheme()
 
         cell = Grapheme()
-        cells = ConsoleString()
+        cells = GraphemeBuffer()
         joined = False
         was_emoji = False
 
@@ -240,32 +243,32 @@ class ConsoleString(list[Grapheme | None]):
                 continue
 
             if c in VARIATION_SELECTORS:
-                if cell.char != "":
-                    if c == EMOJI_VS:
-                        if was_emoji:
-                            log_debug("emoji variation selector")
-                            cell.mods.append(c)
+                log_debug(f"variation selector: 0x{ord(c):04X}")
 
-                            if FORCE_EVS_WIDE and cell.width < 2:
-                                log_debug("forced wide")
-                                cell.width = 2
-                                cell.force_width = True
-                        else:
-                            log_debug("unexpected emoji variation selector")
-                    else:
-                        log_debug(f"variation selector: {c!r}")
-                        cell.mods.append(c)
-                else:
-                    log_debug("unexpected variation selector")
+                if cell.char == "":
+                    cell = cells.pop()
 
+                assert cell is not None
+
+                if c == EMOJI_VS:
+                    log_debug("emoji VS")
+                    was_emoji = True
+
+                    if FORCE_EVS_WIDE and cell.width < 2:
+                        log_debug("forced wide")
+                        cell.width = 2
+                        cell.force_width = True
+
+                cell.mods.append(c)
                 continue
 
-            if c in SKIN_TONES and was_emoji:
-                log_debug(f"skin tone: {c!r}")
+            if c in MODIFIERS:
+                log_debug(f"base modifier: {c!r}")
+                was_emoji = True
                 cell.mods.append(c)
 
                 if not is_emoji(cell.raw):
-                    # separate skin tone modifier from emoji if invalid
+                    # separate modifier from emoji if invalid
                     log_debug(f"invalid base: {cell!r}")
                     cell.mods.pop()
                     cell.mods.append(ZWNJ)
@@ -320,7 +323,7 @@ class ConsoleString(list[Grapheme | None]):
             was_emoji = False
 
             if wcswidth(c) < 1:
-                hexstr = "0x%04X" % ord(c)
+                hexstr = f"0x{ord(c):04X}"
 
                 if c not in VALID_ZWC:
                     log_debug(f"stripping ZWC: {hexstr}")

@@ -3,41 +3,23 @@
 # type checking
 from typing import Callable
 
-# stdlib
-from re import findall, match, sub
-
 # 3rd party
 from blessed.keyboard import Keystroke
-from wcwidth import wcswidth
 
 # local
 from ....logger import log
+from ...console.console_string import GraphemeBuffer
+from ...console.grapheme import Grapheme
 from ...terminal.proxy_terminal import ProxyTerminal
 
-# grapheme cluster modifiers
-
-ZWJ = "\u200d"
-"""Zero-width join; next grapheme modifies the cluster"""
-
-VARIATION = r"[\ufe00-\ufe0f]"
-"""Variation; previous grapheme modifies the cluster"""
-
-SKIN_TONE = r"[\U0001f3fb-\U0001f3ff]"
-"""Skin tone modifiers; modifies previous grapheme (no join sequence)"""
-
-MODIFIERS = rf"{VARIATION}|{SKIN_TONE}|{ZWJ}"
-"""Grapheme modifiers commonly searched for while parsing"""
-
-
-def realwidth(ucs: str):
-    return wcswidth(sub(rf".{VARIATION}|(?=.){SKIN_TONE}|{ZWJ}.", "", ucs))
+# TODO draw_line() with check for first char being None
 
 
 class BlockEditor:
 
     """Block editor (multiple lines)"""
 
-    value = []
+    value: list[GraphemeBuffer] = []
     """Editor text"""
 
     limit = [0, 0]
@@ -69,7 +51,7 @@ class BlockEditor:
         """Width in columns"""
 
         if "value" not in kwargs:
-            self.value = [""] * rows
+            self.value = [GraphemeBuffer() for _ in range(rows)]
 
         if "color" in kwargs:
             self._color_str = kwargs["color"]
@@ -86,12 +68,12 @@ class BlockEditor:
                 if len(self.value[i]) > 0:
                     self.pos[1] = i
 
-            strlen = realwidth(self.value[self.pos[1]])
+            strlen = len(self.value[self.pos[1]])
             self.pos[0] = max(0, strlen - self.columns)
 
         if "cursor" not in kwargs:
             if strlen == 0:
-                strlen = realwidth(self.value[self.pos[1]])
+                strlen = len(self.value[self.pos[1]])
 
             self.cursor[0] = min(self.columns - 1, max(0, strlen))
             self.cursor[1] = min(self.rows - 1, max(0, len(self.value) - 1))
@@ -99,24 +81,6 @@ class BlockEditor:
         log.debug(f"corner: {self.corner}")
         log.debug(f"pos: {self.pos}")
         log.debug(f"cursor: {self.cursor}")
-
-    @property
-    def _char_behind(self):
-        try:
-            return self.value[self.pos[1] + self.cursor[1]][
-                self.pos[0] + self.cursor[0] - 1
-            ]
-        except IndexError:
-            return ""
-
-    @property
-    def _char_under(self):
-        try:
-            return self.value[self.pos[1] + self.cursor[1]][
-                self.pos[0] + self.cursor[0]
-            ]
-        except IndexError:
-            return ""
 
     @property
     def color(self) -> Callable:
@@ -132,6 +96,26 @@ class BlockEditor:
         self._color = getattr(self.term, val)
 
     @property
+    def current_row(self):
+        """The current row's value."""
+
+        return (
+            self.value[self.abs_cursor[1]] if self.value else GraphemeBuffer()
+        )
+
+    @property
+    def abs_cursor(self):
+        """The cursor's absolute position within the entire editor value."""
+
+        return (self.pos[0] + self.cursor[0], self.pos[1] + self.cursor[1])
+
+    @property
+    def cursor_boundary(self):
+        """The relative bottom-right corner of the editor panel."""
+
+        return (self.pos[0] + self.columns, self.pos[1] + self.rows)
+
+    @property
     def at_end(self) -> bool:
         """Whether the cursor is at the end of the editor."""
 
@@ -140,59 +124,64 @@ class BlockEditor:
 
         return (
             self.cursor[0] >= self.columns - 1
-            and realwidth(self.value[self.pos[1]]) >= self.limit[0]
+            and len(self.current_row) >= self.limit[0]
         )
 
     @property
     def edge_diff(self) -> int:
         """How far the cursor is from the edge of the current row."""
 
-        strlen = realwidth(self.value[self.cursor[1] + self.pos[1]])
+        return self.pos[0] + self.cursor[0] - len(self.current_row) - 1
 
-        return self.pos[0] + self.cursor[0] - strlen
+    def _row_vars(self, index: int | None = None, split: int | None = None):
+        abs_cursor = self.abs_cursor
+        row = self.value[index] if index else self.current_row
+
+        if split is None:
+            split = abs_cursor[0]
+
+        before = GraphemeBuffer(row[:split])
+        after = GraphemeBuffer(row[split:])
+
+        return row, before, after
 
     def redraw(self, cursor=True, anchor=True) -> str:
         """
         Output sequence to redraw editor.
 
         Args:
-            cursor: Redraw cursor position as well.
-            anchor: Reset anchor position as well.
+            cursor: Whether to redraw cursor position after output.
+            anchor: Whether to reset anchor position before output.
 
         Returns:
             The output string to redraw the editor/cursor.
         """
 
-        out = ""
-        left = self.pos[0]
-        top = self.pos[1]
+        out: list[str] = []
         travel = 0
 
         if anchor:
-            out += self.reset_anchor()
+            out.append(self.reset_anchor())
 
         for i in range(self.rows):
             if i > 0:
-                out += "\r\n"
+                out.append("\n")
                 travel += 1
 
             if self.corner[0] is not None:
-                out += self.term.move_x(self.corner[0])
+                out.append(self.term.move_x(self.corner[0]))
+            else:
+                out.append(self.term.move_left(self.columns))
 
-            text = self.value[top + i][left : left + self.columns]
-            out += self.color(text)
-            out += self.color(" " * (self.columns - realwidth(text)))
-            out += self.term.move_left(self.columns)
+            index = self.pos[1] + i
+            out.append(self.redraw_line(index))
+
+        if cursor and travel > 0:
+            out.append(self.term.move_up(travel))
 
         log.debug("redrawing editor")
 
-        if cursor:
-            if travel > 0:
-                out += self.term.move_up(travel)
-
-            out += self.redraw_cursor()
-
-        return out
+        return "".join(out)
 
     def redraw_cursor(self) -> str:
         """
@@ -203,25 +192,25 @@ class BlockEditor:
             The output sequence to redraw the cursor.
         """
 
-        out = ""
+        out: list[str] = []
 
         # move cursor back to top left before adjusting to self.cursor offset
         if self.corner[0] is not None:
-            out += self.term.move_x(self.corner[0])
+            out.append(self.term.move_x(self.corner[0]))
 
         if self.corner[1] is not None:
-            out += self.term.move_y(self.corner[1])
+            out.append(self.term.move_y(self.corner[1]))
 
         # adjust offset
         if self.cursor[0] > 0:
-            out += self.term.move_right(self.cursor[0])
+            out.append(self.term.move_right(self.cursor[0]))
 
         if self.cursor[1] > 0:
-            out += self.term.move_down(self.cursor[1])
+            out.append(self.term.move_down(self.cursor[1]))
 
         log.debug("redrawing cursor")
 
-        return out
+        return "".join(out)
 
     def reset_anchor(self) -> str:
         """
@@ -233,169 +222,154 @@ class BlockEditor:
             The output sequence to reset the anchor.
         """
 
-        out = ""
+        out: list[str] = []
 
         if self.cursor[0] > 0:
-            out += self.term.move_left(self.cursor[0])
+            out.append(self.term.move_left(self.cursor[0]))
 
         if self.cursor[1] > 0:
-            out += self.term.move_up(self.cursor[1])
+            out.append(self.term.move_up(self.cursor[1]))
 
         log.debug("resetting anchor")
 
-        return out
+        return "".join(out)
 
     def reset(self):
         """Reset the editor's value, cursor, and offset position."""
 
         self.cursor = [0, 0]
         self.pos = [0, 0]
-        self.value = [""] * self.rows
+        self.value = [GraphemeBuffer() for _ in range(self.rows)]
 
-    @property
-    def _row_vars(self):
-        row = self.value[self.pos[1] + self.cursor[1]]
-        dist = 0
-        offset = 0
-        zwj = False
-        lastw = 0
+    def redraw_current_line(self, cursor=True, left=True, right=True) -> str:
+        abs_cursor = self.abs_cursor
 
-        for ucs in row:
-            if zwj:
-                zwj = False
-                log.debug(f"skipping {ucs!r} due to zwj")
-                continue
+        return self.redraw_line(
+            abs_cursor[1], cursor=cursor, left=left, right=right
+        )
 
-            w = realwidth(ucs)
-            log.debug(f"ucs: {ucs!r}, width: {w}")
+    def redraw_line(
+        self, index: int, cursor=True, left=True, right=True
+    ) -> str:
+        """
+        Output sequence to redraw the given line, accounting for half-width
+        graphemes that would hang off the edge of the panel.
 
-            if match(VARIATION, ucs):
-                offset += 1
-                log.debug(f"offsetting variation: {ucs!r}")
-                dist -= lastw
-            elif match(ZWJ, ucs):
-                offset += 1
-                log.debug(f"offsetting zwj: {ucs!r}")
-                zwj = True
-            elif ucs.encode("utf8").startswith(b"\xf0\x9f\x8f"):
-                offset += 1
-                log.debug(f"offsetting skin tone: {ucs!r}")
-            else:
-                log.debug(f"width: {w}")
-                dist += w
+        Args:
+            cursor: Whether to reset the cursor after output.
+            left: Whether to include the half of the line before the cursor.
+            right: Whether to include the half of the line after the cursor.
 
-            if dist > self.pos[0] + self.cursor[0]:
-                break
+        Returns:
+            String of sequences for redrawing the current line.
+        """
 
-            lastw = w
+        if not (left or right):
+            return ""
 
-        log.debug(f"dist: {dist}")
-        log.debug(f"offset: {offset}")
-        self._cursor_offset = offset
-        before = row[: self.pos[0] + self.cursor[0] + self._cursor_offset]
-        after = row[self.pos[0] + self.cursor[0] + self._cursor_offset :]
+        _, before, after = self._row_vars(index, split=0)
+        beforelen = len(before)
+        afterlen = len(after)
+        left_width = min(self.cursor[0], beforelen)
+        right_width = min(self.columns - self.cursor[0], afterlen)
+        left_half = GraphemeBuffer(before[-left_width:]) if left else None
+        right_half = GraphemeBuffer(after[:right_width]) if right else None
+        travel = 0
+        out: list[str] = []
 
-        return row, before, after
+        if left_half:
+            if cursor:
+                out.append(self.term.move_left(len(left_half)))
+
+            first = left_half[0] if left_half else None
+
+            # handle full-width graphemes hanging off the left edge
+            if left and left_half and first is None:
+                left_half[0] = (
+                    "\u2026" if self.term.encoding == "utf-8" else "<"
+                )
+
+            out.append(str(left_half))
+
+        if right_half and right_half is not None:
+            # overflowing right edge
+            if afterlen >= self.columns - self.cursor[0]:
+                last = right_half[-1]
+
+                # handle full-width graphemes hanging off the right edge
+                if last and last.width > 1:
+                    right_half.pop()
+                    right_half += (
+                        "\u2026" if self.term.encoding == "utf-8" else ">"
+                    )
+
+            assert right_half is not None
+            right_half_len = len(right_half)
+            remaining_space = self.columns - right_half_len
+            log.debug(f"remaining space: {remaining_space}")
+
+            if remaining_space > 0:
+                # handle trailing "ghost" glyphs by overwriting with empty space
+                travel += remaining_space
+                right_half += " " * remaining_space
+
+            travel += right_half_len
+            out.append(str(right_half))
+
+        if cursor and travel > 0:
+            out.append(self.term.move_left(travel))
+
+        return self.color("".join(out))
 
     def _kp_backspace(self) -> str:
-        log.debug(self._cursor_offset)
-        row, before, after = self._row_vars
+        row, before, after = self._row_vars()
         log.debug((row, before, after))
-        log.debug(self._cursor_offset)
 
         if self.pos[0] <= 0 and self.cursor[0] == 0:
             log.debug("at start of line, nothing to backspace")
             return ""
 
-        shift = False
-        offset = 0
-        behind = before
+        abs_cursor = self.abs_cursor
+        cut = 0
+        deleted = None
 
-        while True:
-            modifiers = findall(MODIFIERS, behind)
+        while deleted is None:
+            cut -= 1
+            deleted = before[cut]
 
-            for m in modifiers:
-                encoded = m.encode("utf8")
+        result = GraphemeBuffer(before[:cut] + after)
+        self.value[abs_cursor[1]] = result
+        self.cursor[0] -= deleted.width
+        log.debug(f"backspace {self.pos} {self.cursor} {self.current_row!r}")
 
-                if encoded.startswith(b"\xf0\x9f\x8f"):
-                    log.debug(f"skin tone: {m}")
-                    offset += 2
-                elif m == ZWJ:
-                    log.debug(f"zwj: {m!r}")
-                    offset += 2
-                else:
-                    log.debug(f"variation: {m!r}")
-                    offset += 2
-
-            if match(r".*(?!.{VARIATION}|{ZWJ}.)?$", behind):
-                log.debug("previous char is a variation/zwj")
-                offset += 1
-            elif match(SKIN_TONE, behind):
-                log.debug("previous char is skin tone modifier")
-                offset += 1
-            else:
-                break
-
-            behind = before[-offset]
-
-        dist = wcswidth(behind)
-
-        self.value[self.pos[1] + self.cursor[1]] = before[: -1 - offset] + after
-        out = ""
-
-        after = after[: min(len(after), self.columns - self.cursor[0])]
-        total = dist + offset
-
-        if self.cursor[0] < dist:
-            self.pos[0] = max(0, self.pos[0] - dist)
+        if self.cursor[0] < 0:
+            self.pos[0] = max(0, self.pos[0] - 1)
             self.cursor[0] = 0
-            shift = True
-        else:
-            after += " " * total
 
-            if total > 0:
-                out += self.term.move_left(total)
+            return self.redraw()
 
-            self.cursor[0] -= dist
-            self._cursor_offset -= offset
-
-        if shift:
-            out = self.redraw()
-        else:
-            out += self.color(after)
-
-            if total > 0:
-                out += self.term.move_left(total)
-
-        log.debug(
-            f"backspace {self.pos} {self.cursor} "
-            f"{self.value[self.pos[1] + self.cursor[1]]!r}"
+        return "".join(
+            (
+                self.term.move_left(deleted.width),
+                self.redraw_current_line(left=False),
+            )
         )
 
-        return out
-
     def _kp_delete(self) -> str:
-        _, before, after = self._row_vars
+        row, before, after = self._row_vars()
 
-        if self.pos[0] >= realwidth(self.value[self.pos[1]]):
+        if self.pos[0] >= len(row):
             log.debug("at end of line, nothing to delete")
             return ""
 
-        after = after[1:]
-        dist = realwidth(after)
-        self.value[self.pos[1] + self.cursor[1]] = before + after
-        after = after[: self.columns - self.cursor[0]]
-        out = ""
+        abs_cursor = self.abs_cursor
+        deleted = after[0]
+        assert deleted is not None
+        cut = deleted.width
+        self.value[abs_cursor[1]] = before + GraphemeBuffer(after[cut:])
+        log.debug(f"delete {self.pos} {self.cursor} {self.current_row!r}")
 
-        if self.cursor[0] + dist <= self.columns - 1:
-            after += " " * (dist + 1)
-            out += self.term.move_left(dist + 1)
-
-        log.debug(f'delete "{self.value[self.pos[1] + self.cursor[1]]}"')
-
-        return self.color(
-            after + (self.term.move_left(dist) if dist > 0 else "") + out
-        )
+        return self.redraw_current_line(left=False)
 
     def _horizontal(self, distance: int) -> str:
         """
@@ -411,52 +385,51 @@ class BlockEditor:
         if distance == 0:
             return ""
 
-        row, before, after = self._row_vars
+        row, before, after = self._row_vars()
         log.debug((row, before, after))
-        strlen = realwidth(row)
+        abs_cursor = self.abs_cursor
+        strlen = len(row)
         blen = len(before)
         log.debug(f"before: {blen}")
 
         if distance == 1 and after:
-            distance = realwidth(after[0])
+            first = after[0]
+            log.debug(f"first: {first!r}")
+            distance = first.width if first else 1
 
         elif distance == -1 and blen > 1:
-            idx = -1
+            idx = 0
+            last = None
 
-            while -idx < blen:
-                check = before[idx]
-                log.debug(f"check: {check!r}")
-
-                if match(VARIATION, check):
-                    log.debug("variation; skipping")
-                    idx -= 1
-                elif match(SKIN_TONE, check):
-                    log.debug("skin tone; skipping")
-                elif check == ZWJ:
-                    log.debug("zwj; skipping")
-                elif -idx < blen - 1 and before[idx - 1] == ZWJ:
-                    log.debug("zero-joined; skipping")
-                    idx -= 1
-                else:
-                    break
-
+            while last is None:
                 idx -= 1
+                last = before[idx]
 
-            distance = -realwidth(before[idx])
+            distance = -last.width
             log.debug(f"distance: {distance}")
 
-        if distance < 0 and self.cursor[0] <= 0 and self.pos[0] <= 0:
+        if distance < 0 and abs_cursor[0] <= 0:
             log.debug("already at start of line")
 
             return ""
 
-        if distance > 0 and self.edge_diff >= 0:
+        if distance > 0 and abs_cursor[0] > strlen:
             log.debug("already at end of line")
 
             return ""
 
         shift = False
         move: Callable[..., str]
+        new_abs = abs_cursor[0] + distance
+        target = None
+
+        if new_abs < strlen:
+            target = row[abs_cursor[0] + distance]
+
+            # don't land on half of a grapheme
+            while target is None:
+                distance += 1 if distance > 0 else -1
+                target = row[abs_cursor[0] + distance]
 
         new_cursor = self.cursor[0] + distance
         abs_distance = abs(distance)
@@ -476,7 +449,7 @@ class BlockEditor:
             if new_cursor > self.columns - 1:
                 log.debug("shifting visible area right")
                 self.pos[0] = min(
-                    strlen - self.columns + 1, self.pos[0] + abs_distance
+                    strlen - self.columns + 1, self.pos[0] + abs_distance + 1
                 )
                 new_cursor = self.columns - 1
                 shift = True
@@ -491,7 +464,7 @@ class BlockEditor:
 
         log.debug(
             f"{'left' if distance < 0 else 'right'} {self.pos} {self.cursor} "
-            f"{self._char_under}"
+            f"{target!r} {distance}"
         )
 
         return "".join(out)
@@ -511,26 +484,28 @@ class BlockEditor:
         if distance == 0:
             return ""
 
-        if distance < 0 and self.cursor[1] <= 0 and self.pos[1] <= 0:
+        abs_cursor = self.abs_cursor
+
+        if distance < 0 and abs_cursor[1] == 0:
             log.debug("already at start of editor")
 
             return ""
 
-        if distance > 0 and self.pos[1] + self.cursor[1] >= len(self.value) - 1:
+        if distance > 0 and abs_cursor[1] == len(self.value) - 1:
             log.debug("already at end of editor")
 
             return ""
 
         snap_to_edge = self.edge_diff >= 0
         shift = False
-        vallen = len(self.value)
+        strlen = len(self.value)
         clamp_low = -(self.pos[1] + self.cursor[1])
-        clamp_high = vallen - self.pos[1] - self.cursor[1]
+        clamp_high = strlen - self.pos[1] - self.cursor[1]
         log.debug(f"distance clamp: {clamp_low} - {clamp_high}")
         distance = min(clamp_high, max(clamp_low, distance))
         new_cursor = self.cursor[1] + distance
         log.debug(f"new cursor: {new_cursor}")
-        out = []
+        out: list[str] = []
 
         if distance < 0:
             if new_cursor < 0:
@@ -551,7 +526,7 @@ class BlockEditor:
         if shift:
             self.pos[1] = max(
                 0,
-                min(self.pos[1] + distance, vallen - self.rows),
+                min(self.pos[1] + distance, strlen - self.rows),
             )
 
         log.debug(f"clamped new cursor: {new_cursor}")
@@ -562,6 +537,7 @@ class BlockEditor:
             out.append(move(cursor_shift))
 
         self.cursor[1] = new_cursor
+        strlen = len(self.current_row)
         diff = self.edge_diff
 
         if not snap_to_edge and diff > 0:
@@ -574,7 +550,6 @@ class BlockEditor:
 
             if self.cursor[0] < 0 or self.cursor[0] >= self.columns:
                 log.debug("edge is out of view")
-                strlen = realwidth(self.value[self.pos[1] + self.cursor[1]])
                 self.pos[0] = max(0, strlen - self.columns + 1)
                 self.cursor[0] = self.columns - 1
 
@@ -590,8 +565,29 @@ class BlockEditor:
                 out.append(self.term.move_right(-diff))
 
         out.append(self.redraw() if shift else move(cursor_shift))
+        row = self.current_row
+        strlen = len(row)
+        abs_cursor = self.abs_cursor
+        target: Grapheme | None = None
+
+        if len(row) and abs_cursor[0] < strlen:
+            offset = strlen - abs_cursor[0] - 1
+            log.debug(
+                f"finding valid position: {strlen} {abs_cursor[0]} {offset}"
+            )
+            target = row[abs_cursor[0] - offset]
+
+            while target is None:
+                offset += 1
+                target = row[abs_cursor[0] - offset]
+
+            if offset > 0:
+                self.cursor[0] -= offset
+                out.append(self.term.move_left(offset))
+
         log.debug(
-            f"{'up' if distance < 0 else 'down'} {self.pos} {self.cursor}"
+            f"{'up' if distance < 0 else 'down'} {self.pos} {self.cursor} "
+            f"{target!r}"
         )
 
         return "".join(out)
@@ -606,6 +602,7 @@ class BlockEditor:
         return self._horizontal(-(self.pos[0] + self.cursor[0]))
 
     def _kp_end(self) -> str:
+        log.debug(self.edge_diff)
         return self._horizontal(-self.edge_diff)
 
     def _kp_up(self) -> str:
@@ -677,11 +674,9 @@ class BlockEditor:
 
         # handle typed character or pasted grapheme
 
-        # TODO fix bug when inserting behind graphemes
-
-        dist = realwidth(ucs)
+        dist = len(ucs)
         ucslen = len(ucs)
-        row, before, after = self._row_vars
+        row, before, after = self._row_vars()
         log.debug((row, before, after))
         self.value[self.pos[1] + self.cursor[1]] = before + ucs + after
         self.cursor[0] += dist
@@ -696,18 +691,19 @@ class BlockEditor:
 
             return self.redraw()
 
-        after = after[: -ucslen - 1]
-        afterlen = realwidth(after)
-        move_left = (
-            afterlen
-            if (
-                self.pos[0] + self.cursor[0] + self._cursor_offset
-                < realwidth(self.value[self.pos[1] + self.cursor[1]])
-            )
-            else afterlen
-        )
+        abs_cursor = self.abs_cursor
+        after = GraphemeBuffer(after[: -ucslen - 1])
+        last = after[-1] if after else None
 
-        out = [ucs, after]
+        if (
+            last
+            and last.width > 1
+            and abs_cursor[0] + self.columns >= len(self.current_row)
+        ):
+            after = after[:-1]
+
+        move_left = len(after)
+        out = [ucs, str(after)]
 
         if move_left > 0:
             out.append(self.term.move_left(move_left))
