@@ -80,7 +80,7 @@ parameterized==0.9.0
     # via -r dev.in
 pathspec==0.11.1
     # via black
-pip-tools==6.12.3
+pip-tools==6.13.0
     # via -r dev.in
 pkginfo==1.9.6
     # via twine
