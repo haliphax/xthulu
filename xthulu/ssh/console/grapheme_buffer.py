@@ -110,7 +110,7 @@ class GraphemeBuffer(list[Grapheme | None]):
             absidx = abs(idx)
             grapheme = self[idx]
 
-        if not grapheme or absidx == limit:
+        if not grapheme:
             log_debug("empty after strip")
             return GraphemeBuffer()
 
@@ -198,7 +198,7 @@ class GraphemeBuffer(list[Grapheme | None]):
         was_emoji = False
 
         for c in string:
-            assert cell is not None
+            assert cell
 
             if c == ZWJ:
                 if was_emoji:
@@ -247,8 +247,7 @@ class GraphemeBuffer(list[Grapheme | None]):
 
                 if cell.char == "":
                     cell = cells.pop()
-
-                assert cell is not None
+                    assert cell
 
                 if c == EMOJI_VS:
                     log_debug("emoji VS")
@@ -264,16 +263,23 @@ class GraphemeBuffer(list[Grapheme | None]):
 
             if c in MODIFIERS:
                 log_debug(f"base modifier: {c!r}")
-                was_emoji = True
-                cell.mods.append(c)
+
+                if cell.char != "":
+                    cell.mods.append(c)
+                else:
+                    cell.char = c
 
                 if not is_emoji(cell.raw):
                     # separate modifier from emoji if invalid
                     log_debug(f"invalid base: {cell!r}")
-                    cell.mods.pop()
+
+                    if cell.mods:
+                        cell.mods.pop()
+
                     cell.mods.append(ZWNJ)
                     cell = _append_cell(cell, cells)
                 else:
+                    was_emoji = True
                     continue
 
             if joined:
