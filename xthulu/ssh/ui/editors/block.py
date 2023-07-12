@@ -310,17 +310,18 @@ class BlockEditor:
                     )
 
             assert right_half is not None
-            right_half_len = len(right_half)
-            remaining_space = self.columns - left_width - right_half_len
-            log.debug(f"remaining space: {remaining_space}")
+            right_width = len(right_half)
 
-            if remaining_space > 0:
-                # handle trailing "ghost" glyphs by overwriting with empty space
-                travel += remaining_space
-                right_half += " " * remaining_space
-
-            travel += right_half_len
+            travel += right_width
             out.append(str(right_half))
+
+        remaining_space = self.columns - left_width - right_width
+        log.debug(f"remaining space: {remaining_space}")
+
+        if remaining_space > 0:
+            # handle trailing "ghost" glyphs by overwriting with empty space
+            travel += remaining_space
+            out += " " * remaining_space
 
         if cursor and travel > 0:
             out.append(self.term.move_left(travel))
