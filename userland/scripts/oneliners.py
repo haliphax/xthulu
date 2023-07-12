@@ -113,7 +113,7 @@ async def main(cx: SSHContext):
                 if len(val) == 0:
                     return done()
 
-                await Oneliner.create(user_id=cx.user.id, message=val)
+                await Oneliner.create(user_id=cx.user.id, message=str(val))
                 oneliners, count, offset = await get_oneliners()
                 editor.reset()
 
