@@ -304,7 +304,8 @@ class BlockEditor:
                     log.debug(
                         f"handling hanging grapheme, right edge: {last!r}"
                     )
-                    right_half[-1] = (
+                    right_half.pop()
+                    right_half += (
                         "\u2026" if self.term.encoding == "utf-8" else ">"
                     )
 
