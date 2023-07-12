@@ -1,7 +1,7 @@
 """Userland entry point"""
 
 # stdlib
-# from asyncio import sleep
+from asyncio import sleep
 
 # api
 from xthulu.ssh.context import SSHContext
@@ -34,14 +34,14 @@ async def main(cx: SSHContext):
 
     for color in ("bright_black", "white", "bright_white"):
         colorfunc = getattr(cx.term, color)
-        # await sleep(0.5)
+        await sleep(0.5)
         cx.echo(colorfunc("."))
 
-    # await sleep(0.5)
+    await sleep(0.5)
     cx.echo(f"{cx.term.normal}\r\n")
     await show_art(cx, "userland/artwork/login.ans")
 
-    await cx.gosub("editor_demo")
-    cx.goto("logoff")
     await cx.gosub("oneliners")
     await cx.gosub("lock_example")
+    await cx.gosub("editor_demo")
+    cx.goto("logoff")
