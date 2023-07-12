@@ -4,6 +4,7 @@ aiofiles
 asyncssh
 bcrypt
 blessed
+emoji
 gino
 redis
 toml
