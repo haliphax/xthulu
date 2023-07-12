@@ -4,7 +4,7 @@
 from blessed.keyboard import Keystroke
 
 # api
-from xthulu.ssh.console.console_string import GraphemeBuffer
+from xthulu.ssh.console.grapheme_buffer import GraphemeBuffer
 from xthulu.ssh.context import SSHContext
 from xthulu.ssh.ui.editors import BlockEditor
 from xthulu.ssh.terminal.constants import CTRL_C

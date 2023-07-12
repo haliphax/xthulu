@@ -8,8 +8,8 @@ from blessed.keyboard import Keystroke
 
 # local
 from ....logger import log
-from ...console.console_string import GraphemeBuffer
 from ...console.grapheme import Grapheme
+from ...console.grapheme_buffer import GraphemeBuffer
 from ...terminal.proxy_terminal import ProxyTerminal
 
 # TODO draw_line() with check for first char being None
@@ -267,7 +267,7 @@ class BlockEditor:
         if not (left or right):
             return ""
 
-        _, before, after = self._row_vars(index, split=0)
+        _, before, after = self._row_vars(index)
         beforelen = len(before)
         afterlen = len(after)
         left_width = min(self.cursor[0], beforelen)
@@ -284,28 +284,33 @@ class BlockEditor:
             first = left_half[0] if left_half else None
 
             # handle full-width graphemes hanging off the left edge
-            if left and left_half and first is None:
+            if left and first is None:
                 left_half[0] = (
                     "\u2026" if self.term.encoding == "utf-8" else "<"
+                )
+                log.debug(
+                    f"handling hanging grapheme, left edge: {left_half[0]!r}"
                 )
 
             out.append(str(left_half))
 
-        if right_half and right_half is not None:
+        if right_half:
             # overflowing right edge
             if afterlen >= self.columns - self.cursor[0]:
                 last = right_half[-1]
 
                 # handle full-width graphemes hanging off the right edge
                 if last and last.width > 1:
-                    right_half.pop()
-                    right_half += (
+                    log.debug(
+                        f"handling hanging grapheme, right edge: {last!r}"
+                    )
+                    right_half[-1] = (
                         "\u2026" if self.term.encoding == "utf-8" else ">"
                     )
 
             assert right_half is not None
             right_half_len = len(right_half)
-            remaining_space = self.columns - right_half_len
+            remaining_space = self.columns - left_width - right_half_len
             log.debug(f"remaining space: {remaining_space}")
 
             if remaining_space > 0:
@@ -330,14 +335,12 @@ class BlockEditor:
             return ""
 
         abs_cursor = self.abs_cursor
-        cut = 0
         deleted = None
 
         while deleted is None:
-            cut -= 1
-            deleted = before[cut]
+            deleted = before.pop()
 
-        result = GraphemeBuffer(before[:cut] + after)
+        result = GraphemeBuffer(before + after)
         self.value[abs_cursor[1]] = result
         self.cursor[0] -= deleted.width
         log.debug(f"backspace {self.pos} {self.cursor} {self.current_row!r}")
