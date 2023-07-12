@@ -575,7 +575,7 @@ class BlockEditor:
         abs_cursor = self.abs_cursor
         target: Grapheme | None = None
 
-        if len(row) and abs_cursor[0] < strlen:
+        if len(row) and abs_cursor[0] > strlen:
             offset = strlen - abs_cursor[0] - 1
             log.debug(
                 f"finding valid position: {strlen} {abs_cursor[0]} {offset}"
