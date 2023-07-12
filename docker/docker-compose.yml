@@ -23,7 +23,7 @@ services:
       dockerfile: ./docker/Dockerfile
     entrypoint: /bin/false
     image: xthulu
-    restart: disable
+    restart: "no"
     scale: 0
 
   cache:

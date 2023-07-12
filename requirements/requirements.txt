@@ -24,6 +24,8 @@ bcrypt==4.0.1
     # via -r requirements.in
 blessed==1.20.0
     # via -r requirements.in
+blinker==1.6.2
+    # via flask
 cffi==1.15.1
     # via cryptography
 click==8.1.3
@@ -33,7 +35,7 @@ click==8.1.3
     #   uvicorn
 cryptography==40.0.1
     # via asyncssh
-flask==2.2.3
+flask==2.3.2
     # via
     #   apiflask
     #   flask-httpauth
@@ -101,7 +103,7 @@ webargs==8.2.0
     # via apiflask
 websockets==10.4
     # via uvicorn
-werkzeug==2.2.3
+werkzeug==2.3.3
     # via flask
 wrapt==1.15.0
     # via -r requirements.in
