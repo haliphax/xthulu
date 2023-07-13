@@ -2,6 +2,7 @@
 
 # type checking
 from __future__ import annotations
+from typing_extensions import SupportsIndex
 
 # stdlib
 import unicodedata
@@ -43,28 +44,32 @@ class GraphemeBuffer(list[Grapheme | None]):
     """
 
     def __add__(self, other: GraphemeBuffer | str | None):
-        updated = self.copy()
+        updated = GraphemeBuffer(self.copy())
 
         if other is None:
-            return GraphemeBuffer(updated)
+            return updated
 
-        if isinstance(other, str):
-            other = GraphemeBuffer.from_str(other)
+        add = (
+            GraphemeBuffer.from_str(other) if isinstance(other, str) else other
+        )
 
-        for g in other:
-            updated.append(g)
+        # append to copy, but skip padding (handled by append method)
+        for grapheme in [a for a in add if a]:
+            updated.append(grapheme)
 
-        return GraphemeBuffer(updated)
+        return updated
 
     def __iadd__(self, other: GraphemeBuffer | str | None):
         if other is None:
             return
 
-        if isinstance(other, str):
-            other = GraphemeBuffer.from_str(other)
+        add = (
+            GraphemeBuffer.from_str(other) if isinstance(other, str) else other
+        )
 
-        for g in other:
-            self.append(g)
+        # append to self, but skip padding (handled by append method)
+        for grapheme in [a for a in add if a]:
+            self.append(grapheme)
 
         return self
 
@@ -72,13 +77,53 @@ class GraphemeBuffer(list[Grapheme | None]):
         return f"GraphemeBuffer({len(self)})"
 
     def __setitem__(self, key: int, value: Grapheme | str | None):
-        if isinstance(value, str):
-            value = GraphemeBuffer.from_str(value)[0]
+        graph = (
+            GraphemeBuffer.from_str(value)[0]
+            if isinstance(value, str)
+            else value
+        )
 
-        self[key] = value
+        self.pop(key)
+        self.insert(key, graph)
 
     def __str__(self):
         return "".join(str(g) if g else "" for g in self)
+
+    def append(self, __object: Grapheme | None) -> None:
+        val = super().append(__object)
+
+        # pad wide graphemes
+        if __object and __object.width > 1:
+            for _ in range(__object.width - 1):
+                super().append(None)
+
+        return val
+
+    def insert(self, __index: SupportsIndex, __object: Grapheme | None) -> None:
+        if __object and __object.width > 1:
+            for _ in range(__object.width - 1):
+                super().insert(__index, None)
+
+        return super().insert(__index, __object)
+
+    def pop(self, __index: SupportsIndex = -1) -> Grapheme | None:
+        val = super().pop(__index)
+        idx = int(__index)
+
+        if val and val.width > 1 and idx >= 0:
+            for _ in range(val.width - 1):
+                super().pop(__index)
+
+        idx = int(__index)
+        iterate = idx > 0
+
+        while not val:
+            if iterate:
+                idx -= 1
+
+            val = super().pop(idx)
+
+        return val
 
     @property
     def count(self):
@@ -153,16 +198,14 @@ class GraphemeBuffer(list[Grapheme | None]):
         result: list[GraphemeBuffer] = []
         segment = GraphemeBuffer()
 
-        for g in self:
-            if g and (
-                (is_grapheme and g == separator)
-                or (not is_grapheme and g.char == separator)
+        for g in [g for g in self if g]:
+            if (is_grapheme and g == separator) or (
+                not is_grapheme and g.char == separator
             ):
                 result.append(segment)
                 segment = GraphemeBuffer()
-                continue
-
-            segment.append(g)
+            else:
+                segment.append(g)
 
         if len(segment):
             result.append(segment)
@@ -178,17 +221,13 @@ class GraphemeBuffer(list[Grapheme | None]):
             string: The string to parse.
 
         Returns:
-            A `ConsoleString` instance representing the input string.
+            A `GraphemeBuffer` instance representing the input string.
         """
 
         def _append_cell(cell: Grapheme, cells: GraphemeBuffer):
-            log_debug(f"appending {cell!r}")
-            cells.append(cell)
-
-            # pad cells following wide graphemes with `None` filler
-            if cell.width > 1:
-                for _ in range(0, cell.width - 1):
-                    cells.append(None)
+            if cell:
+                log_debug(f"appending {cell!r}")
+                cells.append(cell)
 
             return Grapheme()
 

@@ -278,15 +278,19 @@ class BlockEditor:
         out: list[str] = []
 
         if left_half:
-            if cursor:
-                out.append(self.term.move_left(len(left_half)))
+            if cursor and self.cursor[0] > 0:
+                out.append(self.term.move_left(self.cursor[0]))
 
-            first = left_half[0] if left_half else None
+            first = left_half[0] if left_half else Grapheme()
 
             # handle full-width graphemes hanging off the left edge
             if left and first is None:
-                left_half[0] = (
-                    "\u2026" if self.term.encoding == "utf-8" else "<"
+                left_half.pop(0)
+                left_half = (
+                    GraphemeBuffer.from_str(
+                        "\u2026" if self.term.encoding == "utf-8" else "<"
+                    )
+                    + left_half
                 )
                 log.debug(
                     f"handling hanging grapheme, left edge: {left_half[0]!r}"
@@ -296,10 +300,9 @@ class BlockEditor:
 
         if right_half:
             # overflowing right edge
-            if afterlen >= self.columns - self.cursor[0]:
+            if afterlen > self.columns - self.cursor[0]:
                 last = right_half[-1]
 
-                # handle full-width graphemes hanging off the right edge
                 if last and last.width > 1:
                     log.debug(
                         f"handling hanging grapheme, right edge: {last!r}"
@@ -315,6 +318,7 @@ class BlockEditor:
             travel += right_width
             out.append(str(right_half))
 
+        log.debug(f"left {left_width} right {right_width}")
         remaining_space = self.columns - left_width - right_width
         log.debug(f"remaining space: {remaining_space}")
 
@@ -368,10 +372,10 @@ class BlockEditor:
             return ""
 
         abs_cursor = self.abs_cursor
-        deleted = after[0]
-        assert deleted is not None
-        cut = deleted.width
-        self.value[abs_cursor[1]] = before + GraphemeBuffer(after[cut:])
+        delete = after[0]
+        assert delete is not None
+        after.pop(0)
+        self.value[abs_cursor[1]] = before + after
         log.debug(f"delete {self.pos} {self.cursor} {self.current_row!r}")
 
         return self.redraw_current_line(left=False)
@@ -574,9 +578,10 @@ class BlockEditor:
         strlen = len(row)
         abs_cursor = self.abs_cursor
         target: Grapheme | None = None
+        cur_char = self.current_row[abs_cursor[0]]
 
-        if len(row) and (abs_cursor[0] > strlen or row[abs_cursor[0]] is None):
-            offset = strlen - abs_cursor[0] - 1 if abs_cursor[0] > strlen else 1
+        if len(row) and (abs_cursor[0] > strlen or not cur_char):
+            offset = abs_cursor[0] - strlen - 1 if cur_char else 1
             log.debug(
                 f"finding valid position: {strlen} {abs_cursor[0]} {offset}"
             )
