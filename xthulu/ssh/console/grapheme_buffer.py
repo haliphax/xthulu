@@ -117,7 +117,7 @@ class GraphemeBuffer(list[Grapheme | None]):
         idx = int(__index)
         iterate = idx > 0
 
-        while not val:
+        while not val and idx != 0:
             if iterate:
                 idx -= 1
 

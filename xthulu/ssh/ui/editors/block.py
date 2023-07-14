@@ -285,15 +285,13 @@ class BlockEditor:
 
             # handle full-width graphemes hanging off the left edge
             if left and first is None:
+                log.debug("hanging grapheme, left edge")
                 left_half.pop(0)
                 left_half = (
                     GraphemeBuffer.from_str(
                         "\u2026" if self.term.encoding == "utf-8" else "<"
                     )
                     + left_half
-                )
-                log.debug(
-                    f"handling hanging grapheme, left edge: {left_half[0]!r}"
                 )
 
             out.append(str(left_half))
@@ -304,9 +302,7 @@ class BlockEditor:
                 last = right_half[-1]
 
                 if last and last.width > 1:
-                    log.debug(
-                        f"handling hanging grapheme, right edge: {last!r}"
-                    )
+                    log.debug("hanging grapheme, right edge")
                     right_half.pop()
                     right_half += (
                         "\u2026" if self.term.encoding == "utf-8" else ">"
@@ -415,7 +411,8 @@ class BlockEditor:
                 last = before[idx]
 
             distance = -last.width
-            log.debug(f"distance: {distance}")
+
+        log.debug(f"distance: {distance}")
 
         if distance < 0 and abs_cursor[0] <= 0:
             log.debug("already at start of line")
@@ -434,6 +431,7 @@ class BlockEditor:
 
         if new_abs < strlen:
             target = row[abs_cursor[0] + distance]
+            log.debug(f"target: {target!r}")
 
             # don't land on half of a grapheme
             while target is None:
@@ -465,11 +463,13 @@ class BlockEditor:
 
             move = self.term.move_right
 
-        out: list[str] = [move(abs(self.cursor[0] - new_cursor))]
+        out: list[str] = []
         self.cursor[0] = new_cursor
 
         if shift:
             out.append(self.redraw())
+        else:
+            out.append(move(abs(distance)))
 
         log.debug(
             f"{'left' if distance < 0 else 'right'} {self.pos} {self.cursor} "
@@ -578,22 +578,26 @@ class BlockEditor:
         strlen = len(row)
         abs_cursor = self.abs_cursor
         target: Grapheme | None = None
-        cur_char = self.current_row[abs_cursor[0]]
 
-        if len(row) and (abs_cursor[0] > strlen or not cur_char):
-            offset = abs_cursor[0] - strlen - 1 if cur_char else 1
-            log.debug(
-                f"finding valid position: {strlen} {abs_cursor[0]} {offset}"
-            )
-            target = row[abs_cursor[0] - offset]
+        try:
+            cur_char = self.current_row[abs_cursor[0]]
 
-            while target is None:
-                offset += 1
+            if len(row) and (abs_cursor[0] > strlen or not cur_char):
+                offset = abs_cursor[0] - strlen - 1 if cur_char else 1
+                log.debug(
+                    f"finding valid position: {strlen} {abs_cursor[0]} {offset}"
+                )
                 target = row[abs_cursor[0] - offset]
 
-            if offset > 0:
-                self.cursor[0] -= offset
-                out.append(self.term.move_left(offset))
+                while target is None:
+                    offset += 1
+                    target = row[abs_cursor[0] - offset]
+
+                if offset > 0:
+                    self.cursor[0] -= offset
+                    out.append(self.term.move_left(offset))
+        except IndexError:
+            pass
 
         log.debug(
             f"{'up' if distance < 0 else 'down'} {self.pos} {self.cursor} "
