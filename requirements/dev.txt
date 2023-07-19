@@ -100,7 +100,7 @@ python-gitlab==3.13.0
     # via python-semantic-release
 python-semantic-release==7.33.2
     # via -r dev.in
-pyyaml==6.0
+pyyaml==6.0.1
     # via pre-commit
 readme-renderer==37.3
     # via twine

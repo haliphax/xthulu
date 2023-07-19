@@ -73,7 +73,7 @@ pycparser==2.21
     # via cffi
 python-dotenv==1.0.0
     # via uvicorn
-pyyaml==6.0
+pyyaml==6.0.1
     # via uvicorn
 redis==4.5.4
     # via -r requirements.in
