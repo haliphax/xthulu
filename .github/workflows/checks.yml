@@ -80,7 +80,7 @@ jobs:
         run: npm i
 
       - name: Prettier
-        run: npx prettier -c .
+        run: npx prettier -l -u .
 
   # linting
 
