@@ -7,19 +7,18 @@ repos:
         entry: ruff
         language: system
         types: [python]
-        require_serial: true
+
       - id: black
         name: black
         args: [-t, py311]
         entry: black
         language: system
         types: [python]
-        require_serial: true
+
       - id: prettier
         name: prettier
-        args: [prettier, -u, -c, -w]
+        args: [prettier, -l, -u, -w]
         entry: npx
         exclude: \.py$
         language: system
         types: [text]
-        require_serial: true
