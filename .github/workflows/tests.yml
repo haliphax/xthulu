@@ -2,10 +2,10 @@ name: Tests
 
 on:
   pull_request:
-    branches: [master]
+    branches: [main]
 
   push:
-    branches: [master]
+    branches: [main]
 
   workflow_dispatch:
 
@@ -35,7 +35,7 @@ jobs:
   tests:
     name: Unit tests
     needs: changes
-    if: needs.changes.outputs.src == 'true' || github.ref == 'refs/heads/master'
+    if: needs.changes.outputs.src == 'true' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Check out
@@ -64,7 +64,7 @@ jobs:
           coverage report --format=markdown >> $GITHUB_STEP_SUMMARY
 
       - name: Coveralls
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
         run: |
           pip install coveralls
           COVERALLS_REPO_TOKEN=${{ secrets.COVERALLS_TOKEN }} coveralls

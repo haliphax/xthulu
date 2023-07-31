@@ -2,10 +2,10 @@ name: Docker build
 
 on:
   pull_request:
-    branches: [master]
+    branches: [main]
 
   push:
-    branches: [master]
+    branches: [main]
 
   workflow_dispatch:
 
@@ -33,7 +33,7 @@ jobs:
   validate:
     name: Validate
     needs: changes
-    if: needs.changes.outputs.src == 'true' || github.ref == 'refs/heads/master'
+    if: needs.changes.outputs.src == 'true' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Check out

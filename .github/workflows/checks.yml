@@ -2,10 +2,10 @@ name: Checks
 
 on:
   pull_request:
-    branches: [master]
+    branches: [main]
 
   push:
-    branches: [master]
+    branches: [main]
 
   workflow_dispatch:
 
@@ -41,7 +41,7 @@ jobs:
   black:
     name: Black (formatter)
     needs: changes
-    if: needs.changes.outputs.py == 'true' || github.ref == 'refs/heads/master'
+    if: needs.changes.outputs.py == 'true' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Check out
@@ -64,7 +64,7 @@ jobs:
     name: Prettier (formatter)
     needs: changes
     if: |
-      needs.changes.outputs.misc == 'true' || github.ref == 'refs/heads/master'
+      needs.changes.outputs.misc == 'true' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Check out
@@ -87,7 +87,7 @@ jobs:
   ruff:
     name: Ruff (linter)
     needs: changes
-    if: needs.changes.outputs.py == 'true' || github.ref == 'refs/heads/master'
+    if: needs.changes.outputs.py == 'true' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Check out
