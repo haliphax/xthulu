@@ -92,7 +92,7 @@ pre-commit==3.2.1
     # via -r dev.in
 pycparser==2.21
     # via cffi
-pygments==2.14.0
+pygments==2.15.0
     # via readme-renderer
 pyproject-hooks==1.0.0
     # via build
