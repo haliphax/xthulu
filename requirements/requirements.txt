@@ -33,7 +33,7 @@ click==8.1.3
     #   -r requirements.in
     #   flask
     #   uvicorn
-cryptography==41.0.2
+cryptography==41.0.3
     # via asyncssh
 flask==2.3.2
     # via
