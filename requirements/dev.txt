@@ -43,7 +43,7 @@ filelock==3.10.7
     # via virtualenv
 gitdb==4.0.10
     # via gitpython
-gitpython==3.1.34
+gitpython==3.1.35
     # via python-semantic-release
 identify==2.5.22
     # via pre-commit
