@@ -36,7 +36,7 @@ async def show_art(
         preload: Number of rows to show immediately without delay
             (0 for term height - 1, None for no preload).
         maxwidth: The maximum number of columns to display.
-        center: True to center output>
+        center: True to center output.
         encoding: The encoding to use for output.
 
     Returns:
