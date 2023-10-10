@@ -22,8 +22,6 @@ asyncssh==2.13.1
     # via -r requirements.in
 bcrypt==4.0.1
     # via -r requirements.in
-blessed==1.20.0
-    # via -r requirements.in
 blinker==1.6.2
     # via flask
 cffi==1.15.1
@@ -52,10 +50,19 @@ httptools==0.5.0
     # via uvicorn
 idna==3.4
     # via anyio
+importlib-metadata==6.8.0
+    # via textual
 itsdangerous==2.1.2
     # via flask
 jinja2==3.1.2
     # via flask
+linkify-it-py==2.0.2
+    # via markdown-it-py
+markdown-it-py[linkify,plugins]==3.0.0
+    # via
+    #   mdit-py-plugins
+    #   rich
+    #   textual
 markupsafe==2.1.2
     # via
     #   jinja2
@@ -64,6 +71,10 @@ marshmallow==3.19.0
     # via
     #   flask-marshmallow
     #   webargs
+mdit-py-plugins==0.4.0
+    # via markdown-it-py
+mdurl==0.1.2
+    # via markdown-it-py
 packaging==23.0
     # via
     #   apispec
@@ -71,24 +82,40 @@ packaging==23.0
     #   webargs
 pycparser==2.21
     # via cffi
+pygments==2.16.1
+    # via rich
 python-dotenv==1.0.0
     # via uvicorn
 pyyaml==6.0.1
     # via uvicorn
 redis==4.5.4
     # via -r requirements.in
-six==1.16.0
+rich==13.6.0
     # via
-    #   blessed
-    #   flask-marshmallow
+    #   -r requirements.in
+    #   textual
+six==1.16.0
+    # via flask-marshmallow
 sniffio==1.3.0
     # via anyio
 sqlalchemy==1.3.24
     # via gino
+textual==0.38.1
+    # via -r requirements.in
 toml==0.10.2
     # via -r requirements.in
+tree-sitter==0.20.2
+    # via
+    #   textual
+    #   tree-sitter-languages
+tree-sitter-languages==1.7.0
+    # via textual
 typing-extensions==4.5.0
-    # via asyncssh
+    # via
+    #   asyncssh
+    #   textual
+uc-micro-py==1.0.2
+    # via linkify-it-py
 uvicorn[standard]==0.21.1
     # via -r requirements.in
 uvloop==0.17.0
@@ -97,8 +124,6 @@ uvloop==0.17.0
     #   uvicorn
 watchfiles==0.19.0
     # via uvicorn
-wcwidth==0.2.6
-    # via blessed
 webargs==8.2.0
     # via apiflask
 websockets==10.4
@@ -107,3 +132,5 @@ werkzeug==2.3.3
     # via flask
 wrapt==1.15.0
     # via -r requirements.in
+zipp==3.17.0
+    # via importlib-metadata

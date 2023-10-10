@@ -5,7 +5,7 @@ from typing import Any, Callable, NoReturn, Optional
 from types import ModuleType
 
 # stdlib
-from asyncio import sleep
+from asyncio import Queue, sleep
 from codecs import decode
 from functools import partial, singledispatch
 from importlib.abc import Loader
@@ -24,9 +24,9 @@ from ...configuration import get_config
 from ...events import EventQueue
 from ...logger import log
 from ...models import User
+from ..console import XthuluConsole
 from ..exceptions import Goto, ProcessClosing
 from ..structs import Script
-from ..terminal.proxy_terminal import ProxyTerminal
 from .lock_manager import _LockManager
 from .log_filter import ContextLogFilter
 
@@ -41,10 +41,13 @@ class SSHContext:
     proc: SSHServerProcess
     """This context's containing process"""
 
+    input: Queue
+    """This context's input queue"""
+
     stack: list[Script] = []
     """Script stack"""
 
-    term: ProxyTerminal
+    term: XthuluConsole
     """Context terminal object"""
 
     encoding: str
@@ -96,6 +99,7 @@ class SSHContext:
         self.ip = self._peername[0]
         self.whoami = f"{self.username}@{self.ip}"
         self.proc = proc
+        self.input = Queue(1024)
         self.encoding = encoding
         self.log = logging.getLogger(self.sid)
         self.events = EventQueue(self.sid)
@@ -143,7 +147,10 @@ class SSHContext:
             )
             text.append(encoded)
 
-        self.proc.stdout.write("".join(text).encode(self.encoding))
+        if encoding is not None:
+            self.proc.stdout.write("".join(text).encode(self.encoding))
+        else:
+            self.term.print("".join(text), sep="", end="")
 
     async def gosub(self, script: str, *args, **kwargs) -> Any:
         """
@@ -285,11 +292,7 @@ class SSHContext:
         except Exception:
             message = f"Exception in script {script.name}"
             self.log.exception(message)
-            self.echo(
-                self.term.normal,
-                "\r\n",
-                self.term.bright_white_on_red(f" {message} "),
-                self.term.normal,
-                "\r\n",
-            )
+            self.echo(f"\n\n[bright_white on red] {message} [/]\n\n")
             await sleep(3)
+            # avoid input debuffering bug if a Textual app crashed
+            self.proc.stdin.feed_data(b"\x1b")

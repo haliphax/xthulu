@@ -3,9 +3,24 @@
 # stdlib
 from asyncio import sleep
 
+# 3rd party
+from rich.progress import track
+from textual.app import ComposeResult
+from textual.widgets import Welcome
+
 # api
+from xthulu.ssh.console.app import XthuluApp
 from xthulu.ssh.context import SSHContext
-from xthulu.ssh.ui import show_art
+from xthulu.logger import log
+
+
+class WelcomeApp(XthuluApp):
+    def compose(self) -> ComposeResult:
+        yield Welcome()
+
+    def on_button_pressed(self) -> None:
+        log.info("pressed")
+        self.exit()
 
 
 async def main(cx: SSHContext):
@@ -15,32 +30,28 @@ async def main(cx: SSHContext):
         cx.echo("\x1b%@\x1b(U")
 
     cx.echo(
-        cx.term.normal,
-        "\r\n",
+        "\n",
         "💀 " if cx.encoding == "utf-8" else "",
-        cx.term.bright_green("x"),
-        cx.term.green("thulu"),
-        " terminal server ",
-        cx.term.italic("v1.0.0a0"),
-        "\r\n",
-        cx.term.bright_black("https://github.com/haliphax/xthulu"),
-        "\r\n\r\n",
-        cx.term.bright_white("Connecting: "),
-        cx.term.bright_cyan_underline(cx.user.name),
-        "@",
-        cx.term.cyan(cx.ip),
-        " ",
+        "[bold bright_green]x[/][green]thulu[/] ",
+        "terminal server [italic]v1.0.0a0[/]\n",
+        "[bright_black]https://github.com/haliphax/xthulu[/]\n\n",
     )
 
-    for color in ("bright_black", "white", "bright_white"):
-        colorfunc = getattr(cx.term, color)
-        await sleep(0.5)
-        cx.echo(colorfunc("."))
+    bar_text = "".join(
+        [
+            "[bright_white]Connecting:[/] ",
+            f"[bright_cyan underline]{cx.user.name}[/]",
+            f"@[cyan]{cx.ip}[/]",
+        ]
+    )
 
-    await sleep(0.5)
-    cx.echo(f"{cx.term.normal}\r\n")
-    await show_art(cx, "userland/artwork/login.ans")
+    for _ in track(range(20), description=bar_text, console=cx.term):
+        await sleep(0.1)
 
     await cx.gosub("oneliners")
     await cx.gosub("lock_example")
-    await cx.gosub("editor_demo")
+
+    app = WelcomeApp(context=cx)
+    await app.run_async()
+
+    cx.echo("\n\nGoodbye, then!\n\n")

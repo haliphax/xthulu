@@ -8,25 +8,20 @@ from xthulu.ssh.context import SSHContext
 
 
 async def main(cx: SSHContext):
-    cx.echo(
-        cx.term.normal,
-        "\r\n\r\n",
-        cx.term.bright_white_on_yellow_underline(" Shared locks demo "),
-        "\r\n\r\n",
-    )
+    cx.echo("\n\n[bright_white on yellow underline] Shared locks demo [/]\n\n")
 
     with cx.lock("testing") as l:
         if l:
             if cx.encoding == "utf-8":
                 cx.echo("🔒 ")
 
-            cx.echo("Lock acquired; press any key to release\r\n")
-            await cx.term.inkey()
+            cx.echo("Lock acquired; press any key to release\n")
+            await cx.proc.stdin.read(1)
 
             if cx.encoding == "utf-8":
                 cx.echo("🔥 ")
 
-            cx.echo("Lock released!\r\n")
+            cx.echo("Lock released!\n")
             await sleep(1)
 
             return
@@ -34,4 +29,5 @@ async def main(cx: SSHContext):
     if cx.encoding == "utf-8":
         cx.echo("❌ ")
 
-    cx.echo("Failed to acquire lock\r\n")
+    cx.echo("Failed to acquire lock\n")
+    await sleep(2)
