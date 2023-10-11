@@ -1,11 +1,12 @@
 """Userland entry point"""
 
-# stdlib
-from asyncio import sleep
+# 3rd party
+from rich.progress import track
 
 # api
+from xthulu.ssh.console.art import scroll_art
+from xthulu.ssh.console.input import wait_for_key
 from xthulu.ssh.context import SSHContext
-from xthulu.ssh.ui import show_art
 
 
 async def main(cx: SSHContext):
@@ -14,33 +15,26 @@ async def main(cx: SSHContext):
     elif cx.env["TERM"] != "ansi":
         cx.echo("\x1b%@\x1b(U")
 
+    await scroll_art(cx, "userland/artwork/login.ans", "amiga")
+    await wait_for_key(cx, "Press any key to continue", "arc")
     cx.echo(
-        cx.term.normal,
-        "\r\n",
         "💀 " if cx.encoding == "utf-8" else "",
-        cx.term.bright_green("x"),
-        cx.term.green("thulu"),
-        " terminal server ",
-        cx.term.italic("v1.0.0a0"),
-        "\r\n",
-        cx.term.bright_black("https://github.com/haliphax/xthulu"),
-        "\r\n\r\n",
-        cx.term.bright_white("Connecting: "),
-        cx.term.bright_cyan_underline(cx.user.name),
-        "@",
-        cx.term.cyan(cx.ip),
-        " ",
+        "[bold bright_green]x[/][green]thulu[/] ",
+        "terminal server [italic]v1.0.0a0[/]\n",
+        "[bright_black]https://github.com/haliphax/xthulu[/]\n\n",
     )
 
-    for color in ("bright_black", "white", "bright_white"):
-        colorfunc = getattr(cx.term, color)
-        await sleep(0.5)
-        cx.echo(colorfunc("."))
+    bar_text = "".join(
+        [
+            "[bright_white]Connecting:[/] ",
+            f"[bright_cyan underline]{cx.user.name}[/]",
+            f"@[cyan]{cx.ip}[/]",
+        ]
+    )
 
-    await sleep(0.5)
-    cx.echo(f"{cx.term.normal}\r\n")
-    await show_art(cx, "userland/artwork/login.ans")
+    for _ in track(sequence=range(20), description=bar_text, console=cx.term):
+        if await wait_for_key(cx, timeout=0.1):
+            break
 
     await cx.gosub("oneliners")
     await cx.gosub("lock_example")
-    await cx.gosub("editor_demo")

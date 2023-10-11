@@ -36,15 +36,12 @@ advantage of.
   - [x] Goto
   - [x] Gosub
   - [x] Exception handling
-- [x] Terminal library ([Blessed])
-  - [x] Process-isolated `Terminal` to circumvent atomic `TERM`
-- [ ] UI components
-  - [x] Block editor
-  - [x] Line editor (block editor with a single line)
-  - [ ] Horizontal lightbar
-  - [ ] Vertical lightbar
-  - [ ] Matrix (vertical/horizontal lightbar)
-  - [ ] Panel (scrollable boundary)
+- [x] Terminal library ([rich])
+  - [x] Adapt for SSH session usage
+- [ ] UI components ([textual])
+  - [x] Adapt for SSH session usage
+  - [ ] Block editor
+  - [ ] Line editor (block editor with a single line)
 
 </details>
 

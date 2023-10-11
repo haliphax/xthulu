@@ -3,9 +3,10 @@ Click
 aiofiles
 asyncssh
 bcrypt
-blessed
 gino
 redis
+rich
+textual
 toml
 uvicorn[standard]
 uvloop

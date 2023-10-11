@@ -4,7 +4,7 @@
 from datetime import datetime
 
 # 3rd party
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, Unicode
 
 # api
 from xthulu.models import User
@@ -27,7 +27,7 @@ class Oneliner(db.Model):
     )
     """User who left the oneliner"""
 
-    message = Column(String(78))
+    message = Column(Unicode(78))
     """The oneliner message"""
 
     timestamp = Column(DateTime(), default=datetime.utcnow)

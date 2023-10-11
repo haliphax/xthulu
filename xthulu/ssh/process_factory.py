@@ -1,10 +1,8 @@
 """SSH server process factory"""
 
 # stdlib
-from asyncio import gather, IncompleteReadError, Queue, TimeoutError, wait_for
+from asyncio import gather, IncompleteReadError, wait_for
 from datetime import datetime
-from multiprocessing.connection import Pipe
-from multiprocessing import Process
 
 # 3rd party
 from asyncssh import SSHServerProcess, TerminalSizeChanged
@@ -13,11 +11,10 @@ from asyncssh import SSHServerProcess, TerminalSizeChanged
 from ..configuration import get_config
 from ..events.structs import EventData
 from ..logger import log
+from .console import XthuluConsole
 from .context import SSHContext
 from .exceptions import Goto, ProcessClosing
 from .structs import Script
-from .terminal import terminal_process
-from .terminal.proxy_terminal import ProxyTerminal
 
 
 async def handle_client(proc: SSHServerProcess):
@@ -54,70 +51,58 @@ async def handle_client(proc: SSHServerProcess):
     if "TERM" not in cx.env:
         cx.env["TERM"] = termtype
 
-    w, h, pw, ph = proc.get_terminal_size()
+    w, h, _, _ = proc.get_terminal_size()
     cx.env["COLUMNS"] = str(w)
     cx.env["LINES"] = str(h)
-    proxy_pipe, subproc_pipe = Pipe()
-    session_stdin = Queue()
-    timeout = int(get_config("ssh.session.timeout", 120))
     await cx.user.update(last=datetime.utcnow()).apply()  # type: ignore
 
     async def input_loop():
-        """Catch exceptions on stdin and convert to EventData."""
+        timeout = int(get_config("ssh.session.timeout", 120))
 
-        while True:
+        while not proc.is_closing():
             try:
                 if timeout > 0:
-                    r = await wait_for(proc.stdin.readexactly(1), timeout)
+                    r = await wait_for(proc.stdin.read(1024), timeout)
                 else:
-                    r = await proc.stdin.readexactly(1)
+                    r = await proc.stdin.read(1024)
 
-                await session_stdin.put(r)
+                await cx.input.put(r)
 
             except IncompleteReadError:
-                # process is likely closing; end the loop
-                return
+                # process is likely closing
+                break
 
             except TimeoutError:
                 log.warning(f"{cx.whoami} timed out")
-                cx.echo(
-                    cx.term.normal,
-                    "\r\n",
-                    cx.term.bright_white_on_red(" TIMED OUT "),
-                    cx.term.normal,
-                    "\r\n",
-                )
-                proc.channel.close()
-                proc.close()
-
-                return
+                cx.echo("\n\n[bright_white on red] TIMED OUT [/]\n\n")
+                break
 
             except TerminalSizeChanged as sz:
                 cx.env["COLUMNS"] = str(sz.width)
                 cx.env["LINES"] = str(sz.height)
-                cx.term._width = sz.width
-                cx.term._height = sz.height
-                cx.term._pixel_width = sz.pixwidth
-                cx.term._pixel_height = sz.pixheight
+                cx.term.width = sz.width
+                cx.term.height = sz.height
                 cx.events.add(EventData("resize", (sz.width, sz.height)))
+
+        # disable capture of mouse events
+        cx.echo("\x1b[?1000l\x1b[?1003l\x1b[?1015l\x1b[?1006l")
+        # show cursor
+        cx.echo("\x1b[?25h")
+
+        if proc.channel:
+            proc.channel.close()
+
+        proc.close()
 
     async def main_process():
         """Userland script stack; main process."""
 
-        tp = Process(
-            target=terminal_process,
-            args=(termtype, w, h, pw, ph, subproc_pipe),
-        )
-        tp.start()
-        cx.term = ProxyTerminal(
-            session_stdin,
-            proc.stdout,
-            cx.encoding,
-            proxy_pipe,
-            w,
-            h,
-            pw,
-            ph,
+        cx.term = XthuluConsole(
+            encoding=cx.encoding,
+            height=h,
+            ssh_writer=proc.stdout,
+            width=w,
+            _environ=cx.env,
         )
         # prep script stack with top scripts;
         # since we're treating it as a stack and not a queue, add them
@@ -126,22 +111,20 @@ async def handle_client(proc: SSHServerProcess):
         cx.stack = [Script(s, (), {}) for s in reversed(top_names)]
 
         # main script engine loop
-        try:
-            while len(cx.stack):
-                try:
-                    await cx.runscript(cx.stack.pop())
-                except Goto as goto_script:
-                    cx.stack = [goto_script.value]
-                except ProcessClosing:
-                    cx.stack = []
-        finally:
-            # send sentinel to close child 'term_pipe' process
-            proxy_pipe.send((None, (), {}))
+        while len(cx.stack):
+            current = cx.stack.pop()
 
-            if proc.channel:
-                proc.channel.close()
+            try:
+                await cx.runscript(current)
+            except Goto as goto_script:
+                cx.stack = [goto_script.value]
+            except ProcessClosing:
+                cx.stack = []
 
-            proc.close()
+        if proc.channel:
+            proc.channel.close()
+
+        proc.close()
 
     log.info(f"{cx.whoami} Starting terminal session")
 

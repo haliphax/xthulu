@@ -4,13 +4,14 @@
 from codecs import decode, register
 
 # local
-from . import cp437
+from . import amiga, cp437
 
 
 def register_encodings():
     """Register encodings to be used by the system."""
 
     _encodings = {
+        "amiga": amiga.getregentry(),
         "cp437": cp437.getregentry(),
     }
 
@@ -22,5 +23,8 @@ def register_encodings():
 
     register(_search_function)
 
-    for c in ("cp437",):
+    for c in (
+        "amiga",
+        "cp437",
+    ):
         decode(bytes((27,)), c)

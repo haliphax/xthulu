@@ -1,0 +1,8 @@
+Label {
+	width: 100%;
+}
+
+#err {
+	background: #a00;
+	color: #fff;
+}
