@@ -66,11 +66,9 @@ class OnlinersApp(XthuluApp):
 
         val = event.input.value.strip()
 
-        if val == "":
-            self.exit()
-            return
+        if val != "":
+            await Oneliner.create(message=val, user_id=self.context.user.id)
 
-        await Oneliner.create(message=val, user_id=self.context.user.id)
         self.exit()
 
     async def on_key(self, event: events.Key) -> None:
