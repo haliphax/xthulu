@@ -1,4 +1,4 @@
-"""encodings module"""
+"""Encodings module"""
 
 # stdlib
 from codecs import decode, register

@@ -1,3 +1,5 @@
+"""File wrapper"""
+
 # typing
 from typing import Any, IO
 
@@ -6,6 +8,9 @@ from asyncssh import SSHWriter
 
 
 class FileWrapper(IO[str]):
+
+    """Duck-typed wrapper for providing a file-like object to rich/Textual"""
+
     _encoding: str
     _wrapped: SSHWriter[Any]
 

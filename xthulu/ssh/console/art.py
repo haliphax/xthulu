@@ -1,3 +1,5 @@
+"""Artwork display"""
+
 # stdlib
 from asyncio import QueueEmpty, sleep
 from re import Match, sub

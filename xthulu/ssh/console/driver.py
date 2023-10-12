@@ -1,3 +1,5 @@
+"""Console driver"""
+
 # 3rd party
 from asyncio import run_coroutine_threadsafe
 from codecs import getincrementaldecoder
@@ -11,7 +13,11 @@ from .app import XthuluApp
 
 
 class SSHDriver(LinuxDriver):
+
+    """Textual console driver integrated with SSHContext queues"""
+
     context: SSHContext
+    """The current SSH context"""
 
     def __init__(self, app: XthuluApp, **kwargs) -> None:
         self.context = app.context

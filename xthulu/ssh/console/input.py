@@ -1,3 +1,5 @@
+"""Input utilities"""
+
 # stdlib
 from asyncio import QueueEmpty, sleep, wait_for
 

@@ -1,3 +1,5 @@
+"""An SSH-integrated Console for use with rich/Textual"""
+
 # typing
 from typing import Any, Mapping
 
@@ -10,6 +12,9 @@ from .file_wrapper import FileWrapper
 
 
 class XthuluConsole(Console):
+
+    """Wrapper around rich's Console for integrating with SSHContext queues"""
+
     _encoding: str
 
     def __init__(

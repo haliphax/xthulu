@@ -1,3 +1,5 @@
+"""Textual application wrapper"""
+
 # stdlib
 from asyncio import sleep
 
