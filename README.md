@@ -51,7 +51,7 @@ advantage of.
 ### Miscellaneous
 
 - [x] Container proxy ([Traefik][])
-- [ ] HTTP server
+- [ ] HTTP server ([uvicorn][])
   - [x] Userland
   - [x] Static files
   - [ ] REST API
@@ -142,3 +142,4 @@ presented with a warning.
 [terminal capabilities]: https://en.wikipedia.org/wiki/Terminal_capabilities
 [textual]: https://github.com/Textualize/textual
 [traefik]: https://traefik.io/traefik
+[uvicorn]: https://www.uvicorn.org
