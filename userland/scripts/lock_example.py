@@ -5,7 +5,7 @@ from xthulu.ssh.context import SSHContext
 
 
 async def main(cx: SSHContext):
-    cx.echo("\n\n[bright_white on yellow underline] Shared locks demo [/]\n\n")
+    cx.echo("\n[bright_white on yellow underline] Shared locks demo [/]\n\n")
 
     with cx.lock("testing") as l:
         if l:
