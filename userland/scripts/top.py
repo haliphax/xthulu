@@ -21,19 +21,16 @@ async def main(cx: SSHContext):
         return
 
     await scroll_art(cx, "userland/artwork/login.ans", "amiga")
-    await cx.inkey()
-    return
-    await cx.inkey(
-        "You have to quit vim to proceed. Press a key when you're ready.",
-        "dots8Bit",
-    )
-    await cx.redirect(["/usr/bin/vi", "-R", "/app/xthulu/ssh/server.py"])
-    await cx.inkey("Press any key to continue", "arc")
+    await cx.inkey("Press any key to continue", "dots8Bit")
+
+    await scroll_art(cx, "userland/artwork/sysinfo.ans", "amiga")
     cx.echo(
         ":skull: [bold bright_green]x[/][green]thulu[/] ",
         "terminal server [italic]v1.0.0a0[/]\n",
         "[bright_black]https://github.com/haliphax/xthulu[/]\n\n",
     )
+    await cx.redirect(["/bin/ash", "-c", "uname -a; echo -e '\\r'; sleep 0.1"])
+    await cx.inkey("Press any key to continue", "arc")
 
     bar_text = "".join(
         [

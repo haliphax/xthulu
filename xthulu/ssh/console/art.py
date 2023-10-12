@@ -52,8 +52,6 @@ class ArtLog(XthuluApp):
 
             if self.context.inkey(timeout=0.1):
                 break
-        else:
-            await self.context.inkey(timeout=1)
 
         self.exit()
 
@@ -124,8 +122,6 @@ async def scroll_art(
 
         if await context.inkey(timeout=delay):
             break
-    else:
-        await context.inkey(timeout=1)
 
 
 async def show_art(context: SSHContext, path: str, encoding="cp437"):
