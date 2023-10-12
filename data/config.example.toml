@@ -22,7 +22,7 @@ bad_usernames = ["admin", "administrator", "root", "system", "god"]
 no_password = ["guest"]
 
 [ssh.session]
-timeout = 180
+timeout = 120
 
 [ssh.userland]
 paths = ["userland/scripts"]
