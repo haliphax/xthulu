@@ -1,16 +1,17 @@
 {
 	"files.exclude": {
 		"*.egg-info/": true,
-		".*": true,
+		"*.pyc": true,
 		"node_modules/": true,
-		"package*.json": true
+		"package-lock.json": true
+	},
+	"[python]": {
+		"editor.defaultFormatter": "ms-python.black-formatter"
 	},
 	"black-formatter.importStrategy": "fromEnvironment",
 	"python.analysis.importFormat": "relative",
 	"python.analysis.indexing": true,
 	"python.analysis.typeCheckingMode": "basic",
-	"python.formatting.provider": "black",
-	"python.linting.enabled": false,
 	"ruff.importStrategy": "fromEnvironment",
 	"python.testing.unittestArgs": ["-v", "-s", "./tests", "-p", "test_*.py"],
 	"python.testing.pytestEnabled": false,
