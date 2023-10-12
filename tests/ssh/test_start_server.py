@@ -4,7 +4,7 @@
 from typing import Any
 
 # stdlib
-from unittest import TestCase
+from unittest.async_case import IsolatedAsyncioTestCase
 from unittest.mock import AsyncMock, Mock, patch
 
 # 3rd party
@@ -16,7 +16,6 @@ from redis import Redis
 from tests.mocks.config import patch_get_config, test_config, test_ssh_config
 from xthulu.ssh import SSHServer, start_server
 from xthulu.ssh.process_factory import handle_client
-from xthulu.util import run_coroutine
 
 
 class Resources:
@@ -26,7 +25,7 @@ class Resources:
     db = Mock(Gino)
 
 
-class TestStartSSHServer(TestCase):
+class TestStartSSHServer(IsolatedAsyncioTestCase):
 
     """Test SSH server startup"""
 
@@ -42,18 +41,18 @@ class TestStartSSHServer(TestCase):
         self._patch_listen.stop()
 
     @patch("xthulu.ssh.get_config", patch_get_config(test_config))
-    def test_db_bind(self):
+    async def test_db_bind(self):
         """Server should bind database connection during startup."""
 
-        run_coroutine(start_server())
+        await start_server()
 
         self.mock_resources.db.set_bind.assert_awaited_once_with("test")
 
     @patch("xthulu.ssh.get_config", patch_get_config(test_config))
-    def test_server_args(self):
+    async def test_server_args(self):
         """Server should bind SSH server to values from configuration."""
 
-        run_coroutine(start_server())
+        await start_server()
 
         ssh_config = test_config["ssh"]
         self.mock_listen.assert_awaited_once_with(
@@ -74,11 +73,31 @@ class TestStartSSHServer(TestCase):
         ),
     )
     @patch("xthulu.ssh.ProxyProtocolListener")
-    def test_proxy_procotol(self, mock_listener: Mock):
+    async def test_proxy_procotol(self, mock_listener: Mock):
         """Server should use a PROXY tunnel if configured to do so."""
 
-        run_coroutine(start_server())
+        await start_server()
 
         mock_listener.assert_called_once()
         self.mock_listen.assert_awaited_once()
         assert "tunnel" in self.mock_listen.call_args[1]
+
+    @patch(
+        "xthulu.ssh.get_config",
+        patch_get_config(
+            {
+                **test_config,
+                "debug": {"enabled": True},
+                "ssh": {**test_ssh_config, "proxy_protocol": True},
+            }
+        ),
+    )
+    @patch("xthulu.ssh.start")
+    async def test_trace_malloc_start(self, mock_start: Mock):
+        """Server should call tracemalloc.start if debugging is enabled."""
+
+        # act
+        await start_server()
+
+        # assert
+        mock_start.assert_called_once()
