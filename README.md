@@ -80,7 +80,7 @@ advantage of.
 
 ```shell
 # in the docker/ directory
-DOCKER_BUILDKIT=1 docker-compose build
+docker compose build
 ```
 
 ### Create a configuration file and generate host keys
@@ -95,16 +95,16 @@ ssh-keygen -f data/ssh_host_key -t rsa -b 4096  # do not use a passphrase
 
 ```shell
 # in the docker/ directory
-docker-compose run --rm ssh db-create
-docker-compose run --rm ssh db-init
-docker-compose run --rm --entrypoint python ssh -m userland.cli.seed
+docker compose run --rm ssh db-create
+docker compose run --rm ssh db-init
+docker compose run --rm --entrypoint python ssh -m userland.cli.seed
 ```
 
 ### Start the services
 
 ```shell
 # in the docker/ directory
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Connect to the terminal server
