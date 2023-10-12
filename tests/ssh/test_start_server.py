@@ -44,16 +44,20 @@ class TestStartSSHServer(IsolatedAsyncioTestCase):
     async def test_db_bind(self):
         """Server should bind database connection during startup."""
 
+        # act
         await start_server()
 
+        # assert
         self.mock_resources.db.set_bind.assert_awaited_once_with("test")
 
     @patch("xthulu.ssh.get_config", patch_get_config(test_config))
     async def test_server_args(self):
         """Server should bind SSH server to values from configuration."""
 
+        # act
         await start_server()
 
+        # assert
         ssh_config = test_config["ssh"]
         self.mock_listen.assert_awaited_once_with(
             **{
@@ -76,8 +80,10 @@ class TestStartSSHServer(IsolatedAsyncioTestCase):
     async def test_proxy_procotol(self, mock_listener: Mock):
         """Server should use a PROXY tunnel if configured to do so."""
 
+        # act
         await start_server()
 
+        # assert
         mock_listener.assert_called_once()
         self.mock_listen.assert_awaited_once()
         assert "tunnel" in self.mock_listen.call_args[1]

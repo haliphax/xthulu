@@ -37,8 +37,10 @@ class TestResources(TestCase):
     def test_config_file_loaded(self, mock_load: Mock):
         """Constructor should load the configuration file."""
 
+        # act
         Resources()
 
+        # assert
         mock_load.assert_called_once_with("data/config.toml")
 
     @patch("xthulu.resources.exists", mock_exists)
@@ -47,8 +49,10 @@ class TestResources(TestCase):
     def test_config_file_from_env_used(self, mock_load: Mock):
         """Constructor should use the filename from environ if available."""
 
+        # act
         Resources()
 
+        # assert
         mock_load.assert_called_once_with("test")
 
     @parameterized.expand(
@@ -59,6 +63,8 @@ class TestResources(TestCase):
     def test_property_assignment(self, name: str, cls: Type):
         """Constructor should assign properties to singleton appropriately."""
 
+        # act
         resources = Resources()
 
+        # assert
         assert isinstance(getattr(resources, name), cls)

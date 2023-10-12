@@ -45,8 +45,10 @@ class TestStartWebServer(TestCase):
     def test_uses_config(self, mock_run: Mock):
         """Server should bind listener using loaded configuration."""
 
+        # act
         start_server()
 
+        # assert
         mock_run.assert_called_once_with(
             "xthulu.web.asgi:asgi_app",
             host=test_web_config["host"],
@@ -57,8 +59,10 @@ class TestStartWebServer(TestCase):
     def test_db_bind(self):
         """Server should bind database connection."""
 
+        # act
         create_app()
 
+        # assert
         self.mock_resources.db.set_bind.assert_called_once_with(
             test_config["db"]["bind"]
         )
@@ -67,14 +71,18 @@ class TestStartWebServer(TestCase):
     def test_registers_blueprint(self, mock_api: Mock):
         """Server should register the API blueprint."""
 
+        # act
         create_app()
 
+        # assert
         self.mock_resources.app.register_blueprint.assert_called_with(mock_api)
 
     def test_imports_userland_modules(self):
         """Server should import userland modules."""
 
+        # act
         create_app()
 
+        # assert
         for mod in test_web_config["userland"]["modules"]:
             self.mock_import.assert_called_with(mod)
