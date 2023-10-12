@@ -34,9 +34,24 @@ class OnlinersApp(XthuluApp):
             width: 100%;
         }
 
+        ListItem {
+            background: grey;
+            color: black;
+        }
+
+        ListItem.even {
+            background: black;
+            color: grey;
+        }
+
+        ListItem.--highlight {
+            background: red;
+            color: white;
+        }
+
         #err {
-            background: #a00;
-            color: #fff;
+            background: red;
+            color: white;
         }
     """
     """Stylesheet"""
@@ -63,6 +78,7 @@ class OnlinersApp(XthuluApp):
         self.artwork = artwork
         self.oneliners = oneliners
         super().__init__(context, **kwargs)
+        self.bind("escape", "quit")
 
     def _update_banner(self):
         padded = []
@@ -89,7 +105,10 @@ class OnlinersApp(XthuluApp):
 
         # oneliners
         list = ListView(
-            *[ListItem(Label(o.message)) for o in self.oneliners],
+            *[
+                ListItem(Label(o.message), classes="even" if idx % 2 else "")
+                for idx, o in enumerate(self.oneliners)
+            ],
             initial_index=len(self.oneliners) - 1,
         )
 
@@ -142,10 +161,6 @@ class OnlinersApp(XthuluApp):
             await Oneliner.create(message=val, user_id=self.context.user.id)
 
         self.exit()
-
-    async def on_key(self, event: events.Key) -> None:
-        if event.key == "escape":
-            self.exit()
 
     def on_resize(self, event: events.Resize) -> None:
         if event.size.height < len(self.artwork) + BANNER_PADDING:
