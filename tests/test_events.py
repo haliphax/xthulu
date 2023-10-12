@@ -157,6 +157,56 @@ class TestEventQueue(IsolatedAsyncioTestCase):
         self.assertEqual(len(q1_events), 1)
         self.assertEqual(q1_events[0], test_data)
 
+    def test_get_all_is_chronological(self):
+        """
+        get should return data in chronological order if no event name is given.
+        """
+
+        # arrange
+        q1 = EventQueue("1")
+        test_data = [
+            EventData("one", "one"),
+            EventData("two", "two"),
+            EventData("three", "three"),
+        ]
+
+        for event in test_data:
+            q1.add(event)
+
+        # act
+        q1_events = q1.get()
+
+        # assert
+        self.assertEqual(q1_events, test_data)
+
+    def test_get_by_name_is_chronological(self):
+        """
+        get should return data in chronological order if event name is given.
+        """
+
+        # arrange
+        q1 = EventQueue("1")
+        test_data_one = [
+            EventData("one", "one"),
+            EventData("one", "two"),
+            EventData("one", "three"),
+        ]
+        test_data_two = [
+            EventData("two", "one"),
+            EventData("two", "two"),
+            EventData("two", "three"),
+        ]
+        test_data = test_data_one + test_data_two
+
+        for event in test_data:
+            q1.add(event)
+
+        # act
+        q1_events = q1.get("one")
+
+        # assert
+        self.assertEqual(q1_events, test_data_one)
+
     def test_get_by_name_returns_eventdata(self):
         """get should return specific EventData from the queue."""
 
