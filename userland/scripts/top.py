@@ -20,9 +20,11 @@ async def main(cx: SSHContext):
         )
         return
 
+    cx.term.set_window_title(f"{cx.username}@79columns")
     await scroll_art(cx, "userland/artwork/login.ans", "amiga")
     await cx.inkey("Press any key to continue", "dots8Bit")
 
+    cx.term.set_window_title("system information")
     await scroll_art(cx, "userland/artwork/sysinfo.ans", "amiga")
     cx.echo(
         ":skull: [bold bright_green]x[/][green]thulu[/] ",
@@ -32,6 +34,7 @@ async def main(cx: SSHContext):
     await cx.redirect(["/bin/ash", "-c", "uname -a; echo -e '\\r'; sleep 0.1"])
     await cx.inkey("Press any key to continue", "arc")
 
+    cx.term.set_window_title("logging in...")
     bar_text = "".join(
         [
             "[bright_white]Connecting:[/] ",

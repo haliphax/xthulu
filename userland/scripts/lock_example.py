@@ -5,6 +5,7 @@ from xthulu.ssh.context import SSHContext
 
 
 async def main(cx: SSHContext):
+    cx.term.set_window_title("locks example")
     cx.echo("\n[bright_white on yellow underline] Shared locks demo [/]\n\n")
 
     with cx.lock("testing") as l:

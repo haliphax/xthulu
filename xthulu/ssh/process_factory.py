@@ -122,6 +122,7 @@ async def handle_client(proc: SSHServerProcess):
                 cx.stack = []
 
         if proc.channel:
+            cx.term.set_window_title("")
             proc.channel.close()
 
         proc.close()

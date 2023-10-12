@@ -176,6 +176,7 @@ class OnlinersApp(XthuluApp):
 
 
 async def main(cx: SSHContext):
+    cx.term.set_window_title("oneliners")
     db = Resources().db
     oneliners: list[Oneliner] = [
         oneliner
