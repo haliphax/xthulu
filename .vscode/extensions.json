@@ -9,6 +9,7 @@
 		"ms-vscode-remote.remote-containers",
 		"seatonjiang.gitmoji-vscode",
 		"tamasfe.even-better-toml",
+		"textualize.textual-syntax-highlighter",
 		"vue.volar",
 		"wholroyd.jinja"
 	]
