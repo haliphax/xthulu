@@ -1,11 +1,11 @@
 """Artwork display"""
 
 # stdlib
-from asyncio import QueueEmpty, sleep
 from re import Match, sub
 
 # 3rd party
 import aiofiles as aiof
+from rich.text import Text
 from textual import events
 from textual.widgets import Log
 
@@ -50,13 +50,10 @@ class ArtLog(XthuluApp):
 
             artlog.write_line(line)
 
-            try:
-                self.context.input.get_nowait()
+            if self.context.inkey(timeout=0.1):
                 break
-            except QueueEmpty:
-                await sleep(0.1)
         else:
-            await sleep(1)
+            await self.context.inkey(timeout=1)
 
         self.exit()
 
@@ -107,29 +104,31 @@ async def scroll_art(
 
     # show entire piece immediately if shorter than terminal
     if context.term.height >= len(artwork):
-        context.term.out(*artwork)
-        return
+        delay = 0.0
 
     for line in artwork:
-        context.term.out(
-            line,
-            end="",
+        processed = Text.from_ansi(line, overflow="crop", no_wrap=True, end="")
+        context.term.print(
+            processed,
+            emoji=False,
+            end="\n",
+            height=1,
             highlight=False,
+            markup=False,
+            overflow="crop",
+            no_wrap=True,
         )
 
-        try:
-            context.input.get_nowait()
+        if delay <= 0:
+            continue
+
+        if await context.inkey(timeout=delay):
             break
-        except QueueEmpty:
-            await sleep(delay)
     else:
-        await sleep(1)
+        await context.inkey(timeout=1)
 
 
 async def show_art(context: SSHContext, path: str, encoding="cp437"):
     """Display ANSI artwork directly to the console without scrolling."""
 
-    if context.encoding != "utf-8":
-        encoding = context.encoding
-
-    context.term.out(*(await load_art(path, encoding)))
+    return await scroll_art(context, path, encoding, 0.0)

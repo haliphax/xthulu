@@ -20,12 +20,14 @@ async def main(cx: SSHContext):
         )
         return
 
+    await scroll_art(cx, "userland/artwork/login.ans", "amiga")
+    await cx.inkey()
+    return
     await cx.inkey(
         "You have to quit vim to proceed. Press a key when you're ready.",
         "dots8Bit",
     )
     await cx.redirect(["/usr/bin/vi", "-R", "/app/xthulu/ssh/server.py"])
-    await scroll_art(cx, "userland/artwork/login.ans", "amiga")
     await cx.inkey("Press any key to continue", "arc")
     cx.echo(
         ":skull: [bold bright_green]x[/][green]thulu[/] ",
