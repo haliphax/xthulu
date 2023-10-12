@@ -52,7 +52,7 @@ services:
       - proxy
     ports:
       - "22:22"
-      - 8000:80
+      - 80:80
       - 443:443
       - 127.0.0.1:8080:8080
     restart: unless-stopped
