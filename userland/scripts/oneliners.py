@@ -61,7 +61,9 @@ class OnlinersApp(XthuluApp):
         for line in self.artwork:
             padded += [pad_left, line]
 
-        text = Text.from_ansi("".join(padded), overflow="crop", end="")
+        text = Text.from_ansi(
+            "".join(padded), overflow="crop", no_wrap=True, end=""
+        )
         self.banner.update(text)
 
     def compose(self):
