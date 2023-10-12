@@ -9,6 +9,9 @@
 	"[python]": {
 		"editor.defaultFormatter": "ms-python.black-formatter"
 	},
+	"[toml]": {
+		"editor.defaultFormatter": "tamasfe.even-better-toml"
+	},
 	"black-formatter.importStrategy": "fromEnvironment",
 	"python.analysis.importFormat": "relative",
 	"python.analysis.indexing": true,
