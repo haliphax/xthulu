@@ -17,6 +17,9 @@ class Oneliner(db.Model):
 
     """Oneliner model"""
 
+    MAX_LENGTH = 120
+    """Maximum length of oneliner messages"""
+
     id = Column(Integer(), primary_key=True)
     """Unique ID"""
 
@@ -27,7 +30,7 @@ class Oneliner(db.Model):
     )
     """User who left the oneliner"""
 
-    message = Column(Unicode(78))
+    message = Column(Unicode(MAX_LENGTH))
     """The oneliner message"""
 
     timestamp = Column(DateTime(), default=datetime.utcnow)

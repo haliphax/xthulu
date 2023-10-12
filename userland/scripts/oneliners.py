@@ -18,20 +18,35 @@ from xthulu.ssh.context import SSHContext
 # local
 from userland.models import Oneliner
 
+BANNER_PADDING = 10
+"""Required space leftover to display banner art"""
+
 LIMIT = 200
 """Total number of oneliners to load"""
 
 
 class OnlinersApp(XthuluApp):
+    CSS = """
+        Label {
+            width: 100%;
+        }
+
+        #err {
+            background: #a00;
+            color: #fff;
+        }
+    """
+
+    # custom props
     artwork: list[str]
     banner: Label
     error_message: Label
-    oneliners: list[Oneliner]
+    oneliners: list[str]
 
     def __init__(
         self,
         context: SSHContext,
-        oneliners: list[Oneliner],
+        oneliners: list[str],
         artwork: list[str],
         **kwargs,
     ):
@@ -53,8 +68,8 @@ class OnlinersApp(XthuluApp):
         # banner
         self.banner = Label(markup=False)
 
-        if self.console.height < len(self.artwork) + 10:
-            self.banner.visible = False
+        if self.console.height < len(self.artwork) + BANNER_PADDING:
+            self.banner.display = False
         else:
             self._update_banner()
 
@@ -62,23 +77,26 @@ class OnlinersApp(XthuluApp):
 
         # oneliners
         list = ListView(
-            *[ListItem(Label(o.message)) for o in self.oneliners],
+            *[ListItem(Label(o)) for o in self.oneliners],
             initial_index=len(self.oneliners) - 1,
         )
+
         list.scroll_end(animate=False)
         yield list
 
         # error message
         self.error_message = Label(id="err")
-        self.error_message.visible = False
+        self.error_message.display = False
         yield self.error_message
 
         # input
         input_widget = Input(
             placeholder="Enter a oneliner or press ESC",
             validators=Length(
-                maximum=78,
-                failure_description="Too long; must be <= 78 characters",
+                maximum=Oneliner.MAX_LENGTH,
+                failure_description=(
+                    f"Too long; must be <= {Oneliner.MAX_LENGTH} characters"
+                ),
             ),
             validate_on=(
                 "changed",
@@ -90,7 +108,7 @@ class OnlinersApp(XthuluApp):
 
     def on_input_changed(self, event: Input.Changed):
         if not event.validation_result or event.validation_result.is_valid:
-            self.error_message.visible = False
+            self.error_message.display = False
             return
 
         message = "".join(
@@ -100,7 +118,7 @@ class OnlinersApp(XthuluApp):
             )
         )
         self.error_message.update(message)
-        self.error_message.visible = True
+        self.error_message.display = True
 
     async def on_input_submitted(self, event: Input.Submitted) -> None:
         if event.validation_result and not event.validation_result.is_valid:
@@ -118,12 +136,12 @@ class OnlinersApp(XthuluApp):
             self.exit()
 
     def on_resize(self, event: events.Resize) -> None:
-        if event.size.height < len(self.artwork) + 10:
+        if event.size.height < len(self.artwork) + BANNER_PADDING:
             self.banner.update("")
-            self.banner.visible = False
+            self.banner.display = False
         else:
             self._update_banner()
-            self.banner.visible = True
+            self.banner.display = True
 
 
 async def main(cx: SSHContext):
