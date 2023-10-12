@@ -5,7 +5,6 @@ from rich.progress import track
 
 # api
 from xthulu.ssh.console.art import scroll_art
-from xthulu.ssh.console.input import wait_for_key
 from xthulu.ssh.context import SSHContext
 
 
@@ -16,7 +15,7 @@ async def main(cx: SSHContext):
         cx.echo("\x1b%@\x1b(U")
 
     await scroll_art(cx, "userland/artwork/login.ans", "amiga")
-    await wait_for_key(cx, "Press any key to continue", "arc")
+    await cx.inkey("Press any key to continue", "arc")
     cx.echo(
         "💀 " if cx.encoding == "utf-8" else "",
         "[bold bright_green]x[/][green]thulu[/] ",
@@ -33,7 +32,7 @@ async def main(cx: SSHContext):
     )
 
     for _ in track(sequence=range(20), description=bar_text, console=cx.term):
-        if await wait_for_key(cx, timeout=0.1):
+        if await cx.inkey(timeout=0.1):
             break
 
     await cx.gosub("oneliners")

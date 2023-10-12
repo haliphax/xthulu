@@ -204,6 +204,13 @@ class SSHContext:
 
         return locks.get(self.sid, name)
 
+    async def inkey(self, text="", spinner="dots", timeout=0.0) -> bytes | None:
+        """Wait for (and return) a keypress."""
+
+        from ..console.input import wait_for_key
+
+        return await wait_for_key(self, text, spinner, timeout)
+
     def release_lock(self, name: str) -> bool:
         """
         Release lock on behalf of session user.
