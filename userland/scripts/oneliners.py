@@ -19,13 +19,16 @@ from xthulu.ssh.context import SSHContext
 from userland.models import Oneliner
 
 BANNER_PADDING = 10
-"""Required space leftover to display banner art"""
+"""Required space left over to display banner art"""
 
 LIMIT = 200
 """Total number of oneliners to load"""
 
 
 class OnlinersApp(XthuluApp):
+
+    """Oneliners Textual app"""
+
     CSS = """
         Label {
             width: 100%;
@@ -36,12 +39,19 @@ class OnlinersApp(XthuluApp):
             color: #fff;
         }
     """
+    """Stylesheet"""
 
-    # custom props
     artwork: list[str]
+    """Lines from pre-loaded artwork file"""
+
     banner: Label
+    """Artwork banner widget"""
+
     error_message: Label
+    """Error message widget"""
+
     oneliners: list[Oneliner]
+    """List of pre-loaded oneliner messages"""
 
     def __init__(
         self,
