@@ -27,6 +27,49 @@ class TestEventQueues(IsolatedAsyncioTestCase):
         self.assertIn("1", EventQueues.q)
         self.assertEqual(EventQueues.q["1"], q1)
 
+    async def test_put_global_count(self):
+        """put_global should return an accurate count of deliveries."""
+
+        # arrange
+        EventQueue("1")
+        EventQueue("2")
+
+        # act
+        count = await put_global(EventData("test", "test"))
+
+        # assert
+        self.assertEqual(count, 2)
+
+    async def test_put_global_exclude(self):
+        """put_global should exclude specified EventQueue sids."""
+
+        # arrange
+        q1 = EventQueue("1")
+        test_data = EventData("test", "test")
+
+        # act
+        await put_global(test_data, exclude={"1"})
+        q1_events = q1.get("test")
+
+        # assert
+        self.assertEqual(len(q1_events), 0)
+
+    async def test_put_global_exclude_count(self):
+        """
+        put_global should return an accurate count of deliveries when sids are
+        excluded.
+        """
+
+        # arrange
+        EventQueue("1")
+        EventQueue("2")
+
+        # act
+        count = await put_global(EventData("test", "test"), exclude={"1"})
+
+        # assert
+        self.assertEqual(count, 1)
+
     async def test_put_global_is_global(self):
         """put_global should add an event to all EventQueues."""
 
@@ -57,20 +100,6 @@ class TestEventQueues(IsolatedAsyncioTestCase):
 
         # assert
         self.assertEqual(ev, test_data)
-
-    async def test_put_global_exclude(self):
-        """put_global should exclude specified EventQueue sids."""
-
-        # arrange
-        q1 = EventQueue("1")
-        test_data = EventData("test", "test")
-
-        # act
-        await put_global(test_data, exclude={"1"})
-        q1_events = q1.get("test")
-
-        # assert
-        self.assertEqual(len(q1_events), 0)
 
 
 class TestEventQueue(IsolatedAsyncioTestCase):
