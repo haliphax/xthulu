@@ -56,7 +56,7 @@ class EventQueue:
         """
 
         events = (
-            self._list.values()
+            list(self._list.values())
             if name is None
             else [self._list[key] for key in self._dict.get(name, [])]
         )
@@ -100,13 +100,25 @@ class EventQueues:
     """Queue storage, mapped by session ID (sid)"""
 
 
-async def put_global(event: EventData):
+async def put_global(event: EventData, exclude: set[str] | None = None):
     """
     Put an event in every connected session's event queue.
 
     Args:
         event: The event to replicate.
+        exclude: A list of sids to exclude from receiving the event.
+
+    Returns:
+        The number of event queues which were populated with the event.
     """
 
-    for q in EventQueues.q.values():
+    count = 0
+
+    for k, q in EventQueues.q.items():
+        if exclude and k in exclude:
+            continue
+
         q.add(event)
+        count += 1
+
+    return count
