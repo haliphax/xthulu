@@ -40,9 +40,11 @@ async def main(cx: SSHContext):
         ]
     )
 
+    waiting = True
+
     for _ in track(sequence=range(20), description=bar_text, console=cx.term):
-        if await cx.inkey(timeout=0.1):
-            break
+        if waiting and await cx.inkey(timeout=0.1):
+            waiting = False
 
     await cx.gosub("oneliners")
     await cx.gosub("lock_example")

@@ -30,28 +30,28 @@ class OnlinersApp(XthuluApp):
     """Oneliners Textual app"""
 
     CSS = """
+        $accent: ansi_red;
+        $error: ansi_bright_red;
+
         Label {
             width: 100%;
         }
 
         ListItem {
-            background: grey;
-            color: black;
+            background: $primary-background;
         }
 
         ListItem.even {
-            background: black;
-            color: grey;
+            background: $secondary-background;
         }
 
         ListItem.--highlight {
-            background: red;
-            color: white;
+            background: $accent;
         }
 
         #err {
-            background: red;
-            color: white;
+            background: $error;
+            color: black;
         }
     """
     """Stylesheet"""
@@ -111,6 +111,10 @@ class OnlinersApp(XthuluApp):
             ],
             initial_index=len(self.oneliners) - 1,
         )
+        list.styles.scrollbar_background = "black"
+        list.styles.scrollbar_color = "ansi_yellow"
+        list.styles.scrollbar_color_active = "white"
+        list.styles.scrollbar_color_hover = "ansi_bright_yellow"
 
         list.scroll_end(animate=False)
         yield list
