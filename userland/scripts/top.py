@@ -13,12 +13,17 @@ async def main(cx: SSHContext):
         cx.echo("\x1b%G")
     elif cx.env["TERM"] != "ansi":
         cx.echo("\x1b%@\x1b(U")
+        # if you don't use Textual apps, you can lift this restriction
+        cx.echo(
+            "[red]ERROR:[/] Unfortunately, only [bright_white]utf-8[/] "
+            "encoding is currently supported\n"
+        )
+        return
 
     await scroll_art(cx, "userland/artwork/login.ans", "amiga")
     await cx.inkey("Press any key to continue", "arc")
     cx.echo(
-        "💀 " if cx.encoding == "utf-8" else "",
-        "[bold bright_green]x[/][green]thulu[/] ",
+        ":skull: [bold bright_green]x[/][green]thulu[/] ",
         "terminal server [italic]v1.0.0a0[/]\n",
         "[bright_black]https://github.com/haliphax/xthulu[/]\n\n",
     )

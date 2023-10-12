@@ -209,6 +209,9 @@ class SSHContext:
 
         from ..console.input import wait_for_key
 
+        if self.encoding != "utf-8":
+            spinner = "line"
+
         return await wait_for_key(self, text, spinner, timeout)
 
     def release_lock(self, name: str) -> bool:

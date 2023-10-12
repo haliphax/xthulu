@@ -86,6 +86,9 @@ async def scroll_art_app(
 ):
     """Display ANSI artwork in a scrolling Log panel."""
 
+    if context.encoding != "utf-8":
+        encoding = context.encoding
+
     artwork = await load_art(path, encoding)
     await ArtLog(context, artwork, delay).run_async()
 
@@ -94,6 +97,9 @@ async def scroll_art(
     context: SSHContext, path: str, encoding="cp437", delay=0.1
 ):
     """Display ANSI artwork directly to the console."""
+
+    if context.encoding != "utf-8":
+        encoding = context.encoding
 
     artwork = await load_art(path, encoding)
 
@@ -120,5 +126,8 @@ async def scroll_art(
 
 async def show_art(context: SSHContext, path: str, encoding="cp437"):
     """Display ANSI artwork directly to the console without scrolling."""
+
+    if context.encoding != "utf-8":
+        encoding = context.encoding
 
     context.term.out(*(await load_art(path, encoding)))
