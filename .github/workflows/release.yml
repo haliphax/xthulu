@@ -26,4 +26,4 @@ jobs:
       - name: Release
         env:
           GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-        run: semantic-release publish
+        run: semantic-release version
