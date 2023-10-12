@@ -21,7 +21,7 @@ services:
     build:
       context: ..
       dockerfile: ./docker/Dockerfile
-    entrypoint: /bin/false
+    entrypoint: /bin/true
     image: xthulu
     restart: "no"
     scale: 0
