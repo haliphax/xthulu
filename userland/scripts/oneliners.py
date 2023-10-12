@@ -41,12 +41,12 @@ class OnlinersApp(XthuluApp):
     artwork: list[str]
     banner: Label
     error_message: Label
-    oneliners: list[str]
+    oneliners: list[Oneliner]
 
     def __init__(
         self,
         context: SSHContext,
-        oneliners: list[str],
+        oneliners: list[Oneliner],
         artwork: list[str],
         **kwargs,
     ):
@@ -77,7 +77,7 @@ class OnlinersApp(XthuluApp):
 
         # oneliners
         list = ListView(
-            *[ListItem(Label(o)) for o in self.oneliners],
+            *[ListItem(Label(o.message)) for o in self.oneliners],
             initial_index=len(self.oneliners) - 1,
         )
 
@@ -146,7 +146,7 @@ class OnlinersApp(XthuluApp):
 
 async def main(cx: SSHContext):
     db = Resources().db
-    oneliners = [
+    oneliners: list[Oneliner] = [
         oneliner
         for oneliner in reversed(
             await db.all(
