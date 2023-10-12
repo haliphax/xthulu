@@ -7,15 +7,7 @@
 			"dockerDashComposeVersion": "v2"
 		}
 	},
+	"forwardPorts": [22, 80, 443],
 	"onCreateCommand": "bash .devcontainer/on-create.sh",
-	"runArgs": ["--init", "--privileged", "--network=host"],
-	"extensions": [
-		"charliermarsh.ruff",
-		"editorconfig.editorconfig",
-		"esbenp.prettier-vscode",
-		"ms-python.black-formatter",
-		"ms-python.python",
-		"redhat.vscode-yaml",
-		"ZainChen.json"
-	]
+	"runArgs": ["--init", "--privileged", "--network=host"]
 }
