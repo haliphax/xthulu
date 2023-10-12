@@ -2,6 +2,7 @@
 	"files.exclude": {
 		"*.egg-info/": true,
 		"*.pyc": true,
+		".ruff_cache/": true,
 		"node_modules/": true,
 		"package-lock.json": true
 	},
