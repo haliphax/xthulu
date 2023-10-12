@@ -31,9 +31,8 @@ pyenv virtualenv 3.11 xthulu
 echo xthulu > .python-version
 cp .devcontainer/docker-compose.override.yml .
 pip install -Ue .[dev,hiredis]
-npm install
-pre-commit install
+npm ci
+pre-commit install --install-hooks
 etc/gitmoji-hook.sh
-docker-compose build
-docker-compose pull
-
+docker compose build
+docker compose pull

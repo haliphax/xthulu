@@ -1,18 +1,18 @@
 # Contributor guide
 
 ⚠️ Contribution at this point is not recommended, but isn't necessarily
-unwelcome. Please [open an issue] with the `enhancement` label with your
+unwelcome. Please [open an issue][] with the `enhancement` label with your
 proposed changes before beginning any work in earnest.
 
 ## Virtual environment
 
 It is all but _required_ that you use a Python virtual environment for
-development. These instructions will assume that you are using [pyenv], and have
-already installed and configured it on your system.
+development. These instructions will assume that you are using [pyenv][], and
+have already installed and configured it on your system.
 
-If you are using [Dev Containers], you may use the repository's configuration to
-create a new development container. Its `onCreateCommand` script will handle all
-of the steps detailed below.
+If you are using [Dev Containers][], you may use the repository's configuration
+to create a new development container. Its `onCreateCommand` script will handle
+all of the steps detailed below.
 
 ### Create the environment
 
@@ -27,35 +27,35 @@ pyenv activate xthulu
 In addition to the standard dependencies for the project, a set of
 developer-focused dependencies are included. Some of them are located in the
 `dev` optional dependencies bundle from the project's Python package, but others
-come from the [node.js] ecosystem.
+come from the [node.js][] ecosystem.
 
 ```shell
-pip install -e .[dev]
+pip install -e .[dev,hiredis]
 nodeenv -p
-npm install
+npm ci
 ```
 
 ## Configure development tools
 
 ### pre-commit
 
-This project makes use of the [pre-commit] system. The following applications
+This project makes use of the [pre-commit][] system. The following applications
 are used to lint source code and check formatting:
 
-- [Black] - Python formatter
-- [Prettier] - Miscellaneous formatter
-- [Ruff] - Python linter
+- [Black][] - Python formatter
+- [Prettier][] - Miscellaneous formatter
+- [Ruff][] - Python linter
 
 You must initialize the system and install the appropriate hooks. Once
 installed, they will be invoked automatically when you commit.
 
 ```shell
-pre-commit install
+pre-commit install --install-hooks
 ```
 
 ### gitmoji
 
-For conventional commit messages, this project has adopted the [gitmoji]
+For conventional commit messages, this project has adopted the [gitmoji][]
 standard. The `prepare-commit-msg` hook for crafting appropriately-categorized
 commit messages can be installed with the provided script.
 
@@ -63,11 +63,11 @@ commit messages can be installed with the provided script.
 etc/gitmoji-hook.sh
 ```
 
-### docker-compose
+### docker compose
 
 In order to avoid the need to rebuild the service containers' base image each
 time you make changes to the source code, you can create an override
-configuration for the `docker-compose` stack. This configuration will mount the
+configuration for the `docker compose` stack. This configuration will mount the
 live source code directory into the running containers so that restarting them
 should be sufficient to pick up any changes.
 
@@ -146,7 +146,7 @@ class TestExample(TestCase):
 
 ### Test coverage
 
-The [coverage] application is used to calculate test coverage after unit tests
+The [coverage][] application is used to calculate test coverage after unit tests
 have been run.
 
 ```shell
@@ -154,13 +154,13 @@ coverage run --source=xthulu --omit="xthulu/__main__.py" -m unittest
 coverage report
 ```
 
-[open an issue]: https://github.com/haliphax/xthulu/issues/new?labels=enhancement&title=Proposal:%20
-[pyenv]: https://github.com/pyenv/pyenv
-[dev containers]: https://containers.dev/
-[node.js]: https://nodejs.org
-[pre-commit]: https://pre-commit.com/
 [black]: https://black.readthedocs.io/en/stable/index.html
-[prettier]: https://prettier.io/
-[ruff]: https://beta.ruff.rs/docs/
-[gitmoji]: https://gitmoji.dev
 [coverage]: https://coverage.readthedocs.io/en/latest/
+[dev containers]: https://containers.dev/
+[gitmoji]: https://gitmoji.dev
+[node.js]: https://nodejs.org
+[open an issue]: https://github.com/haliphax/xthulu/issues/new?labels=enhancement&title=Proposal:%20
+[pre-commit]: https://pre-commit.com/
+[prettier]: https://prettier.io/
+[pyenv]: https://github.com/pyenv/pyenv
+[ruff]: https://beta.ruff.rs/docs/
