@@ -80,21 +80,30 @@ class OnlinersApp(XthuluApp):
                 maximum=78,
                 failure_description="Too long; must be <= 78 characters",
             ),
-            validate_on=("submitted",),
+            validate_on=(
+                "changed",
+                "submitted",
+            ),
         )
         input_widget.focus()
         yield input_widget
 
+    def on_input_changed(self, event: Input.Changed):
+        if not event.validation_result or event.validation_result.is_valid:
+            self.error_message.visible = False
+            return
+
+        message = "".join(
+            (
+                " ",
+                "... ".join(event.validation_result.failure_descriptions),
+            )
+        )
+        self.error_message.update(message)
+        self.error_message.visible = True
+
     async def on_input_submitted(self, event: Input.Submitted) -> None:
         if event.validation_result and not event.validation_result.is_valid:
-            message = "".join(
-                (
-                    " ",
-                    "... ".join(event.validation_result.failure_descriptions),
-                )
-            )
-            self.error_message.update(message)
-            self.error_message.visible = True
             return
 
         val = event.input.value.strip()
