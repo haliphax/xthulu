@@ -19,6 +19,7 @@ dev = { file = "requirements/dev.txt" }
 hiredis = { file = "requirements/hiredis.txt" }
 
 [tool.semantic_release]
+branch = "main"
 build_command = false
 commit_message = ""
 commit_parser = "semantic_release.history.emoji_parser"
