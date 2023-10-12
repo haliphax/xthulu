@@ -12,11 +12,11 @@ xthulu _("ch-THOO-loo")_ Python 3 asyncio community server
 While **xthulu** is intended to be a _community_ server which will provide
 multiple avenues of interaction (e.g. terminal, browser, REST API), its primary
 focus is in providing a modern SSH terminal interface which pays homage to the
-[bulletin boards] of the 1990s. Rather than leaning entirely into [DOS]-era
-nostalgia, modern character sets (UTF-8) and [terminal capabilities] are taken
+[bulletin boards][] of the 1990s. Rather than leaning entirely into [DOS][]-era
+nostalgia, modern character sets (UTF-8) and [terminal capabilities][] are taken
 advantage of.
 
-- [Contributor guide]
+- [Contributor guide][]
 
 ## Progress
 
@@ -25,7 +25,7 @@ advantage of.
 
 ### Terminal server
 
-- [x] SSH server ([AsyncSSH])
+- [x] SSH server ([AsyncSSH][])
   - [x] Password authentication
   - [x] Guest (no-auth) users
   - [ ] Key authentication
@@ -36,12 +36,12 @@ advantage of.
   - [x] Goto
   - [x] Gosub
   - [x] Exception handling
-- [x] Terminal library ([rich])
+- [x] Terminal library ([rich][])
   - [x] Adapt for SSH session usage
-- [ ] UI components ([textual])
+- [ ] UI components ([textual][])
   - [x] Adapt for SSH session usage
-  - [ ] Block editor
-  - [ ] Line editor (block editor with a single line)
+  - [ ] File browser
+  - [ ] Message interface
 
 </details>
 
@@ -50,12 +50,12 @@ advantage of.
 
 ### Miscellaneous
 
-- [x] Container proxy ([Traefik])
+- [x] Container proxy ([Traefik][])
 - [ ] HTTP server
   - [x] Userland
   - [x] Static files
   - [ ] REST API
-    - [x] Web framework ([APIFlask])
+    - [x] Web framework ([APIFlask][])
     - [ ] Implementation
 - [ ] IPC
   - [x] Session events queue
@@ -67,7 +67,7 @@ advantage of.
   - [ ] Global IPC (CLI, web, etc.) via Redis PubSub
 - [ ] Data layer
   - [x] PostgreSQL for data
-  - [x] Asynchronous ORM ([GINO])
+  - [x] Asynchronous ORM ([GINO][])
   - [x] User model
   - [ ] Message bases
   - [ ] Simple pickle table ("The Pile") for miscellaneous data storage
@@ -128,15 +128,17 @@ For the time being, the web server only demonstrates simple interoperability
 between the REST API and static pages. It is available at https://localhost. The
 userland web interface is at https://localhost/user.
 
-⚠️ [Traefik] will be using an untrusted certificate, and you will likely be
+⚠️ [Traefik][] will be using an untrusted certificate, and you will likely be
 presented with a warning.
 
-[bulletin boards]: https://archive.org/details/BBS.The.Documentary
-[dos]: https://en.wikipedia.org/wiki/MS-DOS
-[terminal capabilities]: https://en.wikipedia.org/wiki/Terminal_capabilities
-[contributor guide]: ./CONTRIBUTING.md
+[apiflask]: https://apiflask.com
 [asyncssh]: https://asyncssh.readthedocs.io/en/latest/
 [blessed]: https://blessed.readthedocs.io/en/latest/intro.html
-[traefik]: https://traefik.io/traefik
-[apiflask]: https://apiflask.com
+[bulletin boards]: https://archive.org/details/BBS.The.Documentary
+[contributor guide]: ./CONTRIBUTING.md
+[dos]: https://en.wikipedia.org/wiki/MS-DOS
 [gino]: https://python-gino.org
+[rich]: https://rich.readthedocs.io/en/latest/
+[terminal capabilities]: https://en.wikipedia.org/wiki/Terminal_capabilities
+[textual]: https://github.com/Textualize/textual
+[traefik]: https://traefik.io/traefik
