@@ -95,8 +95,8 @@ ssh-keygen -f data/ssh_host_key -t rsa -b 4096  # do not use a passphrase
 
 ```shell
 # in the docker/ directory
-docker compose run --rm ssh db-create
-docker compose run --rm ssh db-init
+docker compose run --rm ssh db create
+docker compose run --rm ssh db init
 docker compose run --rm --entrypoint python ssh -m userland.cli.seed
 ```
 
@@ -116,7 +116,8 @@ bypass authentication.
 ssh guest@localhost
 ```
 
-There is also an account with a password for testing password authentication.
+There is also a `user` account with a password for testing password
+authentication.
 
 ```shell
 ssh user@localhost  # password is also "user"
