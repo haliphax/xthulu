@@ -186,9 +186,7 @@ async def main(cx: SSHContext):
         .select()
     )
     oneliners: list[Oneliner] = await db.all(
-        Oneliner.query.where(Oneliner.id.in_(recent)).order_by(
-            Oneliner.id.desc()
-        )
+        Oneliner.query.where(Oneliner.id.in_(recent))
     )
 
     artwork = await load_art("userland/artwork/oneliners.ans", "amiga")
