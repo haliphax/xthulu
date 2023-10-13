@@ -80,7 +80,7 @@ class SSHContext:
     _peername: list[str]
 
     @classmethod
-    async def create(cls, proc: SSHServerProcess, encoding="utf-8"):
+    async def _create(cls, proc: SSHServerProcess, encoding="utf-8"):
         """
         Factory method for instantiating a new context asynchronously.
 
