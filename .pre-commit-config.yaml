@@ -8,8 +8,8 @@ repos:
       # blocks files with leftover merge conflict markers
       - id: check-merge-conflict
 
-      - id: no-commit-to-branch
-        name: Block commits to main branch
+      # - id: no-commit-to-branch
+      #   name: Block commits to main branch
 
   - repo: https://github.com/AleksaC/hadolint-py
     rev: v2.12.0
