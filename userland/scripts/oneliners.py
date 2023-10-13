@@ -178,14 +178,18 @@ class OnlinersApp(XthuluApp):
 async def main(cx: SSHContext):
     cx.term.set_window_title("oneliners")
     db = Resources().db
-    oneliners: list[Oneliner] = [
-        oneliner
-        for oneliner in reversed(
-            await db.all(
-                Oneliner.query.order_by(Oneliner.id.desc()).limit(LIMIT)
-            ),
+    recent = (
+        Oneliner.select("id")
+        .order_by(Oneliner.id.desc())
+        .limit(LIMIT)
+        .alias("recent")
+        .select()
+    )
+    oneliners: list[Oneliner] = await db.all(
+        Oneliner.query.where(Oneliner.id.in_(recent)).order_by(
+            Oneliner.id.desc()
         )
-    ]
+    )
 
     artwork = await load_art("userland/artwork/oneliners.ans", "amiga")
     app = OnlinersApp(cx, oneliners, artwork)
