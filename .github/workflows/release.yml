@@ -6,12 +6,14 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      packages: write
+
     steps:
       - name: Check out
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 400
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -25,5 +27,5 @@ jobs:
 
       - name: Release
         env:
-          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: semantic-release version
