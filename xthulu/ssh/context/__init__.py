@@ -129,8 +129,9 @@ class SSHContext:
         Echo text to the terminal.
 
         Args:
-            text: The text to echo.
-            encoding: The encoding to use for output. If unspecified, the
+            args: The text to echo. Multiple args will be joined without line \
+                breaks or whitespace.
+            encoding: The encoding to use for output. If unspecified, the \
                 context's encoding will be used.
         """
 
