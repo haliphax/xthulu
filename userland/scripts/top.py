@@ -1,5 +1,8 @@
 """Userland entry point"""
 
+# stdlib
+from importlib.metadata import version
+
 # 3rd party
 from rich.progress import track
 
@@ -30,7 +33,7 @@ async def main(cx: SSHContext):
     await scroll_art(cx, "userland/artwork/sysinfo.ans", "amiga")
     cx.echo(
         ":skull: [bold bright_green]x[/][green]thulu[/] ",
-        "terminal server [italic]v1.0.0a0[/]\n",
+        f"terminal server [italic]v{version('xthulu')}[/]\n",
         "[bright_black]https://github.com/haliphax/xthulu[/]\n\n",
     )
     await cx.redirect(["/bin/ash", "-c", "uname -a; echo -e '\\r'; sleep 0.1"])
