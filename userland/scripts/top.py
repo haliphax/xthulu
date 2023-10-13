@@ -13,6 +13,8 @@ async def main(cx: SSHContext):
         cx.echo("\x1b%G")
     elif cx.env["TERM"] != "ansi":
         cx.echo("\x1b%@\x1b(U")
+
+    if cx.encoding != "utf-8":
         # if you don't use Textual apps, you can lift this restriction
         cx.echo(
             "[red]ERROR:[/] Unfortunately, only [bright_white]utf-8[/] "
