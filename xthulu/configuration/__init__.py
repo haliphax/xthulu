@@ -28,12 +28,11 @@ def get_config(
     Args:
         path: The configuration path to traverse for a value.
         default: The default value if the path does not exist.
-        config: The configuration dictionary to scan.
-            If this is not provided, the system configuration will be loaded
-            by default.
+        config: The configuration dictionary to scan. If this is not provided, \
+            the system configuration will be loaded by default.
 
     Returns:
-        The configuration value or the provided default if the path does not
+        The configuration value or the provided default if the path does not \
         exist.
     """
 

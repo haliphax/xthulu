@@ -17,7 +17,7 @@ from .exceptions import Goto, ProcessClosing
 from .structs import Script
 
 
-async def handle_client(proc: SSHServerProcess):
+async def handle_client(proc: SSHServerProcess) -> None:
     """
     Factory method for handling client connections.
 

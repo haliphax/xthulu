@@ -206,7 +206,15 @@ class SSHContext:
         return locks.get(self.sid, name)
 
     async def inkey(self, text="", spinner="dots", timeout=0.0) -> bytes | None:
-        """Wait for (and return) a keypress."""
+        """
+        Wait for (and return) a keypress.
+
+        Args:
+            text: The prompt text, if any.
+            spinner: The prompt spinner (if `text` is specified).
+            timeout: The length of time (in seconds) to wait for input. A \
+                value of `0` will wait forever.
+        """
 
         from ..console.input import wait_for_key
 

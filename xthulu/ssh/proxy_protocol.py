@@ -114,8 +114,8 @@ class ProxyProtocolListener:
         Create the server.
 
         Args:
-            conn_factory: A callable which will be called and provided with the
-                connection information when a new connection is tunneled.
+            conn_factory: A callable which will be called and provided with \
+                the connection information when a new connection is tunneled.
             listen_host: The hostname to bind.
             listen_port: The port number to bind.
 
