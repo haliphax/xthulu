@@ -213,10 +213,10 @@ class TestEventQueue(IsolatedAsyncioTestCase):
         # arrange
         q1 = EventQueue("1")
         test_data = EventData("test", "test")
-
-        # act
         q1.add(EventData("nope", "nope"))
         q1.add(test_data)
+
+        # act
         q1_events = q1.get("test")
 
         # assert
