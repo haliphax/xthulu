@@ -248,8 +248,10 @@ class SSHContext:
                 stderr=proc.stderr,
                 send_eof=False,
             )
+            # drain any remaining IO buffer data to avoid tainting context IO
             await self.proc.stdout.drain()
             await self.proc.stderr.drain()
+            # reconnect stdin (or else input freezes)
             await self.proc.redirect(stdin=subprocess.PIPE)
 
         @f.register(tuple)
