@@ -1,22 +1,41 @@
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.0
+    hooks:
+      # blocks files larger than 500 KB
+      - id: check-added-large-files
+
+      # blocks files with leftover merge conflict markers
+      - id: check-merge-conflict
+
+      - id: no-commit-to-branch
+        name: Block commits to main branch
+
+  - repo: https://github.com/AleksaC/hadolint-py
+    rev: v2.12.0
+    hooks:
+      - id: hadolint
+        name: Lint Dockerfile with hadolint
+        args: [--ignore, DL3048]
+
   - repo: local
     hooks:
       - id: ruff
-        name: ruff
+        name: Lint files with ruff
         args: [check, --target-version, py311, --fix, --show-fixes]
         entry: ruff
         language: system
         types: [python]
 
       - id: black
-        name: black
+        name: Format files with black
         args: [-t, py311]
         entry: black
         language: system
         types: [python]
 
       - id: prettier
-        name: prettier
+        name: Format files with prettier
         args: [prettier, -l, -u, -w]
         entry: npx
         exclude: \.py$
