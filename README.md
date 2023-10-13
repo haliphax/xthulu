@@ -93,11 +93,15 @@ ssh-keygen -f data/ssh_host_key -t rsa -b 4096  # do not use a passphrase
 
 ### Create and seed the database
 
+> Note the use of the `cli` and `user` service containers, which are only spun
+> up for command line tasks. The `cli` container is for the server, while the
+> `user` container is for the userland implementation.
+
 ```shell
 # in the docker/ directory
-docker compose run --rm ssh db create
-docker compose run --rm ssh db init
-docker compose run --rm --entrypoint python ssh -m userland.cli.seed
+docker compose run --rm cli db create
+docker compose run --rm cli db init
+docker compose run --rm user db create
 ```
 
 ### Start the services

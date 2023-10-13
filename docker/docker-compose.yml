@@ -5,7 +5,6 @@ x-xthulu-common: &xthulu-common
   environment:
     TERM: xterm-256color
   image: xthulu
-  restart: unless-stopped
   tty: true
   volumes:
     - ../data:/app/data:ro
@@ -16,7 +15,7 @@ networks:
   proxy:
 
 services:
-  # for docker image dependency
+  # for docker image build dependency
   base-image:
     build:
       context: ..
@@ -25,6 +24,24 @@ services:
     image: xthulu
     restart: "no"
     scale: 0
+
+  # for command line utils
+  cli:
+    entrypoint: /usr/local/bin/python3 -m xthulu
+    image: xthulu
+    restart: "no"
+    scale: 0
+    <<: *xthulu-common
+
+  # for userland command line utils
+  user:
+    entrypoint: /usr/local/bin/python3 -m userland
+    image: xthulu
+    restart: "no"
+    scale: 0
+    <<: *xthulu-common
+
+  #---
 
   cache:
     image: redis:alpine
@@ -78,6 +95,7 @@ services:
     networks:
       - internal
       - proxy
+    restart: unless-stopped
     <<: *xthulu-common
 
   web:
@@ -96,6 +114,7 @@ services:
     networks:
       - internal
       - proxy
+    restart: unless-stopped
     <<: *xthulu-common
 
   web-static:

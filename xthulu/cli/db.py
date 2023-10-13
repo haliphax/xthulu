@@ -2,9 +2,10 @@
 
 # stdlib
 from asyncio import get_event_loop
+from importlib import import_module
 
 # 3rd party
-from click import echo, group
+from click import confirm, echo, group
 
 # local
 from ..configuration import get_config
@@ -18,24 +19,40 @@ def cli():
 
 @cli.command()
 def create():
-    """Create database tables"""
+    """Create database tables."""
 
-    from .. import models  # noqa: F401
-
+    import_module("...models", __name__)
     loop = get_event_loop()
     res = Resources()
 
     async def f():
         await res.db.set_bind(get_config("db.bind"))
         echo("Creating database and tables")
-        await res.db.gino.create_all()  # type: ignore
+        await res.db.gino.create_all()
 
     loop.run_until_complete(f())
 
 
 @cli.command()
+def destroy():
+    """Drop database tables."""
+
+    import_module("...models", __name__)
+    loop = get_event_loop()
+    res = Resources()
+
+    async def f():
+        await res.db.set_bind(get_config("db.bind"))
+        echo("Dropping database tables")
+        await res.db.gino.drop_all()
+
+    if confirm("Are you sure you want to destroy the database tables?"):
+        loop.run_until_complete(f())
+
+
+@cli.command()
 def init():
-    """Initialize database with starter data"""
+    """Initialize database with starter data."""
 
     from ..models import User
 
