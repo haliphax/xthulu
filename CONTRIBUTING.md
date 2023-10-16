@@ -81,18 +81,19 @@ images) should be reflected immediately upon reloading the browser.
 ```yaml
 version: "3"
 
-services:
-  ssh:
-    volumes:
-      - ./xthulu:/app/xthulu
+x-live-source: &live-source
+  volumes:
+    - ../xthulu:/app/xthulu:ro
 
-  web:
-    volumes:
-      - ./xthulu:/app/xthulu
+services:
+  cli: *live-source
+  user: *live-source
+  ssh: *live-source
+  web: *live-source
 
   web-static:
     volumes:
-      - ./xthulu/web/static:/usr/share/nginx/html
+      - ../xthulu/web/static:/usr/share/nginx/html:ro
 ```
 
 </details>

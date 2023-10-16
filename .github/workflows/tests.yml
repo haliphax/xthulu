@@ -70,6 +70,6 @@ jobs:
 
       - name: Coveralls
         if: github.ref == 'refs/heads/main'
-        run: |
-          pip install coveralls
-          COVERALLS_REPO_TOKEN=${{ secrets.COVERALLS_TOKEN }} coveralls
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
+        run: pip install coveralls && coveralls
