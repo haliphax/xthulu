@@ -27,22 +27,22 @@ class User(db.Model):
     id = Column(Integer(), primary_key=True)
     """Unique ID"""
 
-    name = Column(String(24), unique=True)
+    name = Column(String(24), unique=True, nullable=False)
     """User name"""
 
-    email = Column(String(64), unique=True)
+    email = Column(String(64), unique=True, nullable=False)
     """Email address"""
 
-    password = Column(LargeBinary(64))
+    password = Column(LargeBinary(64), nullable=True)
     """Encrypted password"""
 
-    salt = Column(LargeBinary(32))
+    salt = Column(LargeBinary(32), nullable=True)
     """Password salt"""
 
-    created = Column(DateTime(), default=datetime.utcnow)
+    created = Column(DateTime(), default=datetime.utcnow, nullable=False)
     """Creation time"""
 
-    last = Column(DateTime(), default=datetime.utcnow)
+    last = Column(DateTime(), default=datetime.utcnow, nullable=False)
     """Last login"""
 
     __tablename__ = "user"
@@ -73,6 +73,6 @@ class User(db.Model):
         if salt is None:
             salt = bcrypt.gensalt()
 
-        password = bcrypt.hashpw(pwd.encode("utf8"), salt)
+        password = bcrypt.hashpw(pwd.encode("utf-8"), salt)
 
         return password, salt
