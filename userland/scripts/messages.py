@@ -136,6 +136,6 @@ async def main(cx: SSHContext):
         Message.select("id", "title").order_by(Message.id.desc()).limit(LIMIT)
     )
 
-    artwork = await load_art("userland/artwork/oneliners.ans", "amiga")
+    artwork = await load_art("userland/artwork/messages.ans", "amiga")
     app = MessagesApp(cx, artwork, messages)
     await app.run_async()
