@@ -42,6 +42,11 @@ advantage of.
   - [x] Adapt for SSH session usage
   - [ ] File browser
   - [ ] Message interface
+- [ ] Door games
+  - [x] Subprocess redirect for terminal apps
+  - [ ] Dropfile generators
+    - [ ] `DOOR.SYS`
+    - [ ] `DORINFOx.DEF`
 
 </details>
 
