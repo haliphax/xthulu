@@ -1,31 +1,23 @@
 """Oneliners script"""
 
-# stdlib
-from math import floor
-
 # 3rd party
-from rich.text import Text
-from textual import events
 from textual.validation import Length
 from textual.widgets import Input, Label, ListItem, ListView
 
 # api
 from xthulu.resources import Resources
-from xthulu.ssh.console.app import XthuluApp
+from xthulu.ssh.console.banner_app import BannerApp
 from xthulu.ssh.console.art import load_art
 from xthulu.ssh.context import SSHContext
 
 # local
 from userland.models import Oneliner
 
-BANNER_PADDING = 10
-"""Required space left over to display banner art"""
-
 LIMIT = 200
 """Total number of oneliners to load"""
 
 
-class OnlinersApp(XthuluApp):
+class OnlinersApp(BannerApp):
 
     """Oneliners Textual app"""
 
@@ -56,12 +48,6 @@ class OnlinersApp(XthuluApp):
     """
     """Stylesheet"""
 
-    artwork: list[str]
-    """Lines from pre-loaded artwork file"""
-
-    banner: Label
-    """Artwork banner widget"""
-
     error_message: Label
     """Error message widget"""
 
@@ -71,37 +57,17 @@ class OnlinersApp(XthuluApp):
     def __init__(
         self,
         context: SSHContext,
-        oneliners: list[Oneliner],
         artwork: list[str],
+        oneliners: list[Oneliner],
         **kwargs,
     ):
-        self.artwork = artwork
         self.oneliners = oneliners
-        super().__init__(context, **kwargs)
+        super().__init__(context, artwork, **kwargs)
         self.bind("escape", "quit")
 
-    def _update_banner(self):
-        padded = []
-        pad_left = " " * floor(self.context.term.width / 2 - 40)
-
-        for line in self.artwork:
-            padded += [pad_left, line]
-
-        text = Text.from_ansi(
-            "".join(padded), overflow="crop", no_wrap=True, end=""
-        )
-        self.banner.update(text)
-
     def compose(self):
-        # banner
-        self.banner = Label(markup=False)
-
-        if self.console.height < len(self.artwork) + BANNER_PADDING:
-            self.banner.display = False
-        else:
-            self._update_banner()
-
-        yield self.banner
+        for widget in super().compose():
+            yield widget
 
         # oneliners
         list = ListView(
@@ -166,14 +132,6 @@ class OnlinersApp(XthuluApp):
 
         self.exit()
 
-    def on_resize(self, event: events.Resize) -> None:
-        if event.size.height < len(self.artwork) + BANNER_PADDING:
-            self.banner.update("")
-            self.banner.display = False
-        else:
-            self._update_banner()
-            self.banner.display = True
-
 
 async def main(cx: SSHContext):
     cx.term.set_window_title("oneliners")
@@ -190,5 +148,5 @@ async def main(cx: SSHContext):
     )
 
     artwork = await load_art("userland/artwork/oneliners.ans", "amiga")
-    app = OnlinersApp(cx, oneliners, artwork)
+    app = OnlinersApp(cx, artwork, oneliners)
     await app.run_async()
