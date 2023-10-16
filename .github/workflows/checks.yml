@@ -11,7 +11,8 @@ on:
 
 concurrency:
   cancel-in-progress: true
-  group: ${{ github.workflow }}-${{ github.branch }}
+  group: |
+    ${{ github.workflow }}-${{ github.event.pull_request.id || github.branch }}
 
 jobs:
   changes:
