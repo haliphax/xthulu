@@ -74,7 +74,7 @@ advantage of.
   - [x] PostgreSQL for data
   - [x] Asynchronous ORM ([GINO][])
   - [x] User model
-  - [ ] Message bases
+  - [x] Message bases
   - [ ] Simple pickle table ("The Pile") for miscellaneous data storage
 
 </details>
