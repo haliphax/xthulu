@@ -1,8 +1,11 @@
 """Console driver"""
 
-# 3rd party
-from asyncio import run_coroutine_threadsafe
+# stdlib
+from asyncio import QueueEmpty
 from codecs import getincrementaldecoder
+from time import sleep
+
+# 3rd party
 from textual._parser import ParseError
 from textual._xterm_parser import XTermParser
 from textual.drivers.linux_driver import LinuxDriver
@@ -38,26 +41,25 @@ class SSHDriver(LinuxDriver):
         pass
 
     def run_input_thread(self) -> None:
-        parser = XTermParser(self.context.proc.stdin.at_eof, self._debug)
+        parser = XTermParser(lambda: True, self._debug)
         feed = parser.feed
         decode = getincrementaldecoder("utf-8")().decode
 
         while not self.exit_event.is_set():
             try:
-                r = run_coroutine_threadsafe(
-                    self.context.input.get(), self._loop
-                ).result()
+                r = self.context.input.get_nowait()
                 unicode_data = decode(r)
 
                 for event in feed(unicode_data):
                     self.process_event(event)
 
+            except QueueEmpty:
+                sleep(0.01)
+                pass
+
             except ParseError:
                 # process is likely closing; end the loop
-                return
-
-        # avoid input debuffering bug on close
-        self.context.proc.stdin.feed_data(b"\r\n")
+                break
 
     def write(self, data: str) -> None:
         try:

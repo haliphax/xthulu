@@ -8,9 +8,8 @@ from textual import events
 from textual.app import App
 from textual.geometry import Size
 
-from ...events.structs import EventData
-
 # local
+from ...events.structs import EventData
 from ..context import SSHContext
 
 
