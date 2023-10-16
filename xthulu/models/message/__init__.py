@@ -9,6 +9,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Integer,
+    String,
     Text,
 )
 
@@ -40,10 +41,13 @@ class Message(db.Model):
     )
     """Recipient of the message (`None` for public messages)"""
 
-    created = Column(DateTime(), default=datetime.utcnow)
+    created = Column(DateTime(), default=datetime.utcnow, nullable=False)
     """Creation time"""
 
-    content = Column(Text())
+    title = Column(String(120), nullable=False)
+    """Title of the message"""
+
+    content = Column(Text(), nullable=False)
     """The message's content"""
 
     __tablename__ = "message"

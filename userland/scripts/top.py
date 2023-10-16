@@ -57,4 +57,4 @@ async def main(cx: SSHContext):
             waiting = False
 
     await cx.gosub("oneliners")
-    await cx.gosub("lock_example")
+    await cx.gosub("messages")

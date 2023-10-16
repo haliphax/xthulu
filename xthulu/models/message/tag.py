@@ -23,7 +23,7 @@ class MessageTag(db.Model):
     name = Column(String(32), primary_key=True)
     """The tag's name"""
 
-    created = Column(DateTime(), default=datetime.utcnow())
+    created = Column(DateTime(), default=datetime.utcnow(), nullable=False)
     """When the tag was created"""
 
     __tablename__ = "message_tag"
