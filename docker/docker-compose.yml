@@ -28,7 +28,12 @@ services:
   # for command line utils
   cli:
     entrypoint: /usr/local/bin/python3 -m xthulu
+    depends_on:
+      - cache
+      - db
     image: xthulu
+    networks:
+      - internal
     restart: "no"
     scale: 0
     <<: *xthulu-common
@@ -36,7 +41,12 @@ services:
   # for userland command line utils
   user:
     entrypoint: /usr/local/bin/python3 -m userland
+    depends_on:
+      - cache
+      - db
     image: xthulu
+    networks:
+      - internal
     restart: "no"
     scale: 0
     <<: *xthulu-common
