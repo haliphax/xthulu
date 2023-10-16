@@ -26,12 +26,19 @@ class Message(db.Model):
     id = Column(Integer(), primary_key=True)
     """Unique ID"""
 
-    user_id = Column(
-        Integer(),
+    author_id = Column(
+        None,
         ForeignKey(User.id, onupdate="cascade", ondelete="set null"),
         nullable=True,
     )
     """Author of the message"""
+
+    recipient_id = Column(
+        None,
+        ForeignKey(User.id, onupdate="cascade", ondelete="cascade"),
+        nullable=True,
+    )
+    """Recipient of the message (`None` for public messages)"""
 
     created = Column(DateTime(), default=datetime.utcnow)
     """Creation time"""
