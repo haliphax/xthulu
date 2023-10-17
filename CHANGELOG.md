@@ -1,3 +1,10 @@
+# [v0.1.0](https://github.com/haliphax/xthulu/compare/v0.0.2...v0.1.0) (2023-10-17)
+
+## ✨ New Features
+- [`d0b74a9`](https://github.com/haliphax/xthulu/commit/d0b74a9)  window titles 
+- [`41f1ad5`](https://github.com/haliphax/xthulu/commit/41f1ad5)  load version dynamically in top 
+- [`2021e48`](https://github.com/haliphax/xthulu/commit/2021e48)  BannerApp wrapper class
+
 # CHANGELOG
 
 
