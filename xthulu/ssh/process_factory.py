@@ -10,7 +10,6 @@ from asyncssh import SSHServerProcess, TerminalSizeChanged
 # local
 from ..configuration import get_config
 from ..events.structs import EventData
-from ..logger import log
 from .console import XthuluConsole
 from .context import SSHContext
 from .exceptions import Goto, ProcessClosing
@@ -28,10 +27,7 @@ async def handle_client(proc: SSHServerProcess) -> None:
     cx = await SSHContext._create(proc)
 
     if proc.subsystem:
-        log.error(
-            f"{cx.whoami} requested unimplemented subsystem: "
-            f"{proc.subsystem}"
-        )
+        cx.log.error(f"Requested unimplemented subsystem: {proc.subsystem}")
         proc.channel.close()
         proc.close()
 
@@ -73,7 +69,7 @@ async def handle_client(proc: SSHServerProcess) -> None:
                 break
 
             except TimeoutError:
-                log.warning(f"{cx.whoami} timed out")
+                cx.log.warn("Timed out")
                 cx.echo("\n\n[bright_white on red] TIMED OUT [/]\n\n")
                 break
 
@@ -127,12 +123,12 @@ async def handle_client(proc: SSHServerProcess) -> None:
 
         proc.close()
 
-    log.info(f"{cx.whoami} Starting terminal session")
+    cx.log.info("Starting terminal session")
 
     try:
         await gather(input_loop(), main_process())
     except Exception:
-        log.exception(f"{cx.whoami} Exception in handler process")
+        cx.log.exception("Exception in handler process")
     finally:
         if proc.channel:
             proc.channel.close()

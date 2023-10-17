@@ -97,7 +97,7 @@ class SSHContext:
         self.sid = "{}:{}".format(*self._peername)
         self.username = proc.get_extra_info("username")
         self.ip = self._peername[0]
-        self.whoami = f"{self.username}@{self.ip}"
+        self.whoami = f"{self.username}@{self.sid}"
         self.proc = proc
         self.input = Queue(1024)
         self.encoding = encoding

@@ -23,7 +23,7 @@ class SSHServer(AsyncSSHServer):
     def whoami(self):
         """The peer name in the format username@host"""
 
-        return f"{self._username}@{self._peername[0]}"
+        return f"{self._username}@{self._sid}"
 
     def connection_made(self, conn: SSHServerConnection):
         """
@@ -35,7 +35,7 @@ class SSHServer(AsyncSSHServer):
 
         self._peername = conn.get_extra_info("peername")
         self._sid = "{}:{}".format(*self._peername)
-        log.info(f"{self._peername[0]} connecting")
+        log.info(f"{self._sid} connecting")
 
     def connection_lost(self, exc: Exception):
         """
