@@ -9,7 +9,7 @@ from os import environ
 from os.path import exists, join
 
 # 3rd party
-from apiflask import APIFlask
+from fastapi import FastAPI
 from gino import Gino
 from redis import Redis
 from toml import load
@@ -25,7 +25,7 @@ class Resources:
 
     """Shared system resources"""
 
-    app: APIFlask
+    app: FastAPI
     """Web application"""
 
     cache: Redis
@@ -41,12 +41,12 @@ class Resources:
     """Database connection"""
 
     def __new__(cls):
-        if not environ.get("PDOC", "") and hasattr(cls, "_singleton"):
+        if hasattr(cls, "_singleton"):
             return cls._singleton
 
         self = super().__new__(cls)
         self._load_config()
-        self.app = APIFlask(__name__)
+        self.app = FastAPI()
         self.cache = Redis(
             host=self._config("cache.host"),
             port=int(self._config("cache.port")),

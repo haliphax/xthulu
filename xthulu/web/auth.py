@@ -1,39 +1,45 @@
 """Web authentication"""
 
+# typing
+from typing import Annotated
+
+# stdlib
+from secrets import compare_digest
+
 # 3rd party
-from apiflask import HTTPBasicAuth
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 # local
 from ..configuration import get_config
 from ..models.user import User
 from ..resources import Resources
 
-auth = HTTPBasicAuth()
+auth = HTTPBasic()
 db = Resources().db
 
 
-@auth.verify_password
-async def verify_password(username: str, password: str) -> User | None:
+async def login_user(
+    credentials: Annotated[HTTPBasicCredentials, Depends(auth)]
+):
+    await db.set_bind(get_config("db.bind"))
     user: User | None = await db.one_or_none(
-        User.query.where(User.name == username)
+        User.query.where(User.name == credentials.username)
     )
+    db.pop_bind()
 
     if not user:
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            headers={"WWW-Authenticate": "Basic"},
+        )
 
-    guests: set[str] = set(get_config("ssh.auth.no_password", []))
+    expected, _ = User.hash_password(credentials.password, user.salt)
 
-    if user.name in guests:
-        return user
-
-    expected, _ = User.hash_password(password, user.salt)
-
-    if expected != user.password:
-        return None
+    if not compare_digest(expected, user.password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            headers={"WWW-Authenticate": "Basic"},
+        )
 
     return user
-
-
-@auth.get_user_roles
-async def get_user_roles(user: User) -> list[str]:
-    return []

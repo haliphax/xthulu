@@ -8,7 +8,7 @@ from unittest import TestCase
 from unittest.mock import Mock, patch
 
 # 3rd party
-from apiflask import APIFlask
+from flask import Flask
 from gino import Gino
 from redis import Redis
 from parameterized import parameterized
@@ -56,7 +56,7 @@ class TestResources(TestCase):
         mock_load.assert_called_once_with("test")
 
     @parameterized.expand(
-        (("app", APIFlask), ("cache", Redis), ("db", Gino)),
+        (("app", Flask), ("cache", Redis), ("db", Gino)),
     )
     @patch("xthulu.resources.load", lambda *_: {})
     @patch("xthulu.resources.exists", mock_exists)
