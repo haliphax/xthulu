@@ -131,7 +131,7 @@ class MessagesApp(BannerApp):
 
 
 async def main(cx: SSHContext):
-    cx.term.set_window_title("messages")
+    cx.console.set_window_title("messages")
     await MessagesApp(
         cx, art_path="userland/artwork/messages.ans", art_encoding="amiga"
     ).run_async()
