@@ -1,3 +1,8 @@
+# [v0.2.0](https://github.com/haliphax/xthulu/compare/v0.1.0...v0.2.0) (2023-10-17)
+
+## ✨ New Features
+- [`ab976f0`](https://github.com/haliphax/xthulu/commit/ab976f0)  node chat script
+
 # [v0.1.0](https://github.com/haliphax/xthulu/compare/v0.0.2...v0.1.0) (2023-10-17)
 
 ## ✨ New Features
