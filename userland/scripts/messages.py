@@ -1,4 +1,4 @@
-"""Oneliners script"""
+"""Messages script"""
 
 # stdlib
 from dataclasses import dataclass
