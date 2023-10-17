@@ -10,7 +10,6 @@ from textual.widgets import Label, ListItem, ListView, MarkdownViewer
 # api
 from xthulu.resources import Resources
 from xthulu.ssh.console.banner_app import BannerApp
-from xthulu.ssh.console.art import load_art
 from xthulu.ssh.context import SSHContext
 
 # local
@@ -68,52 +67,25 @@ class MessagesApp(BannerApp):
     filter: MessageFilter
     """Current message filter"""
 
-    messages: list[dict]
-    """Loaded messages"""
-
     def __init__(
         self,
         context: SSHContext,
-        artwork: list[str],
-        messages: list[dict],
         **kwargs,
     ):
         self.filter = MessageFilter()
-        self.messages = messages
-        super().__init__(context, artwork, **kwargs)
+        super().__init__(context, **kwargs)
 
     def compose(self):
         for widget in super().compose():
             yield widget
 
-        list = ListView(
-            *[
-                ListItem(
-                    Label(o["title"]),
-                    id=f"message_{o['id']}",
-                    classes="even" if idx % 2 else "",
-                )
-                for idx, o in enumerate(self.messages)
-            ],
-            initial_index=-1,
-        )
+        list = ListView()
         list.focus()
         yield list
 
         mv = MarkdownViewer(show_table_of_contents=False)
         mv.display = False
         yield mv
-
-    async def on_list_view_selected(self, event: ListView.Selected):
-        self.query_one(ListView).display = False
-        assert event.item.id
-        message_id = int(event.item.id.split("_")[1])
-        message: Message = await Message.get(message_id)
-        mv = self.query_one(MarkdownViewer)
-        mv.document.update(message.content)
-        mv.display = True
-        mv.scroll_home(animate=False)
-        mv.focus()
 
     async def key_escape(self, event: events.Key):
         lv = self.query_one(ListView)
@@ -128,14 +100,42 @@ class MessagesApp(BannerApp):
         lv.focus()
         event.stop()
 
+    async def on_list_view_selected(self, event: ListView.Selected):
+        self.query_one(ListView).display = False
+        assert event.item.id
+        message_id = int(event.item.id.split("_")[1])
+        message: Message = await Message.get(message_id)
+        mv = self.query_one(MarkdownViewer)
+        mv.document.update(message.content)
+        mv.display = True
+        mv.scroll_home(animate=False)
+        mv.focus()
+
+    async def on_ready(self):
+        await super().on_ready()
+        db = Resources().db
+        messages: list[dict] = await db.all(
+            Message.select("id", "title")
+            .order_by(Message.id.desc())
+            .limit(LIMIT)
+        )
+        lv: ListView = self.query_one(ListView)
+
+        for idx, m in enumerate(messages):
+            lv.mount(
+                ListItem(
+                    Label(m["title"]),
+                    id=f"message_{m['id']}",
+                    classes="even" if idx % 2 else "",
+                )
+            )
+
+        lv.index = 0
+        lv.focus()
+
 
 async def main(cx: SSHContext):
     cx.term.set_window_title("messages")
-    db = Resources().db
-    messages: list[dict] = await db.all(
-        Message.select("id", "title").order_by(Message.id.desc()).limit(LIMIT)
-    )
-
-    artwork = await load_art("userland/artwork/messages.ans", "amiga")
-    app = MessagesApp(cx, artwork, messages)
-    await app.run_async()
+    await MessagesApp(
+        cx, art_path="userland/artwork/messages.ans", art_encoding="amiga"
+    ).run_async()
