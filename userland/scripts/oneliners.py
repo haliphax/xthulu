@@ -36,7 +36,7 @@ class OnlinersApp(BannerApp):
             background: $secondary-background;
         }
 
-        ListItem.--highlight {
+        ListView:focus ListItem.--highlight {
             background: $accent;
         }
 
