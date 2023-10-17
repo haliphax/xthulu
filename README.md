@@ -91,9 +91,9 @@ docker compose build
 ### Create a configuration file and generate host keys
 
 ```shell
-# in the repository root
-cp data/config.example.toml data/config.toml
-ssh-keygen -f data/ssh_host_key -t rsa -b 4096  # do not use a passphrase
+# in the data/ directory
+cp config.example.toml config.toml
+ssh-keygen -f ssh_host_key -t rsa -b 4096  # do not use a passphrase
 ```
 
 ### Create and seed the database
