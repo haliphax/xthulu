@@ -109,42 +109,6 @@ python -m unittest     # run all tests
 python -m unittest -h  # list test runner options
 ```
 
-### Testing asynchronous code
-
-The convenience method `run_coroutine` in the `util` module can be used to await
-asynchronous method calls in test cases.
-
-<details>
-<summary>Example</summary>
-
-```python
-"""Example tests"""
-
-# stdlib
-from unittest import TestCase
-from unittest.mock import AsyncMock, patch
-
-# local
-from xthulu.some_package import some_asynchronous_method
-from xthulu.util import run_coroutine
-
-
-class TestExample(TestCase):
-
-    """Example test case"""
-
-    @patch("xthulu.some_package.a_different_asynchronous_method")
-    def test_something_asynchronous(self, mock_method: AsyncMock):
-        """Asynchronous method A should await asynchronous method B."""
-
-        result = run_coroutine(some_asynchronous_method())
-
-        assert result == "expected result"
-        mock_method.assert_awaited_once()
-```
-
-</details>
-
 ### Test coverage
 
 The [coverage][] application is used to calculate test coverage after unit tests
