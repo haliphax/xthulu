@@ -1,0 +1,38 @@
+{
+	"branches": ["main"],
+	"failComment": false,
+	"plugins": [
+		"semantic-release-gitmoji",
+		["@semantic-release/changelog", { "changelogFile": "CHANGELOG.md" }],
+		[
+			"semantic-release-replace-plugin",
+			{
+				"replacements": [
+					{
+						"countMatches": true,
+						"files": ["pyproject.toml"],
+						"from": "version = \"\\d+\\.\\d+\\.\\d+\"",
+						"results": [
+							{
+								"file": "pyproject.toml",
+								"hasChanged": true,
+								"numMatches": 1,
+								"numReplacements": 1
+							}
+						],
+						"to": "version = \"${nextRelease.version}\""
+					}
+				]
+			}
+		],
+		[
+			"@semantic-release/git",
+			{
+				"assets": ["CHANGELOG.md", "pyproject.toml"],
+				"message": "🔖 release ${nextRelease.version}"
+			}
+		],
+		"@semantic-release/github"
+	],
+	"successComment": false
+}

@@ -14,17 +14,16 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.RELEASE_TOKEN }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up Node
+        uses: actions/setup-node@v3
         with:
-          python-version: 3.11
+          cache: npm
+          node-version-file: .nvmrc
 
-      - name: Install semantic-release
-        run: |
-          pkg="$(grep -E "^python-semantic-release==" requirements/dev.txt)"
-          pip install "$pkg"
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
 
       - name: Release
         env:
-          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-        run: semantic-release version --patch
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: npx semantic-release -r "$(git remote get-url origin)"

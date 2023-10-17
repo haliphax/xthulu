@@ -4,50 +4,25 @@
 #
 #    pip-compile dev.in
 #
-annotated-types==0.6.0
-    # via pydantic
 black==23.1.0
     # via -r dev.in
 build==0.10.0
     # via pip-tools
-certifi==2023.7.22
-    # via requests
 cfgv==3.3.1
     # via pre-commit
-charset-normalizer==3.1.0
-    # via requests
 click==8.1.3
     # via
     #   -c requirements.in
     #   black
     #   pip-tools
-    #   python-semantic-release
 coverage==7.2.2
     # via -r dev.in
 distlib==0.3.6
     # via virtualenv
-dotty-dict==1.3.1
-    # via python-semantic-release
 filelock==3.10.7
     # via virtualenv
-gitdb==4.0.10
-    # via gitpython
-gitpython==3.1.37
-    # via python-semantic-release
 identify==2.5.22
     # via pre-commit
-idna==3.4
-    # via requests
-importlib-resources==5.13.0
-    # via python-semantic-release
-jinja2==3.1.2
-    # via python-semantic-release
-markdown-it-py==3.0.0
-    # via rich
-markupsafe==2.1.3
-    # via jinja2
-mdurl==0.1.2
-    # via markdown-it-py
 mypy-extensions==1.0.0
     # via black
 nodeenv==1.7.0
@@ -70,45 +45,12 @@ platformdirs==3.2.0
     #   virtualenv
 pre-commit==3.2.1
     # via -r dev.in
-pydantic==2.4.2
-    # via python-semantic-release
-pydantic-core==2.10.1
-    # via pydantic
-pygments==2.16.1
-    # via rich
 pyproject-hooks==1.0.0
     # via build
-python-gitlab==3.13.0
-    # via python-semantic-release
-python-semantic-release==8.1.1
-    # via -r dev.in
 pyyaml==6.0.1
     # via pre-commit
-requests==2.31.0
-    # via
-    #   python-gitlab
-    #   python-semantic-release
-    #   requests-toolbelt
-requests-toolbelt==0.10.1
-    # via python-gitlab
-rich==13.6.0
-    # via
-    #   -c requirements.in
-    #   python-semantic-release
 ruff==0.0.259
     # via -r dev.in
-shellingham==1.5.3
-    # via python-semantic-release
-smmap==5.0.0
-    # via gitdb
-tomlkit==0.11.7
-    # via python-semantic-release
-typing-extensions==4.8.0
-    # via
-    #   pydantic
-    #   pydantic-core
-urllib3==1.26.17
-    # via requests
 virtualenv==20.21.0
     # via pre-commit
 wheel==0.40.0

@@ -10,10 +10,10 @@ class Goto(Exception):
 
     def __init__(self, script: str, *args, **kwargs):
         """
-        Thrown to change the script without returning.
-
         Args:
             script: The script to run.
+            args: The positional arguments to pass.
+            kwargs: The keyword arguments to pass.
         """
 
         self.value = Script(script, args, kwargs)

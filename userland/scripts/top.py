@@ -58,3 +58,4 @@ async def main(cx: SSHContext):
 
     await cx.gosub("oneliners")
     await cx.gosub("messages")
+    await cx.gosub("chat")

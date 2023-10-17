@@ -1,7 +1,13 @@
 {
 	"devDependencies": {
+		"@semantic-release/changelog": "^6.0.3",
+		"@semantic-release/git": "^10.0.1",
+		"@semantic-release/github": "^9.2.1",
 		"gitmoji-cli": "^8.0.0",
 		"prettier": "^2.8.7",
-		"prettier-plugin-toml": "0.3.1"
+		"prettier-plugin-toml": "0.3.1",
+		"semantic-release": "^22.0.5",
+		"semantic-release-gitmoji": "^1.6.5",
+		"semantic-release-replace-plugin": "^1.2.7"
 	}
 }

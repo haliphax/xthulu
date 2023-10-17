@@ -9,19 +9,26 @@ from apiflask import APIBlueprint
 from uvicorn import run
 
 # local
-from ..resources import Resources
 from ..configuration import get_config
 from ..logger import log
+from ..models.user import User
+from ..resources import Resources
+from .auth import auth
 
 api = APIBlueprint("api", __name__, url_prefix="/api")
 """Root blueprint"""
 
 
 @api.route("/")
+@api.auth_required(auth)
 def index():
     """Demonstration index route."""
 
-    return {"xthulu": True}
+    user: User = auth.current_user  # type: ignore
+    return {
+        "whoami": user.name,
+        "xthulu": True,
+    }
 
 
 def create_app():
