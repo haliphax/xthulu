@@ -4,7 +4,7 @@
 from asyncio import QueueEmpty, sleep, wait_for
 
 # local
-from ..context import SSHContext
+from ...context import SSHContext
 
 
 async def wait_for_key(

@@ -216,7 +216,7 @@ class SSHContext:
                 value of `0` will wait forever.
         """
 
-        from ..console.input import wait_for_key
+        from ..console.internal.input import wait_for_key
 
         if self.encoding != "utf-8":
             spinner = "line"

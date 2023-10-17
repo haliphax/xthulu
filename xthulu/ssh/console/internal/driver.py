@@ -11,8 +11,8 @@ from textual._xterm_parser import XTermParser
 from textual.drivers.linux_driver import LinuxDriver
 
 # local
-from ..context import SSHContext
-from .app import XthuluApp
+from ...context import SSHContext
+from ..app import XthuluApp
 
 
 class SSHDriver(LinuxDriver):

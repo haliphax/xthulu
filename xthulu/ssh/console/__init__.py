@@ -8,7 +8,7 @@ from asyncssh import SSHWriter
 from rich.console import Console
 
 # local
-from .file_wrapper import FileWrapper
+from .internal.file_wrapper import FileWrapper
 
 
 class XthuluConsole(Console):

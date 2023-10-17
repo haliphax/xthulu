@@ -33,7 +33,7 @@ class XthuluApp(App):
 
     def __init__(self, context: SSHContext, **kwargs):
         # avoid cyclic import
-        from .driver import SSHDriver
+        from .internal.driver import SSHDriver
 
         self.context = context
         super().__init__(driver_class=SSHDriver, **kwargs)
@@ -56,7 +56,7 @@ class XthuluApp(App):
 
     def exit(self, **kwargs) -> None:
         # avoid cyclic import
-        from .driver import SSHDriver
+        from .internal.driver import SSHDriver
 
         super().exit(**kwargs)
         self._driver: SSHDriver
