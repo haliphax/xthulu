@@ -41,7 +41,7 @@ class Resources:
     """Database connection"""
 
     def __new__(cls):
-        if hasattr(cls, "_singleton"):
+        if not environ.get("PDOC", "") and hasattr(cls, "_singleton"):
             return cls._singleton
 
         self = super().__new__(cls)
