@@ -8,7 +8,7 @@ from unittest.async_case import IsolatedAsyncioTestCase
 from unittest.mock import AsyncMock, Mock, patch
 
 # 3rd party
-from apiflask import APIFlask
+from fastapi import FastAPI
 from gino import Gino
 from redis import Redis
 
@@ -19,7 +19,7 @@ from xthulu.ssh.process_factory import handle_client
 
 
 class Resources:
-    app = Mock(APIFlask)
+    app = Mock(FastAPI)
     cache = Mock(Redis)
     config: dict[str, Any]
     db = Mock(Gino)

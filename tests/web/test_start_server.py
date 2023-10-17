@@ -8,7 +8,7 @@ from unittest import TestCase
 from unittest.mock import Mock, patch
 
 # 3rd party
-from apiflask import APIFlask
+from fastapi import FastAPI
 from gino import Gino
 from redis import Redis
 
@@ -18,13 +18,12 @@ from xthulu.web import create_app, start_server
 
 
 class Resources:
-    app = Mock(APIFlask)
+    app = Mock(FastAPI)
     cache = Mock(Redis)
     config: dict[str, Any]
     db = Mock(Gino)
 
 
-@patch("xthulu.web.get_event_loop", Mock())
 @patch("xthulu.web.get_config", patch_get_config(test_config))
 class TestStartWebServer(TestCase):
 
@@ -50,32 +49,20 @@ class TestStartWebServer(TestCase):
 
         # assert
         mock_run.assert_called_once_with(
-            "xthulu.web.asgi:asgi_app",
+            "xthulu.web.asgi:app",
             host=test_web_config["host"],
             port=test_web_config["port"],
             lifespan="off",
         )
 
-    def test_db_bind(self):
-        """Server should bind database connection."""
+    def test_includes_router(self):
+        """Server should include the API router."""
 
         # act
         create_app()
 
         # assert
-        self.mock_resources.db.set_bind.assert_called_once_with(
-            test_config["db"]["bind"]
-        )
-
-    @patch("xthulu.web.api")
-    def test_registers_blueprint(self, mock_api: Mock):
-        """Server should register the API blueprint."""
-
-        # act
-        create_app()
-
-        # assert
-        self.mock_resources.app.register_blueprint.assert_called_with(mock_api)
+        self.mock_resources.app.include_router.assert_called()
 
     def test_imports_userland_modules(self):
         """Server should import userland modules."""
