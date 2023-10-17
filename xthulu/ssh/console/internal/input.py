@@ -56,7 +56,7 @@ async def wait_for_key(
 
             return await _wait()
 
-        with context.term.status(text, spinner=spinner):
+        with context.console.status(text, spinner=spinner):
             if timeout > 0.0:
                 return await wait_for(_wait(), timeout)
 

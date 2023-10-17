@@ -25,11 +25,11 @@ async def main(cx: SSHContext):
         )
         return
 
-    cx.term.set_window_title(f"{cx.username}@79columns")
+    cx.console.set_window_title(f"{cx.username}@79columns")
     await scroll_art(cx, "userland/artwork/login.ans", "cp437")
     await cx.inkey("Press any key to continue", "dots8Bit")
 
-    cx.term.set_window_title("system information")
+    cx.console.set_window_title("system information")
     await scroll_art(cx, "userland/artwork/sysinfo.ans", "amiga")
     cx.echo(
         ":skull: [bold bright_green]x[/][green]thulu[/] ",
@@ -39,7 +39,7 @@ async def main(cx: SSHContext):
     await cx.redirect(["/bin/ash", "-c", "uname -a; echo -e '\\r'; sleep 0.1"])
     await cx.inkey("Press any key to continue", "arc")
 
-    cx.term.set_window_title("logging in...")
+    cx.console.set_window_title("logging in...")
     bar_text = "".join(
         [
             "[bright_white]Connecting:[/] ",
@@ -50,7 +50,9 @@ async def main(cx: SSHContext):
 
     waiting = True
 
-    for _ in track(sequence=range(20), description=bar_text, console=cx.term):
+    for _ in track(
+        sequence=range(20), description=bar_text, console=cx.console
+    ):
         if waiting and await cx.inkey(timeout=0.1):
             waiting = False
 

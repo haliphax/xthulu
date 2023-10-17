@@ -35,7 +35,7 @@ class SSHDriver(LinuxDriver):
         )
 
     def _get_terminal_size(self) -> tuple[int, int]:
-        return (self.context.term.width, self.context.term.height)
+        return (self.context.console.width, self.context.console.height)
 
     def flush(self) -> None:
         pass

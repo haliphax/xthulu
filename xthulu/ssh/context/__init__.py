@@ -47,7 +47,7 @@ class SSHContext:
     stack: list[Script] = []
     """Script stack"""
 
-    term: XthuluConsole
+    console: XthuluConsole
     """Context terminal object"""
 
     encoding: str
@@ -151,7 +151,7 @@ class SSHContext:
         if encoding is not None:
             self.proc.stdout.write("".join(text).encode(self.encoding))
         else:
-            self.term.print("".join(text), sep="", end="")
+            self.console.print("".join(text), sep="", end="")
 
     async def gosub(self, script: str, *args, **kwargs) -> Any:
         """

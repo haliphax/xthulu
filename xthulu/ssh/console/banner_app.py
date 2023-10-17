@@ -40,7 +40,7 @@ class BannerApp(XthuluApp):
 
     def _update_banner(self):
         padded = []
-        pad_left = " " * floor(self.context.term.width / 2 - 40)
+        pad_left = " " * floor(self.context.console.width / 2 - 40)
 
         for line in self.artwork:
             padded += [pad_left, line]

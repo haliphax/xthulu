@@ -137,12 +137,12 @@ async def scroll_art(
     artwork = await load_art(path, encoding)
 
     # show entire piece immediately if shorter than terminal
-    if context.term.height >= len(artwork):
+    if context.console.height >= len(artwork):
         delay = 0.0
 
     for line in artwork:
         processed = Text.from_ansi(line, overflow="crop", no_wrap=True, end="")
-        context.term.print(
+        context.console.print(
             processed,
             emoji=False,
             end="\n",

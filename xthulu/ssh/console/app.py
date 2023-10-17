@@ -37,7 +37,7 @@ class XthuluApp(App):
 
         self.context = context
         super().__init__(driver_class=SSHDriver, **kwargs)
-        self.console = context.term
+        self.console = context.console
         self.error_console = _ErrorConsoleProxy()
         self.run_worker(self._watch_for_resize, exclusive=True)
 

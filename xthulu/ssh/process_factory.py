@@ -80,8 +80,8 @@ async def handle_client(proc: SSHServerProcess) -> None:
             except TerminalSizeChanged as sz:
                 cx.env["COLUMNS"] = str(sz.width)
                 cx.env["LINES"] = str(sz.height)
-                cx.term.width = sz.width
-                cx.term.height = sz.height
+                cx.console.width = sz.width
+                cx.console.height = sz.height
                 cx.events.add(EventData("resize", (sz.width, sz.height)))
 
         # disable capture of mouse events
@@ -97,7 +97,7 @@ async def handle_client(proc: SSHServerProcess) -> None:
     async def main_process():
         """Userland script stack; main process."""
 
-        cx.term = XthuluConsole(
+        cx.console = XthuluConsole(
             encoding=cx.encoding,
             height=h,
             ssh_writer=proc.stdout,
@@ -122,7 +122,7 @@ async def handle_client(proc: SSHServerProcess) -> None:
                 cx.stack = []
 
         if proc.channel:
-            cx.term.set_window_title("")
+            cx.console.set_window_title("")
             proc.channel.close()
 
         proc.close()

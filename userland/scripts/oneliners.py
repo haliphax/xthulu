@@ -137,7 +137,7 @@ class OnlinersApp(BannerApp):
 
 
 async def main(cx: SSHContext):
-    cx.term.set_window_title("oneliners")
+    cx.console.set_window_title("oneliners")
     await OnlinersApp(
         cx, art_path="userland/artwork/oneliners.ans", art_encoding="amiga"
     ).run_async()
