@@ -1,3 +1,5 @@
+"""Handle common events"""
+
 # api
 from xthulu.events.structs import EventData
 from xthulu.ssh.context import SSHContext
