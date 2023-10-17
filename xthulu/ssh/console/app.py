@@ -4,13 +4,24 @@
 from asyncio import sleep
 
 # 3rd party
+from rich.segment import Segments
 from textual import events
 from textual.app import App
 from textual.geometry import Size
 
 # local
+from ...logger import log
 from ...events.structs import EventData
 from ..context import SSHContext
+
+
+class _ErrorConsoleProxy:
+    def print(self, what, **kwargs):
+        if isinstance(what, Segments):
+            log.error("".join([s.text for s in what.segments]))
+            return
+
+        log.error(what)
 
 
 class XthuluApp(App):
@@ -27,7 +38,7 @@ class XthuluApp(App):
         self.context = context
         super().__init__(driver_class=SSHDriver, **kwargs)
         self.console = context.term
-        self.error_console = None
+        self.error_console = _ErrorConsoleProxy()
         self.run_worker(self._watch_for_resize, exclusive=True)
 
     async def _watch_for_resize(self):

@@ -7,7 +7,6 @@ from textual.widgets import Input, Label, ListItem, ListView
 # api
 from xthulu.resources import Resources
 from xthulu.ssh.console.banner_app import BannerApp
-from xthulu.ssh.console.art import load_art
 from xthulu.ssh.context import SSHContext
 
 # local
@@ -48,21 +47,8 @@ class OnlinersApp(BannerApp):
     """
     """Stylesheet"""
 
-    error_message: Label
-    """Error message widget"""
-
-    oneliners: list[Oneliner]
-    """List of pre-loaded oneliner messages"""
-
-    def __init__(
-        self,
-        context: SSHContext,
-        artwork: list[str],
-        oneliners: list[Oneliner],
-        **kwargs,
-    ):
-        self.oneliners = oneliners
-        super().__init__(context, artwork, **kwargs)
+    def __init__(self, context: SSHContext, **kwargs):
+        super().__init__(context, **kwargs)
         self.bind("escape", "quit")
 
     def compose(self):
@@ -70,25 +56,17 @@ class OnlinersApp(BannerApp):
             yield widget
 
         # oneliners
-        list = ListView(
-            *[
-                ListItem(Label(o.message), classes="even" if idx % 2 else "")
-                for idx, o in enumerate(self.oneliners)
-            ],
-            initial_index=len(self.oneliners) - 1,
-        )
-        list.styles.scrollbar_background = "black"
-        list.styles.scrollbar_color = "ansi_yellow"
-        list.styles.scrollbar_color_active = "white"
-        list.styles.scrollbar_color_hover = "ansi_bright_yellow"
-
-        list.scroll_end(animate=False)
-        yield list
+        lv = ListView()
+        lv.styles.scrollbar_background = "black"
+        lv.styles.scrollbar_color = "ansi_yellow"
+        lv.styles.scrollbar_color_active = "white"
+        lv.styles.scrollbar_color_hover = "ansi_bright_yellow"
+        yield lv
 
         # error message
-        self.error_message = Label(id="err")
-        self.error_message.display = False
-        yield self.error_message
+        err = Label(id="err")
+        err.display = False
+        yield err
 
         # input
         input_widget = Input(
@@ -108,8 +86,10 @@ class OnlinersApp(BannerApp):
         yield input_widget
 
     def on_input_changed(self, event: Input.Changed):
+        err: Label = self.get_widget_by_id("err")  # type: ignore
+
         if not event.validation_result or event.validation_result.is_valid:
-            self.error_message.display = False
+            err.display = False
             return
 
         message = "".join(
@@ -118,8 +98,8 @@ class OnlinersApp(BannerApp):
                 "... ".join(event.validation_result.failure_descriptions),
             )
         )
-        self.error_message.update(message)
-        self.error_message.display = True
+        err.update(message)
+        err.display = True
 
     async def on_input_submitted(self, event: Input.Submitted) -> None:
         if event.validation_result and not event.validation_result.is_valid:
@@ -132,21 +112,32 @@ class OnlinersApp(BannerApp):
 
         self.exit()
 
+    async def on_ready(self):
+        await super().on_ready()
+        db = Resources().db
+        recent = (
+            Oneliner.select("id")
+            .order_by(Oneliner.id.desc())
+            .limit(LIMIT)
+            .alias("recent")
+            .select()
+        )
+        oneliners: list[Oneliner] = await db.all(
+            Oneliner.query.where(Oneliner.id.in_(recent))
+        )
+        lv = self.query_one(ListView)
+
+        for idx, o in enumerate(oneliners):
+            lv.mount(
+                ListItem(Label(o.message), classes="even" if idx % 2 else "")
+            )
+
+        lv.index = len(oneliners) - 1
+        lv.scroll_end(animate=False)
+
 
 async def main(cx: SSHContext):
     cx.term.set_window_title("oneliners")
-    db = Resources().db
-    recent = (
-        Oneliner.select("id")
-        .order_by(Oneliner.id.desc())
-        .limit(LIMIT)
-        .alias("recent")
-        .select()
-    )
-    oneliners: list[Oneliner] = await db.all(
-        Oneliner.query.where(Oneliner.id.in_(recent))
-    )
-
-    artwork = await load_art("userland/artwork/oneliners.ans", "amiga")
-    app = OnlinersApp(cx, artwork, oneliners)
-    await app.run_async()
+    await OnlinersApp(
+        cx, art_path="userland/artwork/oneliners.ans", art_encoding="amiga"
+    ).run_async()

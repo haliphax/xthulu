@@ -11,6 +11,7 @@ from textual.widgets import Label
 # local
 from ..context import SSHContext
 from .app import XthuluApp
+from .art import load_art
 
 BANNER_PADDING = 10
 """Required space left over to display banner art"""
@@ -20,16 +21,21 @@ class BannerApp(XthuluApp):
 
     """Textual app with banner display"""
 
+    art_encoding: str
+    """Encoding of the artwork file"""
+
+    art_path: str
+    """Path to the artwork file"""
+
     artwork: list[str]
-    """Lines from pre-loaded artwork file"""
+    """Lines from loaded banner artwork"""
 
-    banner: Label
-    """Artwork banner widget"""
-
-    def __init__(self, context: SSHContext, artwork: list[str], **kwargs):
-        self.artwork = artwork
+    def __init__(
+        self, context: SSHContext, art_path: str, art_encoding: str, **kwargs
+    ):
+        self.art_path = art_path
+        self.artwork = []
         super().__init__(context=context, **kwargs)
-        self.run_worker(self._watch_for_resize, exclusive=True)
 
     def _update_banner(self):
         padded = []
@@ -41,23 +47,32 @@ class BannerApp(XthuluApp):
         text = Text.from_ansi(
             "".join(padded), overflow="crop", no_wrap=True, end=""
         )
-        self.banner.update(text)
+        banner: Label = self.get_widget_by_id("banner")  # type: ignore
+        banner.update(text)
 
     def compose(self):
         # banner
-        self.banner = Label(markup=False)
+        banner = Label(id="banner", markup=False)
+        lines = len(self.artwork)
 
-        if self.console.height < len(self.artwork) + BANNER_PADDING:
-            self.banner.display = False
-        else:
+        if self.console.height < lines + BANNER_PADDING:
+            banner.display = False
+        elif lines > 0:
             self._update_banner()
 
-        yield self.banner
+        yield banner
+
+    async def on_ready(self):
+        self.artwork = await load_art("userland/artwork/oneliners.ans", "amiga")
+        self._update_banner()
 
     def on_resize(self, event: events.Resize) -> None:
+        # banner
+        banner: Label = self.get_widget_by_id("banner")  # type: ignore
+
         if event.size.height < len(self.artwork) + BANNER_PADDING:
-            self.banner.update("")
-            self.banner.display = False
+            banner.update("")
+            banner.display = False
         else:
             self._update_banner()
-            self.banner.display = True
+            banner.display = True
