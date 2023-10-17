@@ -9,12 +9,11 @@ xthulu _("ch-THOO-loo")_ Python asyncio community server
 [![Tests](https://img.shields.io/github/actions/workflow/status/haliphax/xthulu/tests.yml?label=Tests)](https://github.com/haliphax/xthulu/actions/workflows/tests.yml)
 [![Coverage](https://img.shields.io/coverallsCoverage/github/haliphax/xthulu?label=Coverage)](https://coveralls.io/github/haliphax/xthulu)
 
-While **xthulu** is intended to be a _community_ server which will provide
-multiple avenues of interaction (e.g. terminal, browser, REST API), its primary
-focus is in providing a modern SSH terminal interface which pays homage to the
-[bulletin boards][] of the 1990s. Rather than leaning entirely into [DOS][]-era
-nostalgia, modern character sets (UTF-8) and [terminal capabilities][] are taken
-advantage of.
+While **xthulu** is intended to be a _community_ server with multiple avenues of
+interaction (e.g. terminal, browser, REST API), its primary focus is to provide
+a modern SSH terminal interface which pays homage to the [bulletin boards][] of
+the 1990s. Rather than leaning entirely into [DOS][]-era nostalgia, modern
+character sets (UTF-8) and [terminal capabilities][] are taken advantage of.
 
 - [Contributor guide][]
 
