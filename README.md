@@ -56,6 +56,7 @@ character sets (UTF-8) and [terminal capabilities][] are taken advantage of.
 
 - [x] Container proxy ([Traefik][])
 - [ ] HTTP server ([uvicorn][])
+  - [x] Basic authentication
   - [x] Userland
   - [x] Static files
   - [ ] REST API

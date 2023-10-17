@@ -6,20 +6,25 @@
 	<body>
 		<h1>xthulu</h1>
 		<p>
-			This <strong>userland</strong> page is being served by the static web
-			server component.
+			This <em>userland</em> page is being served by the static web server
+			component.
 		</p>
 		<p>
-			The <strong>userland</strong> API service is
-			<b id="connect">disconnected.</b>
+			The <em>userland</em> API service is
+			<strong id="connect">connecting...</strong>
 		</p>
 		<script type="module">
 			await fetch("/api/user/")
 				.then((r) => r.json())
 				.then((d) => {
-					if (d.userland === true) {
-						document.getElementById("connect").innerHTML = "connected!";
-					}
+					if (d.userland !== true) throw "Unexpected response";
+					document.getElementById("connect").innerHTML = "connected!";
+					const p = document.createElement("p");
+					p.innerHTML = `Welcome, <strong>${d.whoami}</strong>!`;
+					document.body.appendChild(p);
+				})
+				.catch(() => {
+					document.getElementById("connect").innerHTML = "disconnected?!";
 				});
 		</script>
 	</body>

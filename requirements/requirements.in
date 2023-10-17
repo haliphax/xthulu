@@ -1,8 +1,8 @@
-APIFlask[async]
-Click
 aiofiles
+APIFlask[async]
 asyncssh
 bcrypt
+Click
 gino
 redis
 rich

@@ -93,7 +93,9 @@ services:
 
   web-static:
     volumes:
-      - ../xthulu/web/static:/usr/share/nginx/html:ro
+      # parent volume cannot be read-only or subvolumes will not mount
+      - ../xthulu/web/static:/usr/share/nginx/html
+      - ../userland/web/static:/usr/share/nginx/html/user:ro
 ```
 
 </details>
