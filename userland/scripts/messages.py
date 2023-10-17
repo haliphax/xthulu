@@ -1,8 +1,5 @@
 """Messages script"""
 
-# stdlib
-from dataclasses import dataclass
-
 # 3rd party
 from textual import events
 from textual.widgets import Label, ListItem, ListView, MarkdownViewer
@@ -19,7 +16,6 @@ LIMIT = 200
 """The maximum number of messages to keep loaded in the UI at once"""
 
 
-@dataclass
 class MessageFilter:
 
     """Data class for filtering messages"""
