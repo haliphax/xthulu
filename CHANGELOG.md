@@ -1,17 +1,13 @@
 # [v0.1.0](https://github.com/haliphax/xthulu/compare/v0.0.2...v0.1.0) (2023-10-17)
 
 ## ✨ New Features
-- [`d0b74a9`](https://github.com/haliphax/xthulu/commit/d0b74a9)  window titles 
-- [`41f1ad5`](https://github.com/haliphax/xthulu/commit/41f1ad5)  load version dynamically in top 
+- [`d0b74a9`](https://github.com/haliphax/xthulu/commit/d0b74a9)  window titles
+- [`41f1ad5`](https://github.com/haliphax/xthulu/commit/41f1ad5)  load version dynamically in top
 - [`2021e48`](https://github.com/haliphax/xthulu/commit/2021e48)  BannerApp wrapper class
 
-# CHANGELOG
+# v0.0.3 (2023-10-13)
 
-
-
-## v0.0.3 (2023-10-13)
-
-### Fix
+## Fix
 
 * 🔧 fix postgres port in example config ([`8873acf`](https://github.com/haliphax/xthulu/commit/8873acf432b4f2aa0e53450141aea03d601fcce9))
 
@@ -19,7 +15,7 @@
 
 * 📝 fix db commands in readme ([`59a248c`](https://github.com/haliphax/xthulu/commit/59a248c66046c66c4876e2084aff00b7c55b54b3))
 
-### Other
+## Other
 
 * ⏪️ revert to secrets-provided token due to branch protections ([`9afec3c`](https://github.com/haliphax/xthulu/commit/9afec3cec2c1af779664ca22685f5f1352f65b82))
 
@@ -46,9 +42,9 @@
 * ✨ window titles ([`d0b74a9`](https://github.com/haliphax/xthulu/commit/d0b74a989defc1affd1c972108e11131f295d2bf))
 
 
-## v0.0.2 (2023-10-13)
+# v0.0.2 (2023-10-13)
 
-### Fix
+## Fix
 
 * 💚 fix semantic-release publishing settings ([`fd808a8`](https://github.com/haliphax/xthulu/commit/fd808a81449802312ff72813f96f6e3a2d9b9559))
 
@@ -162,7 +158,7 @@
 
 * fix redundant config load ([`d78f517`](https://github.com/haliphax/xthulu/commit/d78f5173b1c6e43b2dc1be44efe825375868a27a))
 
-### Other
+## Other
 
 * 👷 point semantic-release at main branch ([`8d2a28a`](https://github.com/haliphax/xthulu/commit/8d2a28a163d0559ed83992de96124e398863c158))
 
