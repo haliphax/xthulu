@@ -1,5 +1,8 @@
 """SSH server implementation"""
 
+# stdlib
+from secrets import compare_digest
+
 # 3rd party
 from asyncssh import SSHServer as AsyncSSHServer, SSHServerConnection
 from sqlalchemy import func
@@ -115,7 +118,7 @@ class SSHServer(AsyncSSHServer):
 
         expected, _ = User.hash_password(password, u.salt)
 
-        if expected != u.password:
+        if not compare_digest(expected, u.password):
             log.warn(f"{self.whoami} failed authentication (password)")
 
             return False

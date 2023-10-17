@@ -8,7 +8,7 @@ from unittest import TestCase
 from unittest.mock import Mock, patch
 
 # 3rd party
-from apiflask import APIFlask
+from flask import Flask
 from gino import Gino
 from redis import Redis
 
@@ -18,7 +18,7 @@ from xthulu.web import create_app, start_server
 
 
 class Resources:
-    app = Mock(APIFlask)
+    app = Mock(Flask)
     cache = Mock(Redis)
     config: dict[str, Any]
     db = Mock(Gino)

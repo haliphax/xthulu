@@ -60,7 +60,7 @@ character sets (UTF-8) and [terminal capabilities][] are taken advantage of.
   - [x] Userland
   - [x] Static files
   - [ ] REST API
-    - [x] Web framework ([APIFlask][])
+    - [x] Web framework ([FastAPI][])
     - [ ] Implementation
 - [ ] IPC
   - [x] Session events queue
@@ -141,12 +141,12 @@ userland web interface is at https://localhost/user.
 ⚠️ [Traefik][] will be using an untrusted certificate, and you will likely be
 presented with a warning.
 
-[apiflask]: https://apiflask.com
 [asyncssh]: https://asyncssh.readthedocs.io/en/latest/
 [blessed]: https://blessed.readthedocs.io/en/latest/intro.html
 [bulletin boards]: https://archive.org/details/BBS.The.Documentary
 [contributor guide]: ./CONTRIBUTING.md
 [dos]: https://en.wikipedia.org/wiki/MS-DOS
+[fastapi]: https://fastapi.tiangolo.com
 [gino]: https://python-gino.org
 [rich]: https://rich.readthedocs.io/en/latest/
 [terminal capabilities]: https://en.wikipedia.org/wiki/Terminal_capabilities

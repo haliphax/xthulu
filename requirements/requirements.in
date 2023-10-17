@@ -1,11 +1,12 @@
 aiofiles
-APIFlask[async]
 asyncssh
 bcrypt
 Click
+FastAPI
 gino
 redis
 rich
+sse-starlette
 textual
 toml
 uvicorn[standard]
