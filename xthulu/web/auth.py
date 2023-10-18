@@ -23,10 +23,13 @@ async def login_user(
     credentials: Annotated[HTTPBasicCredentials, Depends(auth)]
 ):
     await db.set_bind(get_config("db.bind"))
-    user: User | None = await db.one_or_none(
-        User.query.where(User.name == credentials.username)
-    )
-    db.pop_bind()
+
+    try:
+        user: User | None = await db.one_or_none(
+            User.query.where(User.name == credentials.username)
+        )
+    finally:
+        await db.pop_bind().close()
 
     if not user:
         raise HTTPException(
