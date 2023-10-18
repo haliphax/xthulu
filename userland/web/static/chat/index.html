@@ -18,6 +18,9 @@
 				background-color: #f00;
 				color: #fff;
 			}
+			.system + .message {
+				font-style: italic;
+			}
 		</style>
 	</head>
 	<body>
@@ -34,7 +37,7 @@
 					<span class="notify ${message.user ? "user" : "system"}">
 						&lt;${message.user ?? "*"}&gt;
 					</span>
-					<span>${message.message}</span>
+					<span class="message">${message.message}</span>
 					`;
 				ul.appendChild(li);
 			});
