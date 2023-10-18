@@ -45,3 +45,5 @@ f.addEventListener("submit", async (ev) => {
 
 	return false;
 });
+
+inp.focus();
