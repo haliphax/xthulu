@@ -46,6 +46,4 @@ def start_server():
         host=get_config("web.host"),
         port=int(get_config("web.port")),
         lifespan="off",
-        limit_concurrency=1000,
-        limit_max_requests=1000,
     )
