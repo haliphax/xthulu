@@ -1,3 +1,10 @@
+# [v0.3.1](https://github.com/haliphax/xthulu/compare/v0.3.0...v0.3.1) (2023-10-18)
+
+## 🐛 Bug Fixes
+- [`e89ec41`](https://github.com/haliphax/xthulu/commit/e89ec41)  ensure database connections are closed 
+- [`510715d`](https://github.com/haliphax/xthulu/commit/510715d)  ensure ssh db connection is open :P 
+- [`552370e`](https://github.com/haliphax/xthulu/commit/552370e)  html-encode chat messages
+
 # [v0.3.0](https://github.com/haliphax/xthulu/compare/v0.2.0...v0.3.0) (2023-10-18)
 
 ## ✨ New Features
