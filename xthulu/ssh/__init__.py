@@ -48,8 +48,4 @@ async def start_server():
         start()
 
     await res.db.set_bind(get_config("db.bind"))
-
-    try:
-        await listen(**kwargs)
-    finally:
-        await res.db.pop_bind().close()
+    await listen(**kwargs)
