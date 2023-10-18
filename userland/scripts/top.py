@@ -60,3 +60,4 @@ async def main(cx: SSHContext):
     await cx.gosub("oneliners")
     await cx.gosub("lock_example")
     await cx.gosub("chat")
+    cx.goto("logoff")
