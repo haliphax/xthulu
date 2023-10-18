@@ -34,6 +34,11 @@ async def login_user(
             headers={"WWW-Authenticate": "Basic"},
         )
 
+    no_password = set(get_config("ssh.auth.no_password", []))
+
+    if user.name in no_password:
+        return user
+
     expected, _ = User.hash_password(credentials.password, user.salt)
 
     if not compare_digest(expected, user.password):
