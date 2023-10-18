@@ -11,8 +11,9 @@ es.addEventListener("message", (ev) => {
 		<span class="notify ${message.user ? "user" : "system"}">
 			&lt;${message.user ?? "*"}&gt;
 		</span>
-		<span class="message">${message.message}</span>
+		<span class="message"></span>
 		`;
+	li.querySelector(".message").innerText = message.message;
 
 	ul.appendChild(li);
 });
