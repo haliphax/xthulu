@@ -1,3 +1,15 @@
+# [v0.3.1](https://github.com/haliphax/xthulu/compare/v0.3.0...v0.3.1) (2023-10-18)
+
+## 🐛 Bug Fixes
+- [`e89ec41`](https://github.com/haliphax/xthulu/commit/e89ec41)  ensure database connections are closed 
+- [`510715d`](https://github.com/haliphax/xthulu/commit/510715d)  ensure ssh db connection is open :P 
+- [`552370e`](https://github.com/haliphax/xthulu/commit/552370e)  html-encode chat messages
+
+# [v0.3.0](https://github.com/haliphax/xthulu/compare/v0.2.0...v0.3.0) (2023-10-18)
+
+## ✨ New Features
+- [`7b408ef`](https://github.com/haliphax/xthulu/commit/7b408ef)  switch from Flask to FastAPI for server-sent events; web chat
+
 # [v0.2.0](https://github.com/haliphax/xthulu/compare/v0.1.0...v0.2.0) (2023-10-17)
 
 ## ✨ New Features
@@ -226,4 +238,3 @@
 * ✨ replace blessed with rich/textual (#113) ([`e99dcb7`](https://github.com/haliphax/xthulu/commit/e99dcb7cbc168f4f63ae86d495ff243419105543))
 
 * ⬆️ Bump gitpython from 3.1.35 to 3.1.37 in /requirements (#112)
-

@@ -1,0 +1,46 @@
+* {
+	font-family: Consolas, "Courier New", Courier, monospace;
+}
+
+body {
+	display: flex;
+	flex-direction: column;
+	margin: 0;
+	max-height: 100vh;
+	min-height: 100vh;
+	overflow: hidden;
+	padding: 0;
+}
+
+input {
+	font-size: 1.5rem;
+	line-height: 1.2;
+	width: 100%;
+}
+
+ul {
+	flex-grow: 1;
+}
+
+.hide {
+	display: none;
+}
+
+.notify {
+	display: inline-block;
+	padding: 0 0.1em 0 0.1em;
+}
+
+.user {
+	background-color: #00f;
+	color: #fff;
+}
+
+.system {
+	background-color: #f00;
+	color: #fff;
+}
+
+.system + .message {
+	font-style: italic;
+}

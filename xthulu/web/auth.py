@@ -23,16 +23,24 @@ async def login_user(
     credentials: Annotated[HTTPBasicCredentials, Depends(auth)]
 ):
     await db.set_bind(get_config("db.bind"))
-    user: User | None = await db.one_or_none(
-        User.query.where(User.name == credentials.username)
-    )
-    db.pop_bind()
+
+    try:
+        user: User | None = await db.one_or_none(
+            User.query.where(User.name == credentials.username)
+        )
+    finally:
+        await db.pop_bind().close()
 
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             headers={"WWW-Authenticate": "Basic"},
         )
+
+    no_password = set(get_config("ssh.auth.no_password", []))
+
+    if user.name in no_password:
+        return user
 
     expected, _ = User.hash_password(credentials.password, user.salt)
 

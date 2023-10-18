@@ -34,7 +34,6 @@ def create_app():
         app.include_router(mod_api, prefix="/api")
 
     app.include_router(api, prefix="/api")
-    print(app.routes)
 
     return app
 

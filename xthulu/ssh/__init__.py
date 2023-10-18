@@ -24,7 +24,6 @@ async def start_server():
 
     register_encodings()
     res = Resources()
-    await res.db.set_bind(get_config("db.bind"))
     ssh_config: dict[str, Any] = get_config("ssh")
     host: str = ssh_config["host"]
     port = int(ssh_config["port"])
@@ -48,4 +47,5 @@ async def start_server():
     if bool(get_config("debug.enabled", False)):
         start()
 
+    await res.db.set_bind(get_config("db.bind"))
     await listen(**kwargs)
