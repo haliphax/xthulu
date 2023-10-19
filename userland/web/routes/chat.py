@@ -28,6 +28,8 @@ redis = Resources().cache
 def chat(
     user: Annotated[User, Depends(login_user)], request: Request
 ) -> EventSourceResponse:
+    """Server-sent events for chat EventSource."""
+
     async def generate():
         pubsub = redis.pubsub()
         pubsub.subscribe("chat")
@@ -70,6 +72,12 @@ async def post_chat(
     message: ChatPost,
     user: Annotated[User, Depends(login_user)],
 ) -> None:
+    """
+    Post a chat message.
+
+    Args:
+        message: The message object being posted.
+    """
     if len(message.message) > MAX_LENGTH:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
