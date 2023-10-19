@@ -211,8 +211,8 @@ class MessagesApp(BannerApp):
     async def key_escape(self, event: events.Key):
         lv = self.query_one(ListView)
 
-        # messages list must have focus
-        if not lv.has_focus:
+        # quit app if message list has focus
+        if lv.has_focus:
             await self.action_quit()
             return
 
