@@ -40,10 +40,8 @@ class Resources:
     db: Gino
     """Database connection"""
 
-    _singleton = None
-
     def __new__(cls):
-        if cls._singleton is not None:
+        if hasattr(cls, "_singleton"):
             return cls._singleton
 
         singleton = super().__new__(cls)

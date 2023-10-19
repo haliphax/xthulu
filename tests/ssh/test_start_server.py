@@ -48,7 +48,9 @@ class TestStartSSHServer(IsolatedAsyncioTestCase):
         await start_server()
 
         # assert
-        self.mock_resources.db.set_bind.assert_awaited_once_with("test")
+        self.mock_resources.db.set_bind.assert_awaited_once_with(
+            self.mock_resources.db.bind
+        )
 
     @patch("xthulu.ssh.get_config", patch_get_config(test_config))
     async def test_server_args(self):
