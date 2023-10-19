@@ -90,7 +90,7 @@ class MessagesApp(BannerApp):
         self.filter = MessageFilter()
         super().__init__(context, **kwargs)
 
-    async def _allow_refresh(self):
+    async def _allow_refresh(self) -> bool:
         """Avoid database call for a while if last refresh was empty."""
 
         now = datetime.utcnow()
@@ -104,7 +104,7 @@ class MessagesApp(BannerApp):
         self._recent_query = now
         return True
 
-    async def _load_messages(self, newer=False):
+    async def _load_messages(self, newer=False) -> None:
         """Load messages and append/prepend to ListView."""
 
         lv: ListView = self.query_one(ListView)
@@ -212,7 +212,7 @@ class MessagesApp(BannerApp):
         mv.display = False
         yield mv
 
-    async def key_escape(self, event: events.Key):
+    async def key_escape(self, event: events.Key) -> None:
         lv = self.query_one(ListView)
 
         # quit app if message list has focus
@@ -227,7 +227,7 @@ class MessagesApp(BannerApp):
         lv.focus()
         event.stop()
 
-    async def on_key(self, event: events.Key):
+    async def on_key(self, event: events.Key) -> None:
         lv = self.query_one(ListView)
 
         # do nothing if ListView isn't displayed
@@ -252,7 +252,7 @@ class MessagesApp(BannerApp):
             # hit bottom boundary; load older messages
             await self._load_messages()
 
-    async def on_list_view_selected(self, event: ListView.Selected):
+    async def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Load selected message in MarkdownViewer."""
 
         self.query_one(ListView).display = False
@@ -265,7 +265,7 @@ class MessagesApp(BannerApp):
         mv.scroll_home(animate=False)
         mv.focus()
 
-    async def on_ready(self):
+    async def on_ready(self) -> None:
         """App is ready; load messages."""
 
         await super().on_ready()
@@ -275,7 +275,7 @@ class MessagesApp(BannerApp):
         lv.focus()
 
 
-async def main(cx: SSHContext):
+async def main(cx: SSHContext) -> None:
     cx.console.set_window_title("messages")
     await MessagesApp(
         cx, art_path="userland/artwork/messages.ans", art_encoding="amiga"
