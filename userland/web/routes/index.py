@@ -1,3 +1,5 @@
+"""Userland demo routes"""
+
 # typing
 from typing import Annotated
 
@@ -15,4 +17,6 @@ from .. import api
 
 @api.get("/")
 def userland_demo(user: Annotated[User, Depends(login_user)]) -> DemoResponse:
+    """Demonstration route."""
+
     return DemoResponse(userland=True, whoami=user.name)
