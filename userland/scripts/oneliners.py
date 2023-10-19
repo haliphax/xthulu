@@ -85,7 +85,7 @@ class OnlinersApp(BannerApp):
         input_widget.focus()
         yield input_widget
 
-    def on_input_changed(self, event: Input.Changed):
+    def on_input_changed(self, event: Input.Changed) -> None:
         err: Label = self.get_widget_by_id("err")  # type: ignore
 
         if not event.validation_result or event.validation_result.is_valid:
@@ -112,7 +112,7 @@ class OnlinersApp(BannerApp):
 
         self.exit()
 
-    async def on_ready(self):
+    async def on_ready(self) -> None:
         await super().on_ready()
         db = Resources().db
         recent = (
@@ -136,7 +136,7 @@ class OnlinersApp(BannerApp):
         lv.scroll_end(animate=False)
 
 
-async def main(cx: SSHContext):
+async def main(cx: SSHContext) -> None:
     cx.console.set_window_title("oneliners")
     await OnlinersApp(
         cx, art_path="userland/artwork/oneliners.ans", art_encoding="amiga"
