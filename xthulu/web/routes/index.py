@@ -6,15 +6,13 @@ from fastapi import Depends
 
 # local
 from ...models.user import User
+from ..schema.index import DemoResponse
 from ..auth import login_user
 from .. import api
 
 
 @api.get("/")
-def demo(user: Annotated[User, Depends(login_user)]):
+def demo(user: Annotated[User, Depends(login_user)]) -> DemoResponse:
     """Demonstration index route."""
 
-    return {
-        "whoami": user.name,
-        "xthulu": True,
-    }
+    return DemoResponse(whoami=user.name, xthulu=True)
