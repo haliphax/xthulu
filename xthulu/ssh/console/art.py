@@ -17,6 +17,7 @@ FIND_CUF_REGEX = r"\x1b\[(\d+)C"
 
 
 class ArtLog(XthuluApp):
+
     """Displays artwork"""
 
     artwork: list[str]
@@ -102,7 +103,7 @@ async def scroll_art_app(
     Display ANSI artwork in a scrolling Log panel.
 
     Args:
-        context: The current SSHContext.
+        context: The current `xthulu.ssh.context.SSHContext`.
         path: The path of the file to display.
         encoding: The encoding of the file to display.
         delay: The delay (in seconds) between displaying each line.
@@ -122,7 +123,7 @@ async def scroll_art(
     Display ANSI artwork directly to the console.
 
     Args:
-        context: The current SSHContext.
+        context: The current `xthulu.ssh.context.SSHContext`.
         path: The path of the file to display.
         encoding: The encoding of the file to display.
         delay: The delay (in seconds) between displaying each line.
@@ -167,7 +168,7 @@ async def show_art(context: SSHContext, path: str, encoding="cp437") -> None:
     Display ANSI artwork directly to the console without scrolling.
 
     Args:
-        context: The current SSHContext.
+        context: The current `xthulu.ssh.context.SSHContext`.
         path: The path of the file to display.
         encoding: The encoding of the file to display.
     """

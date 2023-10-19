@@ -89,7 +89,7 @@ class SSHContext:
             encoding: The session encoding.
 
         Returns:
-            A new `SSHContext` object.
+            A new `xthulu.ssh.context.SSHContext` object.
         """
 
         self = SSHContext()

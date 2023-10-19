@@ -18,7 +18,7 @@ class _Locks:
     """Internal lock storage mechanism"""
 
     locks: dict[str, dict[str, Lock]] = {}
-    """Mapping of lock keys to lock objects"""
+    """Mapping of lock keys to `redis.lock.Lock` objects"""
 
 
 def get(owner: str, name: str) -> bool:

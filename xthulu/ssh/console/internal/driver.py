@@ -17,7 +17,10 @@ from ..app import XthuluApp
 
 class SSHDriver(LinuxDriver):
 
-    """Textual console driver integrated with SSHContext queues"""
+    """
+    Textual console driver integrated with `xthulu.ssh.context.SSHContext`
+    queues
+    """
 
     context: SSHContext
     """The current SSH context"""

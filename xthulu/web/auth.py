@@ -26,7 +26,7 @@ async def login_user(
     require authentication.
 
     Returns:
-        A `User` model object for the authenticated user.
+        A `xthulu.models.user.User` model object for the authenticated user.
     """
 
     db = Resources().db
