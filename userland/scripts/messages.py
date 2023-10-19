@@ -44,12 +44,9 @@ class MessagesApp(BannerApp):
         $accent: ansi_yellow;
         $error: ansi_bright_red;
 
-        Label {
-            width: 100%;
-        }
-
         ListItem {
             background: $primary-background;
+            layout: horizontal;
         }
 
         ListItem.even {
@@ -62,6 +59,10 @@ class MessagesApp(BannerApp):
 
         ListView:focus ListItem.--highlight {
             background: $accent;
+        }
+
+        ListItem Label.message_id {
+            margin-right: 1;
         }
     """
     """Stylesheet"""
@@ -143,7 +144,10 @@ class MessagesApp(BannerApp):
                 self._last = message_id
 
             item = ListItem(
-                Label(m["title"], markup=False),
+                Label(
+                    f"[italic][white]({m['id']})[/][/]", classes="message_id"
+                ),
+                Label(m["title"], classes="message_title", markup=False),
                 id=f"message_{m['id']}",
                 classes="even" if idx % 2 else "",
             )
