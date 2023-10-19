@@ -8,7 +8,6 @@ from importlib import import_module
 from click import confirm, echo, group
 
 # local
-from ..configuration import get_config
 from ..resources import Resources
 
 
@@ -26,7 +25,7 @@ def create():
     res = Resources()
 
     async def f():
-        await res.db.set_bind(get_config("db.bind"))
+        await res.db.set_bind(res.db.bind)
         echo("Creating database and tables")
         await res.db.gino.create_all()
 
@@ -42,7 +41,7 @@ def destroy():
     res = Resources()
 
     async def f():
-        await res.db.set_bind(get_config("db.bind"))
+        await res.db.set_bind(res.db.bind)
         echo("Dropping database tables")
         await res.db.gino.drop_all()
 
@@ -60,7 +59,7 @@ def init():
     res = Resources()
 
     async def f():
-        await res.db.set_bind(get_config("db.bind"))
+        await res.db.set_bind(res.db.bind)
         echo("Creating guest user")
         pwd, salt = User.hash_password("guest")
         await User.create(

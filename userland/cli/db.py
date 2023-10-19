@@ -9,13 +9,12 @@ from inspect import isclass
 from click import confirm, group
 
 # local
-from xthulu.configuration import get_config
 from xthulu.resources import Resources
 
 
 async def _get_models():
     db = Resources().db
-    await db.set_bind(get_config("db.bind"))
+    await db.set_bind(db.bind)
     models = import_module("...models", __name__)
 
     for m in dir(models):

@@ -47,5 +47,5 @@ async def start_server():
     if bool(get_config("debug.enabled", False)):
         start()
 
-    await res.db.set_bind(get_config("db.bind"))
+    await res.db.set_bind(res.db.bind)
     await listen(**kwargs)

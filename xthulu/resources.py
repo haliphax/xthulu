@@ -40,22 +40,24 @@ class Resources:
     db: Gino
     """Database connection"""
 
+    _singleton = None
+
     def __new__(cls):
-        if hasattr(cls, "_singleton"):
+        if cls._singleton is not None:
             return cls._singleton
 
-        self = super().__new__(cls)
-        self._load_config()
-        self.app = FastAPI()
-        self.cache = Redis(
-            host=self._config("cache.host"),
-            port=int(self._config("cache.port")),
-            db=int(self._config("cache.db")),
+        singleton = super().__new__(cls)
+        singleton._load_config()
+        singleton.app = FastAPI()
+        singleton.cache = Redis(
+            host=singleton._config("cache.host"),
+            port=int(singleton._config("cache.port")),
+            db=int(singleton._config("cache.db")),
         )
-        self.db = Gino(bind=self._config("db.bind"))
-        cls._singleton = self
+        singleton.db = Gino(bind=singleton._config("db.bind"))
+        cls._singleton = singleton
 
-        return self
+        return cls._singleton
 
     def _config(self, path: str, default: Any = None):
         return get_config(path, default, self.config)
