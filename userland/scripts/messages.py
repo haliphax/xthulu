@@ -16,7 +16,10 @@ LIMIT = 50
 """The maximum number of messages to keep loaded in the UI at once"""
 
 LOAD_AT_ONCE = round(LIMIT / 2)
-"""How many messages to load at a time dynamically when navigating ListView"""
+"""Maximum messages to load at a time dynamically when navigating ListView"""
+
+RATE_LIMIT_SECONDS = 10
+"""Time to wait before allowing refresh after empty query result"""
 
 
 class MessageFilter:
@@ -67,9 +70,16 @@ class MessagesApp(BannerApp):
     """Current message filter"""
 
     _first = -1
+    """Newest message ID"""
+
     _last = -1
+    """Oldest message ID"""
+
     _recent_query: datetime | None = None
+    """Time of last query"""
+
     _last_query_empty = False
+    """If last query had no results"""
 
     def __init__(
         self,
@@ -80,13 +90,13 @@ class MessagesApp(BannerApp):
         super().__init__(context, **kwargs)
 
     async def _allow_refresh(self):
-        now = datetime.utcnow()
+        """Avoid database call for a while if last refresh was empty."""
 
-        # avoid database call for a while if last refresh was empty
+        now = datetime.utcnow()
         if (
             self._recent_query is not None
             and self._last_query_empty
-            and (now - self._recent_query).total_seconds() < 10
+            and (now - self._recent_query).total_seconds() < RATE_LIMIT_SECONDS
         ):
             return False
 
@@ -94,28 +104,35 @@ class MessagesApp(BannerApp):
         return True
 
     async def _load_messages(self, newer=False):
+        """Load messages and append/prepend to ListView."""
+
         lv: ListView = self.query_one(ListView)
         select = Message.select("id", "title")
         first = len(lv.children) == 0
         limit = min(round(lv.size.height / 2), LOAD_AT_ONCE)
 
         if first:
+            # app startup; load most recent messages
             limit = min(lv.size.height, LIMIT)
             query = select.order_by(Message.id.desc())
         elif newer:
+            # load newer messages
             query = select.where(Message.id > self._last).order_by(Message.id)
         else:
+            # load older messages
             query = select.where(Message.id < self._first).order_by(
                 Message.id.desc()
             )
 
         messages: list[dict] = await query.limit(limit).gino.all()
 
+        # remember if result was empty for rate limiting refresh
         if not messages:
             self._last_query_empty = True
         else:
             self._last_query_empty = False
 
+        # append/prepend items to ListView
         for idx, m in enumerate(messages):
             message_id = int(m["id"])
 
@@ -133,48 +150,60 @@ class MessagesApp(BannerApp):
 
             lv.append(item)
 
+            # add to top if pulling newer messages
             if newer and not first:
                 lv.move_child(item, before=0)
 
+        # if this is the first load, we're done!
         if first:
             return
 
         count = len(lv.children)
         last_index = lv.index or 0
 
+        # trim ListView items to limit
         if count > lv.size.height:
             lv.index = None
             how_many = count - lv.size.height
 
             for _ in range(how_many):
                 if newer:
+                    # remove from bottom if loading newer items
                     lv.children[-1].remove()
                 else:
+                    # remove from top if loading older items
                     lv.children[0].remove()
 
+            # fix CSS striping
             for idx, c in enumerate(lv.children):
                 c.set_classes("even" if idx % 2 else "")
 
+            # set new first/last message ID
             assert lv.children[-1].id
             self._first = int(lv.children[-1].id.split("_")[1])
             assert lv.children[0].id
             self._last = int(lv.children[0].id.split("_")[1])
 
+            # restore ListView selection index
             if newer:
                 lv.index = how_many
             else:
                 lv.index = last_index - how_many
 
+            # keep selected item in view
             lv.scroll_to_widget(lv.children[lv.index])
 
     def compose(self):
+        # load widgets from BannerApp
         for widget in super().compose():
             yield widget
 
+        # messages list
         list = ListView()
         list.focus()
         yield list
 
+        # individual message display
         mv = MarkdownViewer(show_table_of_contents=False)
         mv.display = False
         yield mv
@@ -182,10 +211,12 @@ class MessagesApp(BannerApp):
     async def key_escape(self, event: events.Key):
         lv = self.query_one(ListView)
 
-        if lv.display:
+        # messages list must have focus
+        if not lv.has_focus:
             await self.action_quit()
             return
 
+        # exit MarkdownViewer otherwise
         mv = self.query_one(MarkdownViewer)
         mv.display = False
         lv.display = True
@@ -195,6 +226,7 @@ class MessagesApp(BannerApp):
     async def on_key(self, event: events.Key):
         lv = self.query_one(ListView)
 
+        # do nothing if ListView isn't displayed
         if not lv.display:
             return
 
@@ -206,15 +238,19 @@ class MessagesApp(BannerApp):
         elif event.key == "end":
             lv.index = len(lv.children) - 1
         if event.key == "up" and lv.index == 0 and self._allow_refresh():
+            # hit top boundary; load newer messages
             await self._load_messages(newer=True)
         elif (
             event.key == "down"
             and lv.index == len(lv.children) - 1
             and self._allow_refresh()
         ):
+            # hit bottom boundary; load older messages
             await self._load_messages()
 
     async def on_list_view_selected(self, event: ListView.Selected):
+        """Load selected message in MarkdownViewer."""
+
         self.query_one(ListView).display = False
         assert event.item.id
         message_id = int(event.item.id.split("_")[1])
@@ -226,6 +262,8 @@ class MessagesApp(BannerApp):
         mv.focus()
 
     async def on_ready(self):
+        """App is ready; load messages."""
+
         await super().on_ready()
         await self._load_messages()
         lv = self.query_one(ListView)
