@@ -20,7 +20,7 @@ from .server import SSHServer
 
 
 async def start_server():
-    """Run init tasks and throw SSH server into asyncio event loop."""
+    """Start the SSH server."""
 
     register_encodings()
     res = Resources()
@@ -47,5 +47,5 @@ async def start_server():
     if bool(get_config("debug.enabled", False)):
         start()
 
-    await res.db.set_bind(get_config("db.bind"))
+    await res.db.set_bind(res.db.bind)
     await listen(**kwargs)

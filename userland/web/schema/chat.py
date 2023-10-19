@@ -1,5 +1,6 @@
 """Chat schema"""
 
+# 3rd party
 from pydantic import BaseModel
 
 

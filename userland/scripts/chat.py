@@ -65,7 +65,7 @@ class ChatApp(XthuluApp):
         self._exit_event = Event()
         self.run_worker(self._listen, exclusive=True, thread=True)
 
-    def _listen(self):
+    def _listen(self) -> None:
         self.redis.publish(
             "chat",
             json.dumps(
@@ -104,7 +104,7 @@ class ChatApp(XthuluApp):
         input_widget.focus()
         yield input_widget
 
-    def on_chat(self, message: dict[str, str]):
+    def on_chat(self, message: dict[str, str]) -> None:
         def format_message(msg: ChatMessage):
             if msg.user:
                 return (
@@ -130,7 +130,7 @@ class ChatApp(XthuluApp):
         input = self.query_one(Input)
         input.value = ""
 
-    def exit(self):
+    def exit(self) -> None:
         msg = ChatMessage(
             user=None, message=f"{self.context.username} has left"
         )
@@ -139,7 +139,7 @@ class ChatApp(XthuluApp):
         self.workers.cancel_all()
         super().exit()
 
-    def on_input_changed(self, event: Input.Changed):
+    def on_input_changed(self, event: Input.Changed) -> None:
         err: Label = self.get_widget_by_id("err")  # type: ignore
 
         if not event.validation_result or event.validation_result.is_valid:
@@ -172,6 +172,6 @@ class ChatApp(XthuluApp):
             )
 
 
-async def main(cx: SSHContext):
+async def main(cx: SSHContext) -> None:
     cx.console.set_window_title("chat")
     await ChatApp(cx).run_async()

@@ -22,7 +22,7 @@ db = Resources().db
 async def login_user(
     credentials: Annotated[HTTPBasicCredentials, Depends(auth)]
 ):
-    await db.set_bind(get_config("db.bind"))
+    await db.set_bind(db.bind)
 
     try:
         user: User | None = await db.one_or_none(

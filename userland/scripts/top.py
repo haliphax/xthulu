@@ -11,7 +11,7 @@ from xthulu.ssh.console.art import scroll_art
 from xthulu.ssh.context import SSHContext
 
 
-async def main(cx: SSHContext):
+async def main(cx: SSHContext) -> None:
     if cx.encoding == "utf-8":
         cx.echo("\x1b%G")
     elif cx.env["TERM"] != "ansi":
