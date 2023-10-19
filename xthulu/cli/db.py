@@ -85,24 +85,20 @@ def init():
             await MessageTag.create(name="demo"),
             await MessageTag.create(name="introduction"),
         )
-        messages = (
-            await Message.create(
-                author_id=user.id,
-                title="Hello, world!",
-                content=(
-                    "# Hello\n\nHello, world! ✌️\n\n"
-                    "## Demo\n\nThis is a demonstration message.\n\n"
+        messages = []
+
+        for i in range(100):
+            messages.append(
+                await Message.create(
+                    author_id=user.id,
+                    title=f"Hello, world! #{i}",
+                    content=(
+                        "# Hello\n\nHello, world! ✌️\n\n"
+                        "## Demo\n\nThis is a demonstration message.\n\n"
+                    )
+                    * 20,
                 )
-                * 20,
-            ),
-            await Message.create(
-                author_id=user.id,
-                title="And another one",
-                content=(
-                    "Here's another demonstration message for you.\n" * 100
-                ),
-            ),
-        )
+            )
 
         for tag in tags:
             for message in messages:
