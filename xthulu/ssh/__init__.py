@@ -20,7 +20,7 @@ from .server import SSHServer
 
 
 async def start_server():
-    """Run init tasks and throw SSH server into asyncio event loop."""
+    """Start the SSH server."""
 
     register_encodings()
     res = Resources()

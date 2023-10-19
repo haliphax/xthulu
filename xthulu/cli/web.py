@@ -14,6 +14,6 @@ def cli():
 
 @cli.command()
 def start():
-    """Start web server process"""
+    """Start web server process."""
 
     start_server()

@@ -17,7 +17,7 @@ api = APIRouter()
 
 
 def create_app():
-    """Create and configure the WSGI application."""
+    """Create and configure the ASGI application."""
 
     res = Resources()
     app = res.app
@@ -39,7 +39,7 @@ def create_app():
 
 
 def start_server():
-    """Run web server via uvicorn server."""
+    """Run ASGI web application in a uvicorn server."""
 
     run(
         "xthulu.web.asgi:app",
