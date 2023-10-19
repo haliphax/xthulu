@@ -16,13 +16,13 @@ from ..models.user import User
 from ..resources import Resources
 
 auth = HTTPBasic()
-db = Resources().db
 
 
 async def login_user(
     credentials: Annotated[HTTPBasicCredentials, Depends(auth)]
 ):
-    await db.set_bind(db.bind)
+    db = Resources().db
+    await db.set_bind(get_config("db.bind"))
 
     try:
         user: User | None = await db.one_or_none(
