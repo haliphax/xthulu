@@ -8,14 +8,15 @@ from logging import Filter, LogRecord
 
 
 class ContextLogFilter(Filter):
-    """Custom logging.Filter that injects username and remote IP address"""
+
+    """Custom `logging.Filter` that injects username and remote IP address"""
 
     whoami: str
     """The context user's username@host information"""
 
     def __init__(self, whoami: str):
         """
-        Custom logging.Filter that injects username and remote IP address.
+        Create a new instance of this `logging.Filter`.
 
         Args:
             whoami: The connection information to inject.

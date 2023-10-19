@@ -13,7 +13,7 @@ from ..logger import log
 from ..resources import Resources
 
 api = APIRouter()
-"""Root blueprint"""
+"""Main router"""
 
 
 def create_app():

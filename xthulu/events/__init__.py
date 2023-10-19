@@ -12,11 +12,12 @@ class EventQueue:
 
     """
     Event queue which uses two underlying storage mechanisms for efficiency.
-    `EventData` objects are stored in an `OrderedDict` with generated UUIDs as
-    keys. These UUIDs are referred to in a chronologically-ordered list stored
-    in a dict where the keys are the event names. This makes it possible to pull
-    all events by using the list or to pull only events with a certain name by
-    using the OrderedDict (without iterating through unrelated events).
+    `xthulu.events.structs.EventData` objects are stored in an `OrderedDict`
+    with generated UUIDs as keys. These UUIDs are referred to in a
+    chronologically-ordered list stored in a dict where the keys are the event
+    names. This makes it possible to pull all events by using the list or to
+    pull only events with a certain name by using the OrderedDict (without
+    iterating through unrelated events).
     """
 
     def __init__(self, sid: str):

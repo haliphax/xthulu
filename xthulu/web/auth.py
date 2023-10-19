@@ -21,6 +21,14 @@ auth = HTTPBasic()
 async def login_user(
     credentials: Annotated[HTTPBasicCredentials, Depends(auth)]
 ):
+    """
+    HTTP Basic authentication routine. Use as a dependency in route arguments to
+    require authentication.
+
+    Returns:
+        A `xthulu.models.user.User` model object for the authenticated user.
+    """
+
     db = Resources().db
     await db.set_bind(get_config("db.bind"))
 

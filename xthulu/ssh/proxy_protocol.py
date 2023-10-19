@@ -1,5 +1,5 @@
 """
-Proxy protocol v1 support
+PROXY protocol v1 support
 
 Credit to Ron Frederick <ronf@timeheart.net> for the majority of this code.
 """

@@ -14,7 +14,7 @@ async def wait_for_key(
     Wait for (and return) a keypress.
 
     Args:
-        context: The current SSHContext.
+        context: The current `xthulu.ssh.context.SSHContext`.
         text: The prompt text, if any.
         spinner: The prompt spinner (if `text` is specified).
         timeout: The length of time (in seconds) to wait for input. A value of \
