@@ -3,10 +3,10 @@
 # stdlib
 from asyncio import Event
 from collections import deque
-from dataclasses import dataclass
 import json
 
 # 3rd party
+from pydantic import BaseModel
 from redis import Redis
 from redis.client import PubSub
 from rich.markup import escape
@@ -26,8 +26,7 @@ MAX_LENGTH = 256
 """Maximum length of individual messages"""
 
 
-@dataclass
-class ChatMessage:
+class ChatMessage(BaseModel):
     user: str | None
     message: str
 
@@ -68,11 +67,9 @@ class ChatApp(XthuluApp):
     def _listen(self) -> None:
         self.redis.publish(
             "chat",
-            json.dumps(
-                ChatMessage(
-                    user=None, message=f"{self.context.username} has joined"
-                ).__dict__
-            ),
+            ChatMessage(
+                user=None, message=f"{self.context.username} has joined"
+            ).model_dump_json(),
         )
 
         while not self._exit_event.is_set():
@@ -134,7 +131,7 @@ class ChatApp(XthuluApp):
         msg = ChatMessage(
             user=None, message=f"{self.context.username} has left"
         )
-        self.redis.publish("chat", json.dumps(msg.__dict__))
+        self.redis.publish("chat", msg.model_dump_json())
         self._exit_event.set()
         self.workers.cancel_all()
         super().exit()
@@ -164,11 +161,9 @@ class ChatApp(XthuluApp):
         if val != "":
             self.redis.publish(
                 "chat",
-                json.dumps(
-                    ChatMessage(
-                        user=self.context.username, message=val
-                    ).__dict__
-                ),
+                ChatMessage(
+                    user=self.context.username, message=val
+                ).model_dump_json(),
             )
 
 

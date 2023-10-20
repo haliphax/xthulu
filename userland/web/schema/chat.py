@@ -10,3 +10,14 @@ class ChatPost(BaseModel):
 
     message: str
     """The message body"""
+
+    token: str
+    """The client's CSRF token"""
+
+
+class ChatToken(BaseModel):
+
+    """CSRF token"""
+
+    token: str
+    """The token value"""
