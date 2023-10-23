@@ -16,7 +16,7 @@
 			<strong id="connect">connecting...</strong>
 		</p>
 		<script type="module">
-			await fetch("/api/user/")
+			await fetch("/api/")
 				.then((r) => r.json())
 				.then((d) => {
 					if (d.userland !== true) throw "Unexpected response";

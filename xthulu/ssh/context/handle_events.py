@@ -1,8 +1,8 @@
-"""Handle common events"""
+"""Handle common `xthulu.ssh.context.SSHContext` events"""
 
-# api
-from xthulu.events.structs import EventData
-from xthulu.ssh.context import SSHContext
+# local
+from ...events.structs import EventData
+from ...ssh.context import SSHContext
 
 
 def handle_events(cx: SSHContext) -> tuple[list[EventData], bool]:

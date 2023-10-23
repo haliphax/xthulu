@@ -128,12 +128,7 @@ services:
     <<: *xthulu-common
 
   web-static:
-    build:
-      context: .
-      dockerfile: nginx.Dockerfile
-    depends_on:
-      - base-image
-    image: xthulu:nginx
+    image: nginx:alpine-slim
     labels:
       - traefik.enable=true
       - traefik.http.routers.web-static.entrypoints=https
@@ -144,7 +139,7 @@ services:
       - proxy
     restart: unless-stopped
     volumes:
-      - ../userland/web/static:/usr/share/nginx/html/user
+      - ../userland/web/static:/usr/share/nginx/html
 
 volumes:
   db-data:

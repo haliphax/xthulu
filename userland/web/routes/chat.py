@@ -7,7 +7,6 @@ from typing import Annotated
 from asyncio import sleep
 import base64
 from datetime import datetime
-import json
 from math import floor
 from uuid import uuid4
 
@@ -28,10 +27,13 @@ from .. import api
 TOKEN_EXPIRY = 30
 """Number of seconds for CSRF token expiration"""
 
+REFRESH_THRESHOLD = floor(TOKEN_EXPIRY * 0.8)
+"""Number of seconds for CSRF token refresh"""
+
 redis = Resources().cache
 
 
-def refresh_token(username: str) -> str:
+def _refresh_token(username: str) -> str:
     """
     Refresh a CSRF token. The token is persisted to redis cache.
 
@@ -69,7 +71,7 @@ def chat(
                 user=None, message=f"{user.name} has joined"
             ).model_dump_json(),
         )
-        token = refresh_token(user.name)
+        token = _refresh_token(user.name)
         then = datetime.utcnow()
         yield ChatToken(token=token).model_dump_json()
 
@@ -77,8 +79,8 @@ def chat(
             while not await request.is_disconnected():
                 now = datetime.utcnow()
 
-                if (now - then).total_seconds() > floor(TOKEN_EXPIRY * 0.8):
-                    token = refresh_token(user.name)
+                if (now - then).total_seconds() > REFRESH_THRESHOLD:
+                    token = _refresh_token(user.name)
                     then = now
                     yield ChatToken(token=token).model_dump_json()
 
@@ -133,7 +135,5 @@ async def post_chat(
 
     redis.publish(
         "chat",
-        json.dumps(
-            ChatMessage(user=user.name, message=message.message).model_dump()
-        ),
+        ChatMessage(user=user.name, message=message.message).model_dump_json(),
     )

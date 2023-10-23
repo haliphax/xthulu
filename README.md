@@ -31,7 +31,7 @@ character sets (UTF-8) and [terminal capabilities][] are taken advantage of.
 - [x] PROXY v1 support
 - [ ] SCP subsystem
 - [ ] SFTP subsystem
-- [x] Userland script stack
+- [x] Composite userland script stack
   - [x] Goto
   - [x] Gosub
   - [x] Exception handling
@@ -55,13 +55,11 @@ character sets (UTF-8) and [terminal capabilities][] are taken advantage of.
 ### Miscellaneous
 
 - [x] Container proxy ([Traefik][])
-- [ ] HTTP server ([uvicorn][])
+- [x] HTTP server ([uvicorn][])
   - [x] Basic authentication
-  - [x] Userland
+  - [x] Web framework ([FastAPI][])
+    - [x] Composite userland
   - [x] Static files
-  - [ ] REST API
-    - [x] Web framework ([FastAPI][])
-    - [ ] Implementation
 - [ ] IPC
   - [x] Session events queue
   - [x] Methods for manipulating queue (querying specific events, etc.)
@@ -75,7 +73,7 @@ character sets (UTF-8) and [terminal capabilities][] are taken advantage of.
   - [x] Asynchronous ORM ([GINO][])
   - [x] User model
   - [x] Message bases
-  - [ ] Simple pickle table ("The Pile") for miscellaneous data storage
+  - [ ] Simple pickle table for miscellaneous data storage?
 
 </details>
 
@@ -135,8 +133,7 @@ ssh user@localhost  # password is also "user"
 ### Connect to the web server
 
 For the time being, the web server only demonstrates simple interoperability
-between the REST API and static pages. It is available at https://localhost. The
-userland web interface is at https://localhost/user.
+between the REST API and static pages. It is available at https://localhost.
 
 ⚠️ [Traefik][] will be using an untrusted certificate, and you will likely be
 presented with a warning.
