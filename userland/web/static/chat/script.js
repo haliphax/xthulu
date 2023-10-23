@@ -1,5 +1,5 @@
 const ul = document.getElementsByTagName("ul")[0];
-const es = new EventSource("/api/user/chat/");
+const es = new EventSource("/api/chat/");
 
 let token;
 
@@ -38,7 +38,7 @@ f.addEventListener("submit", async (ev) => {
 	ev.stopPropagation();
 
 	// post to server
-	await fetch("/api/user/chat/", {
+	await fetch("/api/chat/", {
 		body: JSON.stringify({ message: inp.value, token }),
 		headers: { "Content-Type": "application/json" },
 		method: "POST",

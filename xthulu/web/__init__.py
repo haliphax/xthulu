@@ -21,7 +21,6 @@ def create_app():
 
     res = Resources()
     app = res.app
-    import_module(".routes", __name__)
 
     for mod in list(get_config("web.userland.modules", [])):
         m = import_module(mod)
