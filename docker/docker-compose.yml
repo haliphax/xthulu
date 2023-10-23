@@ -139,7 +139,7 @@ services:
       - proxy
     restart: unless-stopped
     volumes:
-      - ../userland/web/static:/usr/share/nginx/html
+      - ../html:/usr/share/nginx/html
 
 volumes:
   db-data:

@@ -6,6 +6,7 @@
 /data/ssh_host_key*
 /db/
 /docker/docker-compose.override.yml
+/html/
 /node_modules/
 __pycache__/
 

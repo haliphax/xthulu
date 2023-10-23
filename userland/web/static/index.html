@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
@@ -15,19 +15,6 @@
 			The <em>userland</em> API service is
 			<strong id="connect">connecting...</strong>
 		</p>
-		<script type="module">
-			await fetch("/api/")
-				.then((r) => r.json())
-				.then((d) => {
-					if (d.userland !== true) throw "Unexpected response";
-					document.getElementById("connect").innerHTML = "connected!";
-					const p = document.createElement("p");
-					p.innerHTML = `Welcome, <strong>${d.whoami}</strong>!`;
-					document.body.appendChild(p);
-				})
-				.catch(() => {
-					document.getElementById("connect").innerHTML = "disconnected?!";
-				});
-		</script>
+		<script type="module" src="script.ts"></script>
 	</body>
 </html>

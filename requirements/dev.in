@@ -1,7 +1,6 @@
 -c requirements.in
 black
 coverage
-nodeenv
 parameterized
 pip-tools
 pre-commit
