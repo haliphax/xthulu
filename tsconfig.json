@@ -1,0 +1,22 @@
+{
+	"compilerOptions": {
+		"allowImportingTsExtensions": true,
+		"experimentalDecorators": true,
+		"isolatedModules": true,
+		"jsx": "preserve",
+		"lib": ["ES2020", "DOM", "DOM.Iterable"],
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"noEmit": true,
+		"noFallthroughCasesInSwitch": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"resolveJsonModule": true,
+		"resolvePackageJsonExports": false,
+		"skipLibCheck": true,
+		"strict": true,
+		"target": "ES2020",
+		"useDefineForClassFields": true
+	},
+	"include": ["userland/web/**/*.ts", "userland/web/**/*.d.ts"]
+}

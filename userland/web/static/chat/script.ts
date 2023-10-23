@@ -1,22 +1,33 @@
-const ul = document.getElementsByTagName("ul")[0];
+const ul: HTMLUListElement = document.getElementsByTagName("ul")[0];
 const es = new EventSource("/api/chat/");
 
-let token;
+interface ChatMessage {
+	user: string | null;
+	message: string;
+}
+
+interface ChatToken {
+	token: string;
+}
+
+let token: string;
 
 // handle new EventSource message
 es.addEventListener("message", (ev) => {
 	if (!ev.data) return;
 
-	const message = JSON.parse(ev.data);
+	const data: ChatMessage | ChatToken = JSON.parse(ev.data);
 
 	// refresh CSRF token with new value
-	if (Object.prototype.hasOwnProperty.call(message, "token")) {
-		token = message.token;
+	if (Object.prototype.hasOwnProperty.call(data, "token")) {
+		token = (data as ChatToken).token;
 		return;
 	}
 
+	const message = data as ChatMessage;
+
 	// append new chat message to list
-	const li = document.createElement("li");
+	const li: HTMLLIElement = document.createElement("li");
 
 	li.innerHTML = `
 		<span class="notify ${message.user ? "user" : "system"}">
@@ -24,16 +35,17 @@ es.addEventListener("message", (ev) => {
 		</span>
 		<span class="message"></span>
 		`;
-	li.querySelector(".message").innerText = message.message;
+	(li.querySelector(".message") as HTMLSpanElement)!.innerText =
+		message.message;
 
 	ul.appendChild(li);
 });
 
-const f = document.getElementsByTagName("form")[0];
-const inp = document.getElementsByTagName("input")[0];
+const f: HTMLFormElement = document.getElementsByTagName("form")[0];
+const inp: HTMLInputElement = document.getElementsByTagName("input")[0];
 
 // handle chat message submission
-f.addEventListener("submit", async (ev) => {
+f.addEventListener("submit", async (ev: SubmitEvent) => {
 	ev.preventDefault();
 	ev.stopPropagation();
 

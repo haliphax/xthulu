@@ -107,6 +107,13 @@ docker compose run --rm cli db init
 docker compose run --rm user db create
 ```
 
+### Build the static web assets
+
+```shell
+# in the project root
+npm run build
+```
+
 ### Start the services
 
 ```shell

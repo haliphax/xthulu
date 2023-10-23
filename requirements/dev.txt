@@ -25,10 +25,8 @@ identify==2.5.22
     # via pre-commit
 mypy-extensions==1.0.0
     # via black
-nodeenv==1.7.0
-    # via
-    #   -r dev.in
-    #   pre-commit
+nodeenv==1.8.0
+    # via pre-commit
 packaging==23.0
     # via
     #   black
