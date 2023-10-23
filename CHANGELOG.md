@@ -1,3 +1,14 @@
+# [v0.4.0](https://github.com/haliphax/xthulu/compare/v0.3.1...v0.4.0) (2023-10-23)
+
+## ✨ New Features
+- [`5fd8ca3`](https://github.com/haliphax/xthulu/commit/5fd8ca3)  logoff script 
+
+## 🐛 Bug Fixes
+- [`2aba3e6`](https://github.com/haliphax/xthulu/commit/2aba3e6)  fix web auth db bind 
+
+## 🔒 Security Issues
+- [`3025950`](https://github.com/haliphax/xthulu/commit/3025950) ️ CSRF for web chat
+
 # [v0.3.1](https://github.com/haliphax/xthulu/compare/v0.3.0...v0.3.1) (2023-10-18)
 
 ## 🐛 Bug Fixes
