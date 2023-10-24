@@ -40,6 +40,13 @@ repos:
         language: system
         types: [python]
 
+      - id: eslint
+        name: Lint files with ESLint
+        args: [eslint, --fix]
+        entry: npx
+        files: \.(js|ts)$
+        language: system
+
       - id: prettier
         name: Format files with prettier
         args: [prettier, -l, -u, -w]
