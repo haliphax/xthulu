@@ -102,9 +102,7 @@ uc-micro-py==1.0.2
 uvicorn[standard]==0.21.1
     # via -r requirements.in
 uvloop==0.17.0
-    # via
-    #   -r requirements.in
-    #   uvicorn
+    # via uvicorn
 watchfiles==0.19.0
     # via uvicorn
 websockets==10.4

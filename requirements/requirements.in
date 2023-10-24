@@ -10,5 +10,4 @@ sse-starlette
 textual
 toml
 uvicorn[standard]
-uvloop
 wrapt
