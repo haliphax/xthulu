@@ -5,12 +5,27 @@ from datetime import datetime
 
 # 3rd party
 from textual import events
-from textual.widgets import Label, ListItem, ListView, MarkdownViewer
+from textual.binding import Binding
+from textual.containers import Horizontal, Vertical
+from textual.css.query import NoMatches
+from textual.screen import ModalScreen
+from textual.widgets import (
+    Button,
+    Footer,
+    Label,
+    ListItem,
+    ListView,
+    MarkdownViewer,
+    TextArea,
+)
 
 # api
-from xthulu.models import Message
+from xthulu.models import Message, User
+from xthulu.resources import Resources
 from xthulu.ssh.console.banner_app import BannerApp
 from xthulu.ssh.context import SSHContext
+
+db = Resources().db
 
 LIMIT = 50
 """The maximum number of messages to keep loaded in the UI at once"""
@@ -36,12 +51,66 @@ class MessageFilter:
     """Tag name to filter for"""
 
 
+class _SaveScreen(ModalScreen):
+    CSS = """
+        Button {
+            margin: 1;
+            width: 33%;
+        }
+    """
+
+    response: str
+
+    def compose(self):
+        yield Vertical(
+            Label("Do you want to save your message?"),
+            Horizontal(
+                Button("Save", variant="success", id="save"),
+                Button("Continue", variant="primary", id="continue"),
+                Button("Discard", variant="error", id="discard"),
+            ),
+        )
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        assert event.button.id
+
+        if event.button.id == "continue":
+            self.app.pop_screen()  # pop this modal
+            return
+
+        if event.button.id == "save":
+            # TODO save the message
+            pass
+
+        self.app.pop_screen()  # pop this modal
+        self.app.pop_screen()  # pop the editor
+
+
+class _EditorScreen(ModalScreen):
+    _content: str
+
+    def __init__(self, *args, content="", **kwargs):
+        self._content = content
+        super().__init__(*args, **kwargs)
+
+    def compose(self):
+        yield TextArea(self._content)
+
+    async def key_escape(self):
+        await self.app.push_screen(_SaveScreen())
+
+
 class MessagesApp(BannerApp):
 
     """Message bases Textual app"""
 
+    BINDINGS = [
+        Binding("n", "compose", "Compose"),
+        Binding("r", "reply", "Reply"),
+    ]
+
     CSS = """
-        $accent: ansi_yellow;
+        $highlight: ansi_yellow;
         $error: ansi_bright_red;
 
         ListItem {
@@ -54,11 +123,11 @@ class MessagesApp(BannerApp):
         }
 
         ListView ListItem.--highlight {
-            background: $accent 50%;
+            background: $highlight 50%;
         }
 
         ListView:focus ListItem.--highlight {
-            background: $accent;
+            background: $highlight;
         }
 
         ListItem Label.message_id {
@@ -203,7 +272,7 @@ class MessagesApp(BannerApp):
             yield widget
 
         # messages list
-        list = ListView()
+        list = ListView(id="messages_list")
         list.focus()
         yield list
 
@@ -212,8 +281,16 @@ class MessagesApp(BannerApp):
         mv.display = False
         yield mv
 
+        yield Footer()
+
     async def key_escape(self, event: events.Key) -> None:
-        lv = self.query_one(ListView)
+        try:
+            lv: ListView = self.get_widget_by_id(
+                "messages_list"
+            )  # type: ignore
+        except NoMatches:
+            # we're not in the messages list screen; bail out
+            return
 
         # quit app if message list has focus
         if lv.has_focus:
@@ -227,14 +304,43 @@ class MessagesApp(BannerApp):
         lv.focus()
         event.stop()
 
-    async def on_key(self, event: events.Key) -> None:
+    async def action_compose(self) -> None:
+        await self.push_screen(_EditorScreen())
+
+    async def action_reply(self) -> None:
         lv = self.query_one(ListView)
+        assert lv.index is not None
+        selected = lv.children[lv.index]
+        assert selected.id
+        message_id = int(selected.id.split("_")[1])
+        message: Message = await db.one(
+            Message.load(author=User.on(Message.author_id == User.id)).where(
+                Message.id == message_id
+            )
+        )
+        await self.push_screen(
+            _EditorScreen(
+                content=(
+                    f"\n\n---\n{message.author.name} wrote:"
+                    f"\n\n{message.content}"
+                )
+            )
+        )
+
+    async def on_key(self, event: events.Key) -> None:
+        if event.key not in ["down", "up", "home", "end", "pageup", "pagedown"]:
+            return
+
+        try:
+            lv: ListView = self.get_widget_by_id(
+                "messages_list"
+            )  # type: ignore
+        except NoMatches:
+            # we're not in the messages list screen; bail out
+            return
 
         # do nothing if ListView isn't displayed
         if not lv.display:
-            return
-
-        if event.key not in ["down", "up", "home", "end", "pageup", "pagedown"]:
             return
 
         if event.key in ("home", "pageup"):

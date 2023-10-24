@@ -34,12 +34,16 @@ class Message(db.Model):
     )
     """Author of the message"""
 
+    author: User
+
     recipient_id = Column(
         None,
         ForeignKey(User.id, onupdate="cascade", ondelete="cascade"),
         nullable=True,
     )
     """Recipient of the message (`None` for public messages)"""
+
+    recipient: User | None
 
     created = Column(DateTime(), default=datetime.utcnow, nullable=False)
     """Creation time"""
