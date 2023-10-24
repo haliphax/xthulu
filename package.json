@@ -22,6 +22,7 @@
 		"node": "^18"
 	},
 	"scripts": {
-		"build": "vite build userland/web/static --emptyOutDir --outDir ../../../html"
+		"build": "npm ci && npm run build:local",
+		"build:local": "vite build userland/web/static --emptyOutDir --outDir ../../../html"
 	}
 }

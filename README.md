@@ -111,7 +111,7 @@ docker compose run --rm user db create
 
 ```shell
 # in the project root
-npm run build
+etc/build-web.sh
 ```
 
 ### Start the services
