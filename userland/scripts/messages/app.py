@@ -288,7 +288,7 @@ class MessagesApp(BannerApp):
             return
 
         if event.key in ("home", "pageup"):
-            if lv.index == 0:
+            if lv.index == 0 and self._allow_refresh():
                 # hit top boundary; load newer messages
                 await self._load_messages(newer=True)
 
@@ -297,7 +297,7 @@ class MessagesApp(BannerApp):
         elif event.key in ("end", "pagedown"):
             last = len(lv.children) - 1
 
-            if lv.index == last:
+            if lv.index == last and self._allow_refresh():
                 # hit bottom boundary; load older messages
                 await self._load_messages()
 
