@@ -234,16 +234,29 @@ class MessagesApp(BannerApp):
         if not lv.display:
             return
 
-        if event.key not in ["down", "up", "home", "end"]:
+        if event.key not in ["down", "up", "home", "end", "pageup", "pagedown"]:
             return
 
-        if event.key == "home":
+        if event.key in ("home", "pageup"):
+            if lv.index == 0:
+                # hit top boundary; load newer messages
+                await self._load_messages(newer=True)
+
             lv.index = 0
-        elif event.key == "end":
-            lv.index = len(lv.children) - 1
-        if event.key == "up" and lv.index == 0 and self._allow_refresh():
+
+        elif event.key in ("end", "pagedown"):
+            last = len(lv.children) - 1
+
+            if lv.index == last:
+                # hit bottom boundary; load older messages
+                await self._load_messages()
+
+            lv.index = last
+
+        elif event.key == "up" and lv.index == 0 and self._allow_refresh():
             # hit top boundary; load newer messages
             await self._load_messages(newer=True)
+
         elif (
             event.key == "down"
             and lv.index == len(lv.children) - 1
