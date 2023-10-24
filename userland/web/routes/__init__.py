@@ -1,8 +1,5 @@
 """Routes"""
 
-from . import chat, index
+from . import chat
 
-__all__ = (
-    "chat",
-    "index",
-)
+__all__ = ("chat",)
