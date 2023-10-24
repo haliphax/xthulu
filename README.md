@@ -121,6 +121,8 @@ etc/build-web.sh
 docker compose up -d
 ```
 
+## Connect
+
 ### Connect to the terminal server
 
 There is a `guest` account which demonstrates the ability for some accounts to
@@ -142,8 +144,11 @@ ssh user@localhost  # password is also "user"
 For the time being, the web server only demonstrates simple interoperability
 between the REST API and static pages. It is available at https://localhost.
 
-⚠️ [Traefik][] will be using an untrusted certificate, and you will likely be
-presented with a warning.
+> ⚠️ [Traefik][] will be using an untrusted certificate, and you will likely be
+> presented with a warning.
+
+The same credentials may be used here; for the `guest` account, any password (or
+a blank password) will work.
 
 [asyncssh]: https://asyncssh.readthedocs.io/en/latest/
 [blessed]: https://blessed.readthedocs.io/en/latest/intro.html
