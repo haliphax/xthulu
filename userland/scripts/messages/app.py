@@ -1,4 +1,4 @@
-"""Messages script"""
+"""Messages Textual app"""
 
 # stdlib
 from datetime import datetime
@@ -6,24 +6,17 @@ from datetime import datetime
 # 3rd party
 from textual import events
 from textual.binding import Binding
-from textual.containers import Horizontal, Vertical
 from textual.css.query import NoMatches
-from textual.screen import ModalScreen
-from textual.widgets import (
-    Button,
-    Footer,
-    Label,
-    ListItem,
-    ListView,
-    MarkdownViewer,
-    TextArea,
-)
+from textual.widgets import Footer, Label, ListItem, ListView, MarkdownViewer
 
 # api
 from xthulu.models import Message, User
 from xthulu.resources import Resources
 from xthulu.ssh.console.banner_app import BannerApp
 from xthulu.ssh.context import SSHContext
+
+# local
+from .editor_screen import EditorScreen
 
 db = Resources().db
 
@@ -49,55 +42,6 @@ class MessageFilter:
 
     tag: str | None = None
     """Tag name to filter for"""
-
-
-class _SaveScreen(ModalScreen):
-    CSS = """
-        Button {
-            margin: 1;
-            width: 33%;
-        }
-    """
-
-    response: str
-
-    def compose(self):
-        yield Vertical(
-            Label("Do you want to save your message?"),
-            Horizontal(
-                Button("Save", variant="success", id="save"),
-                Button("Continue", variant="primary", id="continue"),
-                Button("Discard", variant="error", id="discard"),
-            ),
-        )
-
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        assert event.button.id
-
-        if event.button.id == "continue":
-            self.app.pop_screen()  # pop this modal
-            return
-
-        if event.button.id == "save":
-            # TODO save the message
-            pass
-
-        self.app.pop_screen()  # pop this modal
-        self.app.pop_screen()  # pop the editor
-
-
-class _EditorScreen(ModalScreen):
-    _content: str
-
-    def __init__(self, *args, content="", **kwargs):
-        self._content = content
-        super().__init__(*args, **kwargs)
-
-    def compose(self):
-        yield TextArea(self._content)
-
-    async def key_escape(self):
-        await self.app.push_screen(_SaveScreen())
 
 
 class MessagesApp(BannerApp):
@@ -305,7 +249,7 @@ class MessagesApp(BannerApp):
         event.stop()
 
     async def action_compose(self) -> None:
-        await self.push_screen(_EditorScreen())
+        await self.push_screen(EditorScreen())
 
     async def action_reply(self) -> None:
         lv = self.query_one(ListView)
@@ -319,7 +263,7 @@ class MessagesApp(BannerApp):
             )
         )
         await self.push_screen(
-            _EditorScreen(
+            EditorScreen(
                 content=(
                     f"\n\n---\n{message.author.name} wrote:"
                     f"\n\n{message.content}"
@@ -392,10 +336,3 @@ class MessagesApp(BannerApp):
         lv = self.query_one(ListView)
         lv.index = 0
         lv.focus()
-
-
-async def main(cx: SSHContext) -> None:
-    cx.console.set_window_title("messages")
-    await MessagesApp(
-        cx, art_path="userland/artwork/messages.ans", art_encoding="amiga"
-    ).run_async()
