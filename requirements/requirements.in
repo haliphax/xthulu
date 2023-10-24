@@ -1,8 +1,8 @@
 aiofiles
 asyncssh
 bcrypt
-Click
-FastAPI
+click
+fastapi
 gino
 redis
 rich
@@ -10,5 +10,4 @@ sse-starlette
 textual
 toml
 uvicorn[standard]
-uvloop
 wrapt
