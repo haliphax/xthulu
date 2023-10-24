@@ -30,7 +30,11 @@ jobs:
         uses: dorny/paths-filter@v2
         with:
           filters: |
+            ts:
+              - "**.js"
+              - "**.ts"
             misc:
+              - "**.html"
               - "**.json"
               - "**.md"
               - "**.toml"
@@ -69,7 +73,9 @@ jobs:
     name: Prettier (formatter)
     needs: changes
     if: |
-      needs.changes.outputs.misc == 'true' || github.ref == 'refs/heads/main'
+      needs.changes.outputs.misc == 'true' ||
+      needs.changes.outputs.ts == 'true' ||
+      github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Check out
@@ -78,16 +84,38 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies
         run: npm i
 
       - name: Prettier
-        run: npx prettier -l -u .
+        run: npx prettier -lu .
 
   # linting
+
+  eslint:
+    name: ESLint (linter)
+    needs: changes
+    if: |
+      needs.changes.outputs.ts == 'true' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm i
+
+      - name: ESLint
+        run: npx eslint .
 
   ruff:
     name: Ruff (linter)
