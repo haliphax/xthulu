@@ -17,7 +17,7 @@
 		"semantic-release-gitmoji": "^1.6.5",
 		"semantic-release-replace-plugin": "^1.2.7",
 		"typescript": "^5.2.2",
-		"vite": "^4.5.1"
+		"vite": "^4.5.2"
 	},
 	"engines": {
 		"node": "^18"
