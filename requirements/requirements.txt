@@ -10,7 +10,6 @@ annotated-types==0.6.0
     # via pydantic
 anyio==3.7.1
     # via
-    #   fastapi
     #   starlette
     #   watchfiles
 async-timeout==4.0.2
@@ -29,7 +28,7 @@ click==8.1.3
     #   uvicorn
 cryptography==41.0.6
     # via asyncssh
-fastapi==0.103.2
+fastapi==0.109.1
     # via -r requirements.in
 gino==1.0.1
     # via -r requirements.in
@@ -76,7 +75,7 @@ sqlalchemy==1.3.24
     # via gino
 sse-starlette==1.6.5
     # via -r requirements.in
-starlette==0.27.0
+starlette==0.35.1
     # via
     #   fastapi
     #   sse-starlette
