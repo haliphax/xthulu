@@ -22,6 +22,9 @@
 	"engines": {
 		"node": "^18"
 	},
+	"overrides": {
+		"ip": "^2.0.1"
+	},
 	"prettier": {
 		"plugins": [
 			"prettier-plugin-organize-imports",
