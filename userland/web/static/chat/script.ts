@@ -49,9 +49,12 @@ f.addEventListener("submit", async (ev: SubmitEvent) => {
 	ev.preventDefault();
 	ev.stopPropagation();
 
+	const message = inp.value;
+	inp.value = "";
+
 	// post to server
 	await fetch("/api/chat/", {
-		body: JSON.stringify({ message: inp.value, token }),
+		body: JSON.stringify({ message, token }),
 		headers: { "Content-Type": "application/json" },
 		method: "POST",
 	}).then(async (r) => {
@@ -65,8 +68,6 @@ f.addEventListener("submit", async (ev: SubmitEvent) => {
 
 			return;
 		}
-
-		inp.value = "";
 	});
 
 	return false;
