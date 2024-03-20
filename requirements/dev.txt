@@ -4,7 +4,7 @@
 #
 #    pip-compile dev.in
 #
-black==23.1.0
+black==24.3.0
     # via -r dev.in
 build==0.10.0
     # via pip-tools
