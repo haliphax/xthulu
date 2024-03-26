@@ -7,7 +7,7 @@ from datetime import datetime
 from textual import events
 from textual.binding import Binding
 from textual.css.query import NoMatches
-from textual.widgets import Footer, Label, ListItem, ListView, MarkdownViewer
+from textual.widgets import Footer, Label, ListItem, ListView
 
 # api
 from xthulu.models import Message, User
@@ -17,6 +17,7 @@ from xthulu.ssh.context import SSHContext
 
 # local
 from .editor_screen import EditorScreen
+from .view_screen import ViewScreen
 
 db = Resources().db
 
@@ -220,39 +221,26 @@ class MessagesApp(BannerApp):
         list.focus()
         yield list
 
-        # individual message display
-        mv = MarkdownViewer(show_table_of_contents=False)
-        mv.display = False
-        yield mv
-
         yield Footer()
 
-    async def key_escape(self, event: events.Key) -> None:
-        try:
-            lv: ListView = self.get_widget_by_id(
-                "messages_list"
-            )  # type: ignore
-        except NoMatches:
-            # we're not in the messages list screen; bail out
-            return
-
-        # quit app if message list has focus
-        if lv.has_focus:
-            await self.action_quit()
-            return
-
-        # exit MarkdownViewer otherwise
-        mv = self.query_one(MarkdownViewer)
-        mv.display = False
-        lv.display = True
-        lv.focus()
-        event.stop()
-
     async def action_compose(self) -> None:
+        try:
+            self.query_one(ListView)
+        except NoMatches:
+            # not in message list screen; pop screen first
+            self.pop_screen()
+            return await self.action_compose()
+
         await self.push_screen(EditorScreen())
 
     async def action_reply(self) -> None:
-        lv = self.query_one(ListView)
+        try:
+            lv: ListView = self.query_one(ListView)
+        except NoMatches:
+            # not in message list screen; pop screen first
+            self.pop_screen()
+            return await self.action_reply()
+
         assert lv.index is not None
         selected = lv.children[lv.index]
         assert selected.id
@@ -272,7 +260,15 @@ class MessagesApp(BannerApp):
         )
 
     async def on_key(self, event: events.Key) -> None:
-        if event.key not in ["down", "up", "home", "end", "pageup", "pagedown"]:
+        if event.key not in [
+            "down",
+            "end",
+            "escape",
+            "home",
+            "pagedown",
+            "pageup",
+            "up",
+        ]:
             return
 
         try:
@@ -283,9 +279,8 @@ class MessagesApp(BannerApp):
             # we're not in the messages list screen; bail out
             return
 
-        # do nothing if ListView isn't displayed
-        if not lv.display:
-            return
+        if event.key == "escape":
+            self.exit()
 
         if event.key in ("home", "pageup"):
             if lv.index == 0 and self._allow_refresh():
@@ -318,15 +313,10 @@ class MessagesApp(BannerApp):
     async def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Load selected message in MarkdownViewer."""
 
-        self.query_one(ListView).display = False
         assert event.item.id
         message_id = int(event.item.id.split("_")[1])
         message: Message = await Message.get(message_id)
-        mv = self.query_one(MarkdownViewer)
-        mv.document.update(message.content)
-        mv.display = True
-        mv.scroll_home(animate=False)
-        mv.focus()
+        await self.push_screen(ViewScreen(message=message))
 
     async def on_ready(self) -> None:
         """App is ready; load messages."""
