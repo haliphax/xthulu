@@ -1,4 +1,4 @@
-"""GINO models"""
+"""Database ORM models"""
 
 from .user import User
 

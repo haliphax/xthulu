@@ -58,6 +58,7 @@ async def main(cx: SSHContext) -> None:
 
     await cx.inkey(timeout=0.1)  # show bar at 100% before switching screens
     await cx.gosub("oneliners")
+    await cx.gosub("messages")
     await cx.gosub("lock_example")
     await cx.gosub("chat")
     cx.goto("logoff")
