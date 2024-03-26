@@ -17,10 +17,13 @@
 		"semantic-release-gitmoji": "^1.6.5",
 		"semantic-release-replace-plugin": "^1.2.7",
 		"typescript": "^5.2.2",
-		"vite": "^4.5.0"
+		"vite": "^4.5.2"
 	},
 	"engines": {
 		"node": "^18"
+	},
+	"overrides": {
+		"ip": "^2.0.1"
 	},
 	"prettier": {
 		"plugins": [
