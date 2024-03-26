@@ -5,8 +5,8 @@ from textual.binding import Binding
 from textual.screen import Screen
 from textual.widgets import Footer, MarkdownViewer
 
-# api
-from xthulu.models import Message
+# local
+from userland.models import Message
 
 
 class ViewScreen(Screen):

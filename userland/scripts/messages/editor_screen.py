@@ -4,10 +4,8 @@
 from textual.screen import ModalScreen
 from textual.widgets import TextArea
 
-# api
-from xthulu.models.message import Message
-
 # local
+from userland.models.message import Message
 from .save_modal import SaveModal
 
 

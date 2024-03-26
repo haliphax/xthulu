@@ -9,7 +9,9 @@ from textual.widgets import Button, Input, Label, TextArea
 
 # api
 from xthulu.ssh.console.app import XthuluApp
-from xthulu.models import Message, MessageTag, MessageTags
+
+# local
+from userland.models import Message, MessageTag, MessageTags
 
 
 class DetailsModal(ModalScreen):
@@ -74,6 +76,7 @@ class DetailsModal(ModalScreen):
                             1, failure_description="Title is required"
                         )
                     ],
+                    validate_on=("changed", "submitted"),
                 ),
             ),
             Horizontal(
@@ -103,15 +106,24 @@ class DetailsModal(ModalScreen):
         inp.value = tags
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
-        self.app.pop_screen()  # pop this modal
-
         if event.button.name == "cancel":
+            self.app.pop_screen()  # pop this modal
             return
 
         app: XthuluApp = self.app  # type: ignore
         title: Input = self.get_widget_by_id("title")  # type: ignore
-        content = self.app.screen_stack[-1].query_one(TextArea)
+        title_validator = title.validate(title.value)
+
+        if title_validator and not title_validator.is_valid:
+            return
+
+        content = self.app._background_screens[-1].query_one(TextArea)
         tags: Input = self.get_widget_by_id("tags")  # type: ignore
+        tags_validator = tags.validate(tags.value)
+
+        if tags_validator and not tags_validator.is_valid:
+            return
+
         all_tags = set(tags.value.split(" "))
         existing_tags = set(
             [
@@ -139,4 +151,5 @@ class DetailsModal(ModalScreen):
         for t in all_tags:
             await MessageTags.create(message_id=message.id, tag_name=t)
 
+        self.app.pop_screen()  # pop this modal
         self.app.pop_screen()  # pop the editor

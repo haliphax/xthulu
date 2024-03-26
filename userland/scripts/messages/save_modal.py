@@ -5,10 +5,8 @@ from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, Label
 
-# api
-from xthulu.models.message import Message
-
 # local
+from userland.models import Message
 from .details_modal import DetailsModal
 
 

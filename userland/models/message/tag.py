@@ -10,8 +10,8 @@ from sqlalchemy import (
     String,
 )
 
-# local
-from ...resources import Resources
+# api
+from xthulu.resources import Resources
 
 db = Resources().db
 

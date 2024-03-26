@@ -13,9 +13,9 @@ from sqlalchemy import (
     Text,
 )
 
-# local
-from ...resources import Resources
-from ..user import User
+# api
+from xthulu.resources import Resources
+from xthulu.models import User
 
 db = Resources().db
 
@@ -29,7 +29,7 @@ class Message(db.Model):
 
     parent_id = Column(
         None,
-        ForeignKey("message.id", onupdate="cascade", ondelete="cascade"),
+        ForeignKey("message.id", onupdate="cascade", ondelete="set null"),
         nullable=True,
     )
     """Parent message (if any)"""

@@ -10,12 +10,13 @@ from textual.css.query import NoMatches
 from textual.widgets import Footer, Label, ListItem, ListView
 
 # api
-from xthulu.models import Message, User
+from xthulu.models import User
 from xthulu.resources import Resources
 from xthulu.ssh.console.banner_app import BannerApp
 from xthulu.ssh.context import SSHContext
 
 # local
+from userland.models import Message
 from .editor_screen import EditorScreen
 from .view_screen import ViewScreen
 

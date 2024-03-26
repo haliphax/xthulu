@@ -53,7 +53,7 @@ def destroy():
 def init():
     """Initialize database with starter data."""
 
-    from ..models import Message, MessageTag, MessageTags, User
+    from ..models import User
 
     loop = get_event_loop()
     res = Resources()
@@ -72,37 +72,11 @@ def init():
 
         echo("Creating user with password")
         pwd, salt = User.hash_password("user")
-        user = await User.create(
+        await User.create(
             name="user",
             email="user@localhost.localdomain",
             password=pwd,
             salt=salt,
         )
-
-        echo("Posting initial messages")
-        tags = (
-            await MessageTag.create(name="demo"),
-            await MessageTag.create(name="introduction"),
-        )
-        messages = []
-
-        for i in range(100):
-            messages.append(
-                await Message.create(
-                    author_id=user.id,
-                    title=f"Hello, world! #{i}",
-                    content=(
-                        "# Hello\n\nHello, world! ✌️\n\n"
-                        "## Demo\n\nThis is a demonstration message.\n\n"
-                    )
-                    * 20,
-                )
-            )
-
-        for tag in tags:
-            for message in messages:
-                await MessageTags.create(
-                    message_id=message.id, tag_name=tag.name
-                )
 
     loop.run_until_complete(f())
