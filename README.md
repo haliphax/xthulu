@@ -41,6 +41,13 @@ character sets (UTF-8) and [terminal capabilities][] are taken advantage of.
   - [x] Adapt for SSH session usage
   - [ ] File browser
   - [ ] Message interface
+    - [x] List messages
+    - [x] Post messages
+    - [x] Reply to messages
+    - [x] Tag system
+    - [ ] Search messages
+    - [ ] Filter by tag(s)
+    - [ ] Private messages
 - [ ] Door games
   - [x] Subprocess redirect for terminal apps
   - [ ] Dropfile generators
@@ -72,14 +79,7 @@ character sets (UTF-8) and [terminal capabilities][] are taken advantage of.
   - [x] PostgreSQL for data
   - [x] Asynchronous ORM ([GINO][])
   - [x] User model
-  - [ ] Message bases
-    - [x] List messages
-    - [x] Post messages
-    - [x] Reply to messages
-    - [x] Tag system
-    - [ ] Search messages
-    - [ ] Filter by tag(s)
-    - [ ] Private messages
+  - [x] Message bases
   - [ ] Simple pickle table for miscellaneous data storage?
 
 </details>
