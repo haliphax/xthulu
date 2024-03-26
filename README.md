@@ -112,6 +112,7 @@ ssh-keygen -f ssh_host_key -t rsa -b 4096  # do not use a passphrase
 docker compose run --rm cli db create
 docker compose run --rm cli db init
 docker compose run --rm user db create
+docker compose run --rm user db init
 ```
 
 ### Build the static web assets
