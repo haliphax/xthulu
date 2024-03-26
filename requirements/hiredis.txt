@@ -4,5 +4,5 @@
 #
 #    pip-compile hiredis.in
 #
-hiredis==2.2.2
+hiredis==2.3.2
     # via -r hiredis.in
