@@ -26,7 +26,7 @@ jobs:
 
       - name: Detect changed files
         id: changes
-        uses: dorny/paths-filter@v2
+        uses: dorny/paths-filter@v3
         with:
           filters: |
             src:
