@@ -29,7 +29,7 @@ es.addEventListener("message", (ev) => {
 	// append new chat message to list
 	const li: HTMLLIElement = document.createElement("li");
 
-	li.innerHTML = `
+	li.innerHTML = /*html*/ `
 		<span class="notify ${message.user ? "user" : "system"}">
 			&lt;${message.user ?? "*"}&gt;
 		</span>
