@@ -47,8 +47,8 @@ jobs:
 
   # formatting
 
-  black:
-    name: Black (formatter)
+  ruff-format:
+    name: Ruff (formatter)
     needs: changes
     if: needs.changes.outputs.py == 'true' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -66,8 +66,8 @@ jobs:
           python -m pip install -U pip setuptools
           pip install -e .[dev]
 
-      - name: Black
-        run: black -t py311 --check .
+      - name: Ruff
+        run: ruff format .
 
   prettier:
     name: Prettier (formatter)
@@ -117,7 +117,7 @@ jobs:
       - name: ESLint
         run: npx eslint .
 
-  ruff:
+  ruff-lint:
     name: Ruff (linter)
     needs: changes
     if: needs.changes.outputs.py == 'true' || github.ref == 'refs/heads/main'
@@ -137,4 +137,4 @@ jobs:
           pip install -e .[dev]
 
       - name: Ruff
-        run: ruff check --target-version py311 .
+        run: ruff check .

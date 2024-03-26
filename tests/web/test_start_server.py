@@ -26,7 +26,6 @@ class Resources:
 
 @patch("xthulu.web.get_config", patch_get_config(test_config))
 class TestStartWebServer(TestCase):
-
     """Web server tests"""
 
     def setUp(self):

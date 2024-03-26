@@ -14,7 +14,6 @@ db = Resources().db
 
 
 class Oneliner(db.Model):
-
     """Oneliner model"""
 
     MAX_LENGTH = 120

@@ -10,7 +10,6 @@ from .save_modal import SaveModal
 
 
 class EditorScreen(ModalScreen):
-
     """Message compose/reply screen"""
 
     _content: str

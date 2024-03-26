@@ -5,7 +5,6 @@ from pydantic import BaseModel
 
 
 class ChatPost(BaseModel):
-
     """Posted chat message"""
 
     message: str
@@ -16,7 +15,6 @@ class ChatPost(BaseModel):
 
 
 class ChatToken(BaseModel):
-
     """CSRF token"""
 
     token: str

@@ -25,7 +25,6 @@ class _ErrorConsoleProxy:
 
 
 class XthuluApp(App):
-
     """SSH wrapper for Textual apps"""
 
     context: SSHContext
@@ -43,9 +42,7 @@ class XthuluApp(App):
 
     async def _watch_for_resize(self):
         while True:
-            ev: list[EventData] = self.context.events.get(
-                "resize"
-            )  # type: ignore
+            ev: list[EventData] = self.context.events.get("resize")  # type: ignore
 
             if not ev:
                 await sleep(0.5)

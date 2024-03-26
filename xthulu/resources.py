@@ -22,7 +22,6 @@ log = getLogger(__name__)
 
 
 class Resources:
-
     """Shared system resources"""
 
     app: FastAPI

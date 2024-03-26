@@ -21,7 +21,6 @@ db = Resources().db
 
 
 class Message(db.Model):
-
     """Message model"""
 
     id = Column(Integer(), primary_key=True)

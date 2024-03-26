@@ -9,7 +9,6 @@ from .structs import EventData
 
 
 class EventQueue:
-
     """
     Event queue which uses two underlying storage mechanisms for efficiency.
     `xthulu.events.structs.EventData` objects are stored in an `OrderedDict`
@@ -94,7 +93,6 @@ class EventQueue:
 
 
 class EventQueues:
-
     """Underlying event queue storage"""
 
     q: dict[str, EventQueue] = {}

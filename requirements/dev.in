@@ -1,5 +1,4 @@
 -c requirements.in
-black
 coverage
 parameterized
 pip-tools

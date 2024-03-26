@@ -7,7 +7,6 @@ from typing import Any, Sequence
 
 @dataclass
 class Script:
-
     """A userland Python script"""
 
     name: str

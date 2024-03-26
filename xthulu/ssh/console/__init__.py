@@ -12,7 +12,6 @@ from .internal.file_wrapper import FileWrapper
 
 
 class XthuluConsole(Console):
-
     """
     Wrapper around rich's Console for integrating with
     `xthulu.ssh.context.SSHContext` queues

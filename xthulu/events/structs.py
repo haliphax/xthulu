@@ -9,7 +9,6 @@ from dataclasses import dataclass
 
 @dataclass
 class EventData:
-
     """An event and its accompanying data"""
 
     name: str

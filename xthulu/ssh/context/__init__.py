@@ -35,7 +35,6 @@ pathfinder = PathFinder()
 
 
 class SSHContext:
-
     """Context object for SSH sessions"""
 
     proc: SSHServerProcess

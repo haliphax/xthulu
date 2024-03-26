@@ -8,7 +8,6 @@ from logging import Filter, LogRecord
 
 
 class ContextLogFilter(Filter):
-
     """Custom `logging.Filter` that injects username and remote IP address"""
 
     whoami: str

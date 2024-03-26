@@ -26,7 +26,6 @@ class Resources:
 
 
 class TestStartSSHServer(IsolatedAsyncioTestCase):
-
     """Test SSH server startup"""
 
     def setUp(self):

@@ -15,7 +15,6 @@ from asyncssh import SSHServerConnection, SSHServerSession
 
 
 class ProxyProtocolSession:
-
     """Session implementing the PROXY protocol v1"""
 
     def __init__(self, conn_factory: Callable):
@@ -104,7 +103,6 @@ class ProxyProtocolSession:
 
 
 class ProxyProtocolListener:
-
     """Tunnel listener which passes connections to a PROXY protocol session"""
 
     async def create_server(
@@ -127,5 +125,7 @@ class ProxyProtocolListener:
             return ProxyProtocolSession(conn_factory)
 
         return await get_event_loop().create_server(
-            tunnel_factory, listen_host, listen_port  # type: ignore
+            tunnel_factory,
+            listen_host,
+            listen_port,  # type: ignore
         )

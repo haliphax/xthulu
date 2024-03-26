@@ -11,7 +11,6 @@ from .details_modal import DetailsModal
 
 
 class SaveModal(ModalScreen):
-
     """Save confirmation screen"""
 
     CSS = """

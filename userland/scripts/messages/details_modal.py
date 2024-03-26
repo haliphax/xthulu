@@ -15,7 +15,6 @@ from userland.models import Message, MessageTag, MessageTags
 
 
 class DetailsModal(ModalScreen):
-
     """Message details screen"""
 
     BINDINGS = [
@@ -67,9 +66,11 @@ class DetailsModal(ModalScreen):
             Horizontal(
                 Label("Title", shrink=True),
                 Input(
-                    f"Re: {self.reply_to.title.lstrip('Re: ')}"
-                    if self.reply_to
-                    else "",
+                    (
+                        f"Re: {self.reply_to.title.lstrip('Re: ')}"
+                        if self.reply_to
+                        else ""
+                    ),
                     id="title",
                     validators=[
                         validation.Length(

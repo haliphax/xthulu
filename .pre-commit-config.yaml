@@ -26,17 +26,17 @@ repos:
 
   - repo: local
     hooks:
-      - id: ruff
+      - id: ruff-lint
         name: Lint files with ruff
-        args: [check, --target-version, py311, --fix, --show-fixes]
+        args: [check, --fix, --show-fixes]
         entry: ruff
         language: system
         types: [python]
 
-      - id: black
-        name: Format files with black
-        args: [-t, py311]
-        entry: black
+      - id: ruff-format
+        name: Format files with ruff
+        args: [format]
+        entry: ruff
         language: system
         types: [python]
 

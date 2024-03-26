@@ -18,7 +18,6 @@ BANNER_PADDING = 10
 
 
 class BannerApp(XthuluApp):
-
     """Textual app with banner display"""
 
     art_encoding: str

@@ -5,7 +5,6 @@ from ...locks import get, release
 
 
 class _LockManager:
-
     """Internal class for managing user locks"""
 
     def __init__(self, sid: str, name: str):

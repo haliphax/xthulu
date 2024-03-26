@@ -17,7 +17,6 @@ db = Resources().db
 
 
 class MessageTag(db.Model):
-
     """Message tag model"""
 
     name = Column(String(32), primary_key=True)

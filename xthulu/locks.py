@@ -14,7 +14,6 @@ cache = Resources().cache
 
 
 class _Locks:
-
     """Internal lock storage mechanism"""
 
     locks: dict[str, dict[str, Lock]] = {}

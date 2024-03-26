@@ -10,7 +10,6 @@ from userland.models import Message
 
 
 class ViewScreen(Screen):
-
     """Message viewer screen"""
 
     BINDINGS = [

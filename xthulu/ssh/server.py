@@ -16,7 +16,6 @@ from ..models import User
 
 
 class SSHServer(AsyncSSHServer):
-
     """xthulu SSH Server"""
 
     _username: str | None = None

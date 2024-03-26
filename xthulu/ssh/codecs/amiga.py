@@ -13,7 +13,9 @@ class Codec(codecs.Codec):
 
     def decode(self, char, errors="strict"):
         return codecs.charmap_decode(
-            char, errors, DECODING_TABLE  # type: ignore
+            char,
+            errors,
+            DECODING_TABLE,  # type: ignore
         )
 
 
@@ -25,7 +27,9 @@ class IncrementalEncoder(codecs.IncrementalEncoder):
 class IncrementalDecoder(codecs.IncrementalDecoder):
     def decode(self, char, final=False):
         return codecs.charmap_decode(
-            char, self.errors, DECODING_TABLE  # type: ignore
+            char,
+            self.errors,
+            DECODING_TABLE,  # type: ignore
         )[0]
 
 

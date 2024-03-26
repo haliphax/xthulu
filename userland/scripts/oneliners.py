@@ -17,7 +17,6 @@ LIMIT = 200
 
 
 class OnlinersApp(BannerApp):
-
     """Oneliners Textual app"""
 
     CSS = """

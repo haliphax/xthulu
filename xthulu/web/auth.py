@@ -19,7 +19,7 @@ auth = HTTPBasic()
 
 
 async def login_user(
-    credentials: Annotated[HTTPBasicCredentials, Depends(auth)]
+    credentials: Annotated[HTTPBasicCredentials, Depends(auth)],
 ):
     """
     HTTP Basic authentication routine. Use as a dependency in route arguments to

@@ -17,7 +17,6 @@ FIND_CUF_REGEX = r"\x1b\[(\d+)C"
 
 
 class ArtLog(XthuluApp):
-
     """Displays artwork"""
 
     artwork: list[str]

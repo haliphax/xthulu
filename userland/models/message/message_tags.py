@@ -13,7 +13,6 @@ db = Resources().db
 
 
 class MessageTags(db.Model):
-
     """Message tag model"""
 
     message_id = Column(

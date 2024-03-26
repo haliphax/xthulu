@@ -16,7 +16,6 @@ from ..app import XthuluApp
 
 
 class SSHDriver(LinuxDriver):
-
     """
     Textual console driver integrated with `xthulu.ssh.context.SSHContext`
     queues

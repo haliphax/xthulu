@@ -8,7 +8,6 @@ from xthulu.events import EventData, EventQueue, EventQueues, put_global
 
 
 class TestEventQueues(IsolatedAsyncioTestCase):
-
     """EventQueues tests"""
 
     def setUp(self):
@@ -103,7 +102,6 @@ class TestEventQueues(IsolatedAsyncioTestCase):
 
 
 class TestEventQueue(IsolatedAsyncioTestCase):
-
     """EventQueue tests"""
 
     def setUp(self):

@@ -18,7 +18,6 @@ from xthulu.resources import Resources
 
 
 class TestResources(TestCase):
-
     """Resources singleton tests"""
 
     def setUp(self):

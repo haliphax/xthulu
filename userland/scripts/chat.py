@@ -33,7 +33,6 @@ class ChatMessage(BaseModel):
 
 
 class ChatApp(XthuluApp):
-
     """Node chat Textual app"""
 
     BINDINGS = [Binding("escape", "quit", show=False)]

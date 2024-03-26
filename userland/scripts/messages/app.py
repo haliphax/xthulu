@@ -33,7 +33,6 @@ RATE_LIMIT_SECONDS = 10
 
 
 class MessageFilter:
-
     """Data class for filtering messages"""
 
     author: int | None = None
@@ -47,7 +46,6 @@ class MessageFilter:
 
 
 class MessagesApp(BannerApp):
-
     """Message bases Textual app"""
 
     BINDINGS = [
@@ -274,9 +272,7 @@ class MessagesApp(BannerApp):
             return
 
         try:
-            lv: ListView = self.get_widget_by_id(
-                "messages_list"
-            )  # type: ignore
+            lv: ListView = self.get_widget_by_id("messages_list")  # type: ignore
         except NoMatches:
             # we're not in the messages list screen; bail out
             return
