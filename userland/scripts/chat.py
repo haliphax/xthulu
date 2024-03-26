@@ -10,6 +10,7 @@ from pydantic import BaseModel
 from redis import Redis
 from redis.client import PubSub
 from rich.markup import escape
+from textual.binding import Binding
 from textual.containers import VerticalScroll
 from textual.validation import Length
 from textual.widgets import Input, Label, Static
@@ -35,6 +36,7 @@ class ChatApp(XthuluApp):
 
     """Node chat Textual app"""
 
+    BINDINGS = [Binding("escape", "quit", show=False)]
     CSS = """
         $error: ansi_bright_red;
 
@@ -56,7 +58,6 @@ class ChatApp(XthuluApp):
 
     def __init__(self, context: SSHContext, **kwargs):
         super().__init__(context, **kwargs)
-        self.bind("escape", "quit")
         self.redis = Resources().cache
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe(**{"chat": self.on_chat})

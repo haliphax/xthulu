@@ -60,6 +60,7 @@ def init():
 
     async def f():
         await res.db.set_bind(res.db.bind)
+
         echo("Creating guest user")
         pwd, salt = User.hash_password("guest")
         await User.create(
@@ -68,6 +69,7 @@ def init():
             password=pwd,
             salt=salt,
         )
+
         echo("Creating user with password")
         pwd, salt = User.hash_password("user")
         await User.create(
