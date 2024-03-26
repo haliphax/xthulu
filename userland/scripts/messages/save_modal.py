@@ -5,13 +5,19 @@ from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, Label
 
+# api
+from xthulu.models.message import Message
 
-class SaveScreen(ModalScreen):
+# local
+from .details_modal import DetailsModal
+
+
+class SaveModal(ModalScreen):
 
     """Save confirmation screen"""
 
     CSS = """
-        SaveScreen {
+        SaveModal {
             align: center middle;
             background: rgba(0, 0, 0, 0.5);
         }
@@ -34,7 +40,11 @@ class SaveScreen(ModalScreen):
         }
     """
 
-    response: str
+    reply_to: Message | None
+
+    def __init__(self, *args, reply_to: Message | None = None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.reply_to = reply_to
 
     def compose(self):
         yield Vertical(
@@ -47,7 +57,7 @@ class SaveScreen(ModalScreen):
             id="wrapper",
         )
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
+    async def on_button_pressed(self, event: Button.Pressed) -> None:
         assert event.button.id
 
         if event.button.id == "continue":
@@ -55,8 +65,9 @@ class SaveScreen(ModalScreen):
             return
 
         if event.button.id == "save":
-            # TODO save the message
-            pass
+            self.app.pop_screen()
+            await self.app.push_screen(DetailsModal(reply_to=self.reply_to))
+            return
 
         self.app.pop_screen()  # pop this modal
         self.app.pop_screen()  # pop the editor

@@ -27,6 +27,15 @@ class Message(db.Model):
     id = Column(Integer(), primary_key=True)
     """Unique ID"""
 
+    parent_id = Column(
+        None,
+        ForeignKey("message.id", onupdate="cascade", ondelete="cascade"),
+        nullable=True,
+    )
+    """Parent message (if any)"""
+
+    parent: "Message | None"
+
     author_id = Column(
         None,
         ForeignKey(User.id, onupdate="cascade", ondelete="set null"),

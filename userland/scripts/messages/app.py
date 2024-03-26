@@ -255,7 +255,8 @@ class MessagesApp(BannerApp):
                 content=(
                     f"\n\n---\n{message.author.name} wrote:"
                     f"\n\n{message.content}"
-                )
+                ),
+                reply_to=message,
             )
         )
 
