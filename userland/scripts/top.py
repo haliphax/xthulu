@@ -25,7 +25,6 @@ async def main(cx: SSHContext) -> None:
         )
         return
 
-    cx.goto("messages")
     cx.console.set_window_title(f"{cx.username}@79columns")
     await scroll_art(cx, "userland/artwork/login.ans", "cp437")
     await cx.inkey("Press any key to continue", "dots8Bit")
