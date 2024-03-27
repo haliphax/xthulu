@@ -30,8 +30,18 @@ class XthuluConsole(Console):
         **kwargs,
     ):
         self.encoding = encoding
+        color_term = _environ.get("COLORTERM") if _environ else None
+        term_type = (_environ.get("TERM") if _environ else None) or ""
+        color_system = (
+            "truecolor"
+            if color_term == "truecolor" or term_type.find("truecolor") >= 0
+            else "256"
+            if term_type.find("256") >= 0
+            else "standard"
+        )
         super().__init__(
             **kwargs,
+            color_system=color_system,
             file=FileWrapper(ssh_writer, encoding),
             force_interactive=True,
             force_terminal=True,
