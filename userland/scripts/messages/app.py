@@ -356,7 +356,6 @@ class MessagesApp(BannerApp):
     async def on_ready(self) -> None:
         """App is ready; load messages."""
 
-        await super().on_ready()
         await self._load_messages()
         lv = self.query_one(ListView)
         lv.index = 0
