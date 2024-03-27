@@ -27,11 +27,13 @@ pyenv activate xthulu
 In addition to the standard dependencies for the project, a set of
 developer-focused dependencies are included. Some of them are located in the
 `dev` optional dependencies bundle from the project's Python package, but others
-come from the [node.js][] ecosystem.
+come from the [node.js][] ecosystem. You should use a node version manager such
+as [nvm][] in order to select the appropriate runtime version.
 
 ```shell
 pip install -e .[dev,hiredis]
-nodeenv -p
+nvm install
+nvm use
 npm ci
 ```
 
@@ -42,9 +44,9 @@ npm ci
 This project makes use of the [pre-commit][] system. The following applications
 are used to lint source code and check formatting:
 
-- [Black][] - Python formatter
+- [ESLint][] - TypeScript linter/formatter
 - [Prettier][] - Miscellaneous formatter
-- [Ruff][] - Python linter
+- [Ruff][] - Python linter/formatter
 
 You must initialize the system and install the appropriate hooks. Once
 installed, they will be invoked automatically when you commit.
@@ -121,11 +123,12 @@ coverage run --source=xthulu --omit="xthulu/__main__.py" -m unittest
 coverage report
 ```
 
-[black]: https://black.readthedocs.io/en/stable/index.html
 [coverage]: https://coverage.readthedocs.io/en/latest/
 [dev containers]: https://containers.dev/
+[eslint]: https://eslint.org/
 [gitmoji]: https://gitmoji.dev
 [node.js]: https://nodejs.org
+[nvm]: https://github.com/nvm-sh/nvm
 [open an issue]: https://github.com/haliphax/xthulu/issues/new?labels=enhancement&title=Proposal:%20
 [pre-commit]: https://pre-commit.com/
 [prettier]: https://prettier.io/
