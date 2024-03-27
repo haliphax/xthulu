@@ -4,5 +4,5 @@
 set -eo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
 node_ver="$(cat ../.nvmrc | sed -e 's/\n//' | sed -e 's/\//-/')"
-docker run -it --rm -u "$UID:$GID" -v "$(pwd)/..:/app" -w /app \
+docker run -it --rm -e HOME=/tmp -u "$UID:$GID" -v "$(pwd)/..:/app" -w /app \
 	"node:$node_ver" npm run build
