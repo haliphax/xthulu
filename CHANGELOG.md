@@ -1,3 +1,8 @@
+# [v0.5.1](https://github.com/haliphax/xthulu/compare/v0.5.0...v0.5.1) (2024-03-27)
+
+## 🐛 Bug Fixes
+- [`0040c67`](https://github.com/haliphax/xthulu/commit/0040c67)  fix build-web script by setting HOME env var to /tmp
+
 # [v0.5.0](https://github.com/haliphax/xthulu/compare/v0.4.0...v0.5.0) (2024-03-27)
 
 ## ✨ New Features
