@@ -1,7 +1,6 @@
 """Message details screen"""
 
 # 3rd party
-from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
 from textual import validation
@@ -16,10 +15,6 @@ from userland.models import Message, MessageTag, MessageTags
 
 class DetailsModal(ModalScreen):
     """Message details screen"""
-
-    BINDINGS = [
-        Binding("escape", "app.pop_screen", show=False),
-    ]
 
     CSS = """
         DetailsModal {
@@ -154,3 +149,6 @@ class DetailsModal(ModalScreen):
 
         self.app.pop_screen()  # pop this modal
         self.app.pop_screen()  # pop the editor
+
+    async def key_escape(self, _):
+        self.app.pop_screen()  # pop this modal

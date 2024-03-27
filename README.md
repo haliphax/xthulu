@@ -45,8 +45,8 @@ character sets (UTF-8) and [terminal capabilities][] are taken advantage of.
     - [x] Post messages
     - [x] Reply to messages
     - [x] Tag system
+    - [x] Filter by tag(s)
     - [ ] Search messages
-    - [ ] Filter by tag(s)
     - [ ] Private messages
 - [ ] Door games
   - [x] Subprocess redirect for terminal apps

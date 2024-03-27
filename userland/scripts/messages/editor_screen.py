@@ -1,6 +1,7 @@
 """Message compose/reply screen"""
 
 # 3rd party
+from textual import events
 from textual.screen import ModalScreen
 from textual.widgets import TextArea
 
@@ -23,7 +24,10 @@ class EditorScreen(ModalScreen):
         super().__init__(*args, **kwargs)
 
     def compose(self):
-        yield TextArea(self._content)
+        yield TextArea(text=self._content, show_line_numbers=True)
 
-    async def key_escape(self):
+    async def key_escape(self, key: events.Key) -> None:
+        if isinstance(self.app.screen_stack[-1], SaveModal):
+            return
+
         await self.app.push_screen(SaveModal(reply_to=self.reply_to))

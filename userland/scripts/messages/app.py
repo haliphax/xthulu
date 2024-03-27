@@ -5,6 +5,7 @@ from datetime import datetime
 
 # 3rd party
 from textual import events
+from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.css.query import NoMatches
 from textual.widgets import Footer, Label, ListItem, ListView
@@ -16,8 +17,9 @@ from xthulu.ssh.console.banner_app import BannerApp
 from xthulu.ssh.context import SSHContext
 
 # local
-from userland.models import Message
+from userland.models import Message, MessageTags
 from .editor_screen import EditorScreen
+from .filter_modal import FilterModal
 from .view_screen import ViewScreen
 
 db = Resources().db
@@ -49,6 +51,7 @@ class MessagesApp(BannerApp):
     """Message bases Textual app"""
 
     BINDINGS = [
+        Binding("f", "filter", "Filter"),
         Binding("n", "compose", "Compose"),
         Binding("r", "reply", "Reply"),
     ]
@@ -95,6 +98,9 @@ class MessagesApp(BannerApp):
     _last_query_empty = False
     """If last query had no results"""
 
+    _tags = []
+    """List of tags to filter by"""
+
     def __init__(
         self,
         context: SSHContext,
@@ -122,19 +128,32 @@ class MessagesApp(BannerApp):
 
         lv: ListView = self.query_one(ListView)
         select = Message.select("id", "title")
+        filter = (
+            select
+            if len(self._tags) == 0
+            else select.select_from(
+                Message.join(
+                    MessageTags,
+                    db.and_(
+                        MessageTags.message_id == Message.id,
+                        MessageTags.tag_name.in_(self._tags),
+                    ),
+                )
+            )
+        )
         first = len(lv.children) == 0
         limit = min(round(lv.size.height / 2), LOAD_AT_ONCE)
 
         if first:
             # app startup; load most recent messages
             limit = min(lv.size.height, LIMIT)
-            query = select.order_by(Message.id.desc())
+            query = filter.order_by(Message.id.desc())
         elif newer:
             # load newer messages
-            query = select.where(Message.id > self._last).order_by(Message.id)
+            query = filter.where(Message.id > self._last).order_by(Message.id)
         else:
             # load older messages
-            query = select.where(Message.id < self._first).order_by(
+            query = filter.where(Message.id < self._first).order_by(
                 Message.id.desc()
             )
 
@@ -210,7 +229,15 @@ class MessagesApp(BannerApp):
             # keep selected item in view
             lv.scroll_to_widget(lv.children[lv.index])
 
-    def compose(self):
+    async def _update_tags(self, tags: list[str]) -> None:
+        lv = self.query_one(ListView)
+        await lv.clear()
+        self._tags = [t for t in tags if t != ""]
+        await self._load_messages()
+        lv.index = 0
+        lv.focus()
+
+    def compose(self) -> ComposeResult:
         # load widgets from BannerApp
         for widget in super().compose():
             yield widget
@@ -232,6 +259,16 @@ class MessagesApp(BannerApp):
 
         await self.push_screen(EditorScreen())
 
+    async def action_filter(self) -> None:
+        try:
+            self.query_one(ListView)
+        except NoMatches:
+            # not in message list screen; pop screen first
+            self.pop_screen()
+            return await self.action_filter()
+
+        await self.push_screen(FilterModal(tags=self._tags), self._update_tags)
+
     async def action_reply(self) -> None:
         try:
             lv: ListView = self.query_one(ListView)
@@ -252,7 +289,7 @@ class MessagesApp(BannerApp):
         await self.push_screen(
             EditorScreen(
                 content=(
-                    f"\n\n---\n{message.author.name} wrote:"
+                    f"\n\n---\n\n{message.author.name} wrote:"
                     f"\n\n{message.content}"
                 ),
                 reply_to=message,

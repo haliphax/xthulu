@@ -1,7 +1,6 @@
 """Message viewer screen"""
 
 # 3rd party
-from textual.binding import Binding
 from textual.screen import Screen
 from textual.widgets import Footer, MarkdownViewer
 
@@ -12,9 +11,7 @@ from userland.models import Message
 class ViewScreen(Screen):
     """Message viewer screen"""
 
-    BINDINGS = [
-        Binding("escape", "app.pop_screen", show=False),
-    ]
+    BINDINGS = [("escape", "app.pop_screen", "Exit")]
 
     message: Message
 
