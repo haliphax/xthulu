@@ -1,3 +1,12 @@
+# [v0.5.0](https://github.com/haliphax/xthulu/compare/v0.4.0...v0.5.0) (2024-03-27)
+
+## ✨ New Features
+- [`0e0c616`](https://github.com/haliphax/xthulu/commit/0e0c616)  typescript web userland 
+- [`65d1e50`](https://github.com/haliphax/xthulu/commit/65d1e50)  basic public message system (#117) (Issues: [`#117`](https://github.com/haliphax/xthulu/issues/117))
+
+## 🐛 Bug Fixes
+- [`6d3f2cc`](https://github.com/haliphax/xthulu/commit/6d3f2cc)  256/truecolor detection fix
+
 # [v0.4.0](https://github.com/haliphax/xthulu/compare/v0.3.1...v0.4.0) (2023-10-23)
 
 ## ✨ New Features
