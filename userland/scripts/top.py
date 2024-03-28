@@ -27,7 +27,18 @@ async def main(cx: SSHContext) -> None:
 
     cx.console.set_window_title(f"{cx.username}@79columns")
     await scroll_art(cx, "userland/artwork/login.ans", "cp437")
-    await cx.inkey("Press any key to continue", "dots8Bit")
+    await cx.inkey("Press any key to continue", "dots8Bit", timeout=5)
+
+    # new user application
+    if cx.username == "guest":
+        result = await cx.gosub("nua")
+
+        if result == "create":
+            cx.echo("Yeah, only that's not ready yet.\n\n")
+            return
+
+        if not result or result == "logoff":
+            return
 
     cx.console.set_window_title("system information")
     await scroll_art(cx, "userland/artwork/sysinfo.ans", "amiga")
@@ -58,7 +69,4 @@ async def main(cx: SSHContext) -> None:
 
     await cx.inkey(timeout=0.1)  # show bar at 100% before switching screens
     await cx.gosub("oneliners")
-    await cx.gosub("messages")
-    await cx.gosub("lock_example")
-    await cx.gosub("chat")
-    cx.goto("logoff")
+    cx.goto("main")
