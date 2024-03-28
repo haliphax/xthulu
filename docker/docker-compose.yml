@@ -8,6 +8,7 @@ x-xthulu-common: &xthulu-common
   tty: true
   volumes:
     - ../data:/app/data:ro
+    - ../run:/app/run
     - ../userland:/app/userland:ro
 
 networks:

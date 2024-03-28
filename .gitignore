@@ -8,6 +8,7 @@
 /db/
 /docker/docker-compose.override.yml
 /html/
+/run/logs/*.log*
 __pycache__/
 node_modules/
 
