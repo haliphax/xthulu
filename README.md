@@ -151,6 +151,8 @@ ssh user@localhost  # password is also "user"
 
 For the time being, the web server only demonstrates simple interoperability
 between the REST API and static pages. It is available at https://localhost.
+There is a demo application that can be used for chatting with other users
+connected via both the web and the SSH server.
 
 > ⚠️ [Traefik][] will be using an untrusted certificate, and you will likely be
 > presented with a warning.
