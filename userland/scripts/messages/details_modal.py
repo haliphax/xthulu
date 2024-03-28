@@ -104,11 +104,7 @@ class DetailsModal(ModalScreen):
         inp: Input = self.get_widget_by_id("tags")  # type: ignore
         inp.value = tags
 
-    async def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.name == "cancel":
-            self.app.pop_screen()  # pop this modal
-            return
-
+    async def submit(self) -> None:
         app: XthuluApp = self.app  # type: ignore
         title: Input = self.get_widget_by_id("title")  # type: ignore
         title_validator = title.validate(title.value)
@@ -152,6 +148,16 @@ class DetailsModal(ModalScreen):
 
         self.app.pop_screen()  # pop this modal
         self.app.pop_screen()  # pop the editor
+
+    async def on_input_submitted(self, event: Input.Submitted) -> None:
+        await self.submit()
+
+    async def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.name == "cancel":
+            self.app.pop_screen()  # pop this modal
+            return
+
+        await self.submit()
 
     async def key_escape(self, _):
         self.app.pop_screen()  # pop this modal

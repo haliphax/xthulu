@@ -54,6 +54,7 @@ class MessagesApp(BannerApp):
         Binding("f", "filter", "Filter"),
         Binding("n", "compose", "Compose"),
         Binding("r", "reply", "Reply"),
+        Binding("escape", "", "Exit"),
     ]
 
     CSS = """
