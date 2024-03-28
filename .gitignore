@@ -1,3 +1,4 @@
+**/*.override.yml
 *.pyc
 /*.egg-info/
 /.coverage
@@ -6,7 +7,6 @@
 /data/*.toml
 /data/ssh_host_key*
 /db/
-/docker/docker-compose.override.yml
 /html/
 /run/logs/*.log*
 __pycache__/
