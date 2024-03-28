@@ -1,4 +1,10 @@
 {
+	"[python]": {
+		"editor.defaultFormatter": "charliermarsh.ruff"
+	},
+	"[toml]": {
+		"editor.defaultFormatter": "tamasfe.even-better-toml"
+	},
 	"files.exclude": {
 		"*.egg-info/": true,
 		"*.pyc": true,
@@ -6,19 +12,12 @@
 		"node_modules/": true,
 		"package-lock.json": true
 	},
-	"[python]": {
-		"editor.defaultFormatter": "charliermarsh.ruff"
-	},
-	"[toml]": {
-		"editor.defaultFormatter": "tamasfe.even-better-toml"
-	},
-	"black-formatter.importStrategy": "fromEnvironment",
 	"python.analysis.importFormat": "relative",
 	"python.analysis.indexing": true,
 	"python.analysis.typeCheckingMode": "basic",
-	"ruff.importStrategy": "fromEnvironment",
-	"python.testing.unittestArgs": ["-v", "-s", "./tests", "-p", "test_*.py"],
 	"python.testing.pytestEnabled": false,
+	"python.testing.unittestArgs": ["-v", "-s", "./tests", "-p", "test_*.py"],
 	"python.testing.unittestEnabled": true,
+	"ruff.importStrategy": "fromEnvironment",
 	"typescript.tsdk": "node_modules/typescript/lib"
 }
