@@ -86,19 +86,19 @@ character sets (UTF-8) and [terminal capabilities][] are taken advantage of.
 
 ## Setup
 
-### Build the docker images
-
-```shell
-# in the docker/ directory
-docker compose build
-```
-
 ### Create a configuration file and generate host keys
 
 ```shell
 # in the data/ directory
 cp config.example.toml config.toml
 ssh-keygen -f ssh_host_key -t rsa -b 4096  # do not use a passphrase
+```
+
+### Build the docker images
+
+```shell
+# in the docker/ directory
+docker compose build
 ```
 
 ### Create and seed the database
