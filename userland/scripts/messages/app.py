@@ -1,12 +1,12 @@
 """Messages Textual app"""
 
 # stdlib
+from asyncio import sleep
 from datetime import datetime
 
 # 3rd party
 from textual import events
 from textual.app import ComposeResult
-from textual.binding import Binding
 from textual.css.query import NoMatches
 from textual.widgets import Footer, Label, ListItem, ListView
 
@@ -24,13 +24,7 @@ from .view_screen import ViewScreen
 
 db = Resources().db
 
-LIMIT = 50
-"""The maximum number of messages to keep loaded in the UI at once"""
-
-LOAD_AT_ONCE = round(LIMIT / 2)
-"""Maximum messages to load at a time dynamically when navigating ListView"""
-
-RATE_LIMIT_SECONDS = 10
+RATE_LIMIT_SECONDS = 3
 """Time to wait before allowing refresh after empty query result"""
 
 
@@ -51,15 +45,14 @@ class MessagesApp(BannerApp):
     """Message bases Textual app"""
 
     BINDINGS = [
-        Binding("f", "filter", "Filter"),
-        Binding("n", "compose", "Compose"),
-        Binding("r", "reply", "Reply"),
-        Binding("escape", "", "Exit"),
+        ("f", "filter", "Filter"),
+        ("n", "compose", "Compose"),
+        ("r", "reply", "Reply"),
+        ("escape", "", "Exit"),
     ]
 
     CSS = """
         $highlight: ansi_yellow;
-        $error: ansi_bright_red;
 
         ListItem {
             background: $primary-background;
@@ -143,11 +136,9 @@ class MessagesApp(BannerApp):
             )
         )
         first = len(lv.children) == 0
-        limit = min(round(lv.size.height / 2), LOAD_AT_ONCE)
 
         if first:
             # app startup; load most recent messages
-            limit = min(lv.size.height, LIMIT)
             query = filter.order_by(Message.id.desc())
         elif newer:
             # load newer messages
@@ -158,13 +149,18 @@ class MessagesApp(BannerApp):
                 Message.id.desc()
             )
 
-        messages: list[dict] = await query.limit(limit).gino.all()
+        limit = lv.region.height * 2
+        messages: list[dict] = await query.limit(
+            limit if first else lv.region.height
+        ).gino.all()
 
         # remember if result was empty for rate limiting refresh
         if not messages:
             self._last_query_empty = True
         else:
             self._last_query_empty = False
+
+        coros = []
 
         # append/prepend items to ListView
         for idx, m in enumerate(messages):
@@ -185,7 +181,7 @@ class MessagesApp(BannerApp):
                 classes="even" if idx % 2 else "",
             )
 
-            lv.append(item)
+            coros.append(lv.append(item))
 
             # add to top if pulling newer messages
             if newer and not first:
@@ -193,23 +189,26 @@ class MessagesApp(BannerApp):
 
         # if this is the first load, we're done!
         if first:
+            for c in coros:
+                await c
+
             return
 
         count = len(lv.children)
         last_index = lv.index or 0
 
         # trim ListView items to limit
-        if count > lv.size.height:
+        if count > limit:
             lv.index = None
-            how_many = count - lv.size.height
+            how_many = count - limit
 
             for _ in range(how_many):
                 if newer:
                     # remove from bottom if loading newer items
-                    lv.children[-1].remove()
+                    coros.append(lv.children[-1].remove())
                 else:
                     # remove from top if loading older items
-                    lv.children[0].remove()
+                    coros.append(lv.children[0].remove())
 
             # fix CSS striping
             for idx, c in enumerate(lv.children):
@@ -227,8 +226,11 @@ class MessagesApp(BannerApp):
             else:
                 lv.index = last_index - how_many
 
-            # keep selected item in view
-            lv.scroll_to_widget(lv.children[lv.index])
+        for c in coros:
+            await c
+
+        # keep selected item in view
+        lv.scroll_to_widget(lv.children[lv.index], animate=False)  # type: ignore
 
     async def _update_tags(self, tags: list[str]) -> None:
         lv = self.query_one(ListView)
@@ -243,11 +245,7 @@ class MessagesApp(BannerApp):
         for widget in super().compose():
             yield widget
 
-        # messages list
-        list = ListView(id="messages_list")
-        list.focus()
-        yield list
-
+        yield ListView(id="messages_list")
         yield Footer()
 
     async def action_compose(self) -> None:
@@ -354,9 +352,43 @@ class MessagesApp(BannerApp):
         message: Message = await Message.get(message_id)
         await self.push_screen(ViewScreen(message=message))
 
+    async def on_event(self, event: events.Event | events.MouseScrollDown):
+        await super().on_event(event)
+        scroll = False
+        down = False
+
+        if isinstance(event, events.MouseScrollDown):
+            scroll = True
+            down = True
+
+        elif isinstance(event, events.MouseScrollUp):
+            scroll = True
+            down = False
+
+        if not scroll:
+            return
+
+        lv = self.query_one(ListView)
+
+        if down and lv.is_vertical_scroll_end and await self._allow_refresh():
+            await self._load_messages()
+            lv.index = len(lv.children) - round(lv.region.height * 1.25)
+            lv.scroll_end(animate=False)
+            lv.scroll_to(None, lv.index, animate=False)
+
+        elif (
+            not down and lv.scroll_offset.y == 0 and await self._allow_refresh()
+        ):
+            await self._load_messages(newer=True)
+            lv.index = round(lv.region.height * 1.25)
+            lv.scroll_home(animate=False)
+            lv.scroll_to(None, lv.index - lv.region.height + 1, animate=False)
+
     async def on_ready(self) -> None:
         """App is ready; load messages."""
 
+        # halt briefly for banner to fully load
+        await sleep(0.1)
         await self._load_messages()
         lv = self.query_one(ListView)
         lv.index = 0

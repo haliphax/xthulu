@@ -62,7 +62,7 @@ class BannerApp(XthuluApp):
 
         yield banner
 
-    async def on_ready(self):
+    async def on_mount(self):
         self.artwork = await load_art(self.art_path, self.art_encoding)
         self._update_banner()
 
