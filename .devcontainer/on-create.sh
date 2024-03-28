@@ -26,15 +26,22 @@ PATH="$PYENV_ROOT/versions/xthulu/bin:$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
 eval "$(pyenv virtualenv-init -)"
 pyenv install 3.11
-
-# install application and prerequisites, virtual env config, dev tools
 pyenv virtualenv 3.11 xthulu
 echo xthulu > .python-version
-cp .devcontainer/docker-compose.override.yml .
+
+# install and configure nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
+export NVM_DIR="$HOME/.nvm"
+source "$NVM_DIR/nvm.sh" || true
+nvm install
+nvm use
+
+# install application, prerequisites, and dev tools
 pip install -Ue .[dev,hiredis]
 nodeenv -p
 npm ci
 pre-commit install --install-hooks
 etc/gitmoji-hook.sh
 cd docker || exit 1
+cp ../.devcontainer/docker-compose.override.yml .
 docker compose build
