@@ -12,6 +12,8 @@ from xthulu.ssh.console.app import XthuluApp
 # local
 from userland.models import Message, MessageTag, MessageTags
 
+MAX_TITLE_LENGTH = 120
+
 
 class DetailsModal(ModalScreen):
     """Message details screen"""
@@ -67,6 +69,7 @@ class DetailsModal(ModalScreen):
                         else ""
                     ),
                     id="title",
+                    max_length=MAX_TITLE_LENGTH,
                     validators=[
                         validation.Length(
                             1, failure_description="Title is required"

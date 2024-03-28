@@ -1,7 +1,6 @@
 """Oneliners script"""
 
 # 3rd party
-from textual.validation import Length
 from textual.widgets import Input, Label, ListItem, ListView
 
 # api
@@ -69,41 +68,13 @@ class OnlinersApp(BannerApp):
 
         # input
         input_widget = Input(
+            max_length=Oneliner.MAX_LENGTH,
             placeholder="Enter a oneliner or press ESC",
-            validators=Length(
-                maximum=Oneliner.MAX_LENGTH,
-                failure_description=(
-                    f"Too long; must be <= {Oneliner.MAX_LENGTH} characters"
-                ),
-            ),
-            validate_on=(
-                "changed",
-                "submitted",
-            ),
         )
         input_widget.focus()
         yield input_widget
 
-    def on_input_changed(self, event: Input.Changed) -> None:
-        err: Label = self.get_widget_by_id("err")  # type: ignore
-
-        if not event.validation_result or event.validation_result.is_valid:
-            err.display = False
-            return
-
-        message = "".join(
-            (
-                " ",
-                "... ".join(event.validation_result.failure_descriptions),
-            )
-        )
-        err.update(message)
-        err.display = True
-
     async def on_input_submitted(self, event: Input.Submitted) -> None:
-        if event.validation_result and not event.validation_result.is_valid:
-            return
-
         val = event.input.value.strip()
 
         if val != "":
@@ -111,8 +82,7 @@ class OnlinersApp(BannerApp):
 
         self.exit()
 
-    async def on_ready(self) -> None:
-        await super().on_ready()
+    async def on_mount(self) -> None:
         db = Resources().db
         recent = (
             Oneliner.select("id")

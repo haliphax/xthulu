@@ -12,8 +12,7 @@ from redis.client import PubSub
 from rich.markup import escape
 from textual.binding import Binding
 from textual.containers import VerticalScroll
-from textual.validation import Length
-from textual.widgets import Input, Label, Static
+from textual.widgets import Input, Static
 
 # api
 from xthulu.resources import Resources
@@ -36,15 +35,6 @@ class ChatApp(XthuluApp):
     """Node chat Textual app"""
 
     BINDINGS = [Binding("escape", "quit", show=False)]
-    CSS = """
-        $error: ansi_bright_red;
-
-        #err {
-            background: $error;
-            color: black;
-        }
-    """
-    """Stylesheet"""
 
     redis: Redis
     """Redis connection"""
@@ -79,24 +69,10 @@ class ChatApp(XthuluApp):
         # chat log
         yield VerticalScroll(Static(id="log"))
 
-        # error message
-        err = Label(id="err")
-        err.display = False
-        yield err
-
         # input
         input_widget = Input(
             placeholder="Enter a message or press ESC",
-            validators=Length(
-                maximum=MAX_LENGTH,
-                failure_description=(
-                    f"Too long; must be <= {MAX_LENGTH} characters"
-                ),
-            ),
-            validate_on=(
-                "changed",
-                "submitted",
-            ),
+            max_length=MAX_LENGTH,
         )
         input_widget.focus()
         yield input_widget
@@ -136,35 +112,18 @@ class ChatApp(XthuluApp):
         self.workers.cancel_all()
         super().exit()
 
-    def on_input_changed(self, event: Input.Changed) -> None:
-        err: Label = self.get_widget_by_id("err")  # type: ignore
-
-        if not event.validation_result or event.validation_result.is_valid:
-            err.display = False
-            return
-
-        message = "".join(
-            (
-                " ",
-                "... ".join(event.validation_result.failure_descriptions),
-            )
-        )
-        err.update(message)
-        err.display = True
-
     def on_input_submitted(self, event: Input.Submitted) -> None:
-        if event.validation_result and not event.validation_result.is_valid:
-            return
-
         val = event.input.value.strip()
 
-        if val != "":
-            self.redis.publish(
-                "chat",
-                ChatMessage(
-                    user=self.context.username, message=val
-                ).model_dump_json(),
-            )
+        if val == "":
+            return
+
+        self.redis.publish(
+            "chat",
+            ChatMessage(
+                user=self.context.username, message=val
+            ).model_dump_json(),
+        )
 
 
 async def main(cx: SSHContext) -> None:
