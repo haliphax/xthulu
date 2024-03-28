@@ -368,7 +368,11 @@ class MessagesApp(BannerApp):
         if not scroll:
             return
 
-        lv = self.query_one(ListView)
+        try:
+            lv = self.query_one(ListView)
+        except NoMatches:
+            # no ListView; might be in modal/editor
+            return
 
         if down and lv.is_vertical_scroll_end and await self._allow_refresh():
             await self._load_messages()
