@@ -21,6 +21,16 @@ class SSHServer(AsyncSSHServer):
     _username: str | None = None
     _peername: list[str]
 
+    _debug_enabled: bool
+    _no_password: list[str]
+    _no_entry: list[str]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._debug_enabled = bool(get_config("debug.enabled", False))
+        self._no_entry = get_config("ssh.auth.bad_usernames", [])
+        self._no_password = get_config("ssh.auth.no_password", [])
+
     @property
     def whoami(self):
         """The peer name in the format username@host"""
@@ -53,7 +63,7 @@ class SSHServer(AsyncSSHServer):
         locks.expire(self._sid)
 
         if exc:
-            if bool(get_config("debug.enabled", False)):
+            if self._debug_enabled:
                 log.error(exc.with_traceback(None))
             else:
                 log.error(exc)
@@ -72,17 +82,15 @@ class SSHServer(AsyncSSHServer):
         """
 
         self._username = username
-        pwd_required = True
+        auth_required = True
 
-        if "no_password" in get_config("ssh.auth") and username in get_config(
-            "ssh.auth.no_password"
-        ):
+        if username in self._no_password:
             log.info(f"{self.whoami} connected (no password)")
-            pwd_required = False
+            auth_required = False
         else:
             log.info(f"{self.whoami} authenticating")
 
-        return pwd_required
+        return auth_required
 
     def password_auth_supported(self) -> bool:
         """
@@ -106,12 +114,19 @@ class SSHServer(AsyncSSHServer):
             Whether the authentication is valid.
         """
 
+        lowered = username.lower()
+
+        if lowered in self._no_entry:
+            log.warn(f"{self.whoami} rejected")
+
+            return False
+
         u = await User.query.where(
-            func.lower(User.name) == username.lower()
+            func.lower(User.name) == lowered
         ).gino.first()
 
         if u is None:
-            log.warn(f"f{self.whoami} no such user")
+            log.warn(f"{self.whoami} no such user")
 
             return False
 
