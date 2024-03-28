@@ -103,16 +103,16 @@ docker compose build
 
 ### Create and seed the database
 
-> Note the use of the `cli` and `user` service containers, which are only spun
-> up for command line tasks. The `cli` container is for the server, while the
-> `user` container is for the userland implementation.
+> Note the names of the scripts. The `etc/cli.sh` script is the command line
+> interface for server tasks, while the `etc/userland.sh` script is for
+> userland.
 
 ```shell
-# in the docker/ directory
-docker compose run --rm cli db create
-docker compose run --rm cli db init
-docker compose run --rm user db create
-docker compose run --rm user db init
+# in the project root
+etc/cli.sh db create
+etc/cli.sh db init
+etc/user.sh db create
+etc/user.sh db init
 ```
 
 ### Build the static web assets
