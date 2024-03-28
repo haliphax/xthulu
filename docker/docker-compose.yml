@@ -23,6 +23,8 @@ services:
       dockerfile: ./docker/Dockerfile
     entrypoint: /bin/true
     image: xthulu
+    networks:
+      - internal
     restart: "no"
     scale: 0
 
