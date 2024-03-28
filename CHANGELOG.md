@@ -1,3 +1,12 @@
+# [v0.7.0](https://github.com/haliphax/xthulu/compare/v0.6.0...v0.7.0) (2024-03-28)
+
+## ✨ New Features
+- [`08082ce`](https://github.com/haliphax/xthulu/commit/08082ce)  enter submits message details modal 
+- [`d5f5c35`](https://github.com/haliphax/xthulu/commit/d5f5c35)  scrollable messages list 
+- [`c67023d`](https://github.com/haliphax/xthulu/commit/c67023d)  main menu 
+- [`f063a94`](https://github.com/haliphax/xthulu/commit/f063a94)  reject bad_usernames entries during login 
+- [`9ef3f44`](https://github.com/haliphax/xthulu/commit/9ef3f44)  log to file
+
 # [v0.6.0](https://github.com/haliphax/xthulu/compare/v0.5.1...v0.6.0) (2024-03-27)
 
 ## ✨ New Features
