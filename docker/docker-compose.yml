@@ -1,5 +1,3 @@
-version: "3"
-
 # configuration common to all services using the xthulu image
 x-xthulu-common: &xthulu-common
   environment:
