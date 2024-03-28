@@ -33,6 +33,6 @@
 	},
 	"scripts": {
 		"build": "npm ci && npm run build:local",
-		"build:local": "vite build userland/web/static --emptyOutDir --outDir ../../../html"
+		"build:local": "vite build userland/web/static"
 	}
 }
