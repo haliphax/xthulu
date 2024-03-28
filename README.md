@@ -91,7 +91,7 @@ character sets (UTF-8) and [terminal capabilities][] are taken advantage of.
 ```shell
 # in the data/ directory
 cp config.example.toml config.toml
-ssh-keygen -f ssh_host_key -t rsa -b 4096  # do not use a passphrase
+ssh-keygen -f ssh_host_key -t rsa -b 4096 -N ""
 ```
 
 ### Build the docker images
