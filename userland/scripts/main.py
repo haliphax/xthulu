@@ -48,6 +48,7 @@ class MenuApp(XthuluApp):
 
 async def main(cx: SSHContext) -> None:
     while True:
+        cx.console.set_window_title("main menu")
         result: str | None = await MenuApp(cx).run_async()
 
         if not result:

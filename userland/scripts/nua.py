@@ -48,4 +48,5 @@ class NuaApp(XthuluApp):
 
 
 async def main(cx: SSHContext) -> str:
+    cx.console.set_window_title("new user application")
     return await NuaApp(cx).run_async()  # type: ignore
