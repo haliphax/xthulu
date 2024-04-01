@@ -5,7 +5,7 @@ from asyncio import get_event_loop
 from importlib import import_module
 
 # 3rd party
-from click import confirm, echo, group
+from click import confirm, echo, group, option
 
 # local
 from ..resources import Resources
@@ -17,7 +17,14 @@ def cli():
 
 
 @cli.command()
-def create():
+@option(
+    "--seed/-s",
+    "seed_data",
+    default=False,
+    flag_value=True,
+    help="Seed the database with default data.",
+)
+def create(seed_data=False):
     """Create database tables."""
 
     import_module("...models", __name__)
@@ -31,9 +38,19 @@ def create():
 
     loop.run_until_complete(f())
 
+    if seed_data:
+        seed()
+
 
 @cli.command()
-def destroy():
+@option(
+    "--yes",
+    "confirmed",
+    default=False,
+    flag_value=True,
+    help="Skip confirmation.",
+)
+def destroy(confirmed=False):
     """Drop database tables."""
 
     import_module("...models", __name__)
@@ -45,12 +62,14 @@ def destroy():
         echo("Dropping database tables")
         await res.db.gino.drop_all()
 
-    if confirm("Are you sure you want to destroy the database tables?"):
+    if confirmed or confirm(
+        "Are you sure you want to destroy the database tables?"
+    ):
         loop.run_until_complete(f())
 
 
 @cli.command()
-def init():
+def seed():
     """Initialize database with starter data."""
 
     from ..models import User

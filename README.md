@@ -109,10 +109,8 @@ docker compose build
 
 ```shell
 # in the project root
-etc/cli.sh db create
-etc/cli.sh db init
-etc/user.sh db create
-etc/user.sh db init
+etc/cli.sh db create --seed
+etc/user.sh db create --seed
 ```
 
 ### Build the static web assets

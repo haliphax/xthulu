@@ -6,7 +6,7 @@ from importlib import import_module
 from inspect import isclass
 
 # 3rd party
-from click import confirm, echo, group
+from click import confirm, echo, group, option
 
 # api
 from xthulu.resources import Resources
@@ -34,7 +34,14 @@ def cli():
 
 
 @cli.command()
-def create():
+@option(
+    "--seed/-s",
+    "seed_data",
+    default=False,
+    flag_value=True,
+    help="Seed the database with default data.",
+)
+def create(seed_data=False):
     """Create database tables."""
 
     async def f():
@@ -43,9 +50,12 @@ def create():
 
     get_event_loop().run_until_complete(f())
 
+    if seed_data:
+        seed()
+
 
 @cli.command()
-def init():
+def seed():
     """Initialize database with seed data."""
 
     from ..models import Message, MessageTag, MessageTags
@@ -80,12 +90,21 @@ def init():
 
 
 @cli.command()
-def destroy():
+@option(
+    "--yes",
+    "confirmed",
+    default=False,
+    flag_value=True,
+    help="Skip confirmation.",
+)
+def destroy(confirmed=False):
     """Drop database tables."""
 
     async def f():
         async for model in _get_models():
             await model.gino.drop()
 
-    if confirm("Are you sure you want to drop the userland tables?"):
+    if confirmed or confirm(
+        "Are you sure you want to drop the userland tables?"
+    ):
         get_event_loop().run_until_complete(f())
