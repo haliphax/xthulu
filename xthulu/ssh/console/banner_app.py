@@ -6,7 +6,7 @@ from math import floor
 # 3rd party
 from rich.text import Text
 from textual import events
-from textual.widgets import Label
+from textual.widgets import Static
 
 # local
 from ..context import SSHContext
@@ -47,12 +47,12 @@ class BannerApp(XthuluApp):
         text = Text.from_ansi(
             "".join(padded), overflow="crop", no_wrap=True, end=""
         )
-        banner: Label = self.get_widget_by_id("banner")  # type: ignore
+        banner: Static = self.get_widget_by_id("banner")  # type: ignore
         banner.update(text)
 
     def compose(self):
         # banner
-        banner = Label(id="banner", markup=False)
+        banner = Static(id="banner", markup=False)
         lines = len(self.artwork)
 
         if self.console.height < lines + BANNER_PADDING:
@@ -68,7 +68,7 @@ class BannerApp(XthuluApp):
 
     def on_resize(self, event: events.Resize) -> None:
         # banner
-        banner: Label = self.get_widget_by_id("banner")  # type: ignore
+        banner: Static = self.get_widget_by_id("banner")  # type: ignore
 
         if event.size.height < len(self.artwork) + BANNER_PADDING:
             banner.update("")
