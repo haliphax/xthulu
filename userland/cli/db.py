@@ -35,7 +35,7 @@ def cli():
 
 @cli.command()
 @option(
-    "--seed/-s",
+    "-s/--seed",
     "seed_data",
     default=False,
     flag_value=True,
@@ -51,13 +51,10 @@ def create(seed_data=False):
     get_event_loop().run_until_complete(f())
 
     if seed_data:
-        seed()
+        _seed()
 
 
-@cli.command()
-def seed():
-    """Initialize database with seed data."""
-
+def _seed():
     from ..models import Message, MessageTag, MessageTags
 
     db = Resources().db
@@ -87,6 +84,13 @@ def seed():
                 )
 
     get_event_loop().run_until_complete(f())
+
+
+@cli.command()
+def seed():
+    """Initialize database with seed data."""
+
+    _seed()
 
 
 @cli.command()

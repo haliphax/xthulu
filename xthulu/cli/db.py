@@ -18,7 +18,7 @@ def cli():
 
 @cli.command()
 @option(
-    "--seed/-s",
+    "-s/--seed",
     "seed_data",
     default=False,
     flag_value=True,
@@ -39,7 +39,7 @@ def create(seed_data=False):
     loop.run_until_complete(f())
 
     if seed_data:
-        seed()
+        _seed()
 
 
 @cli.command()
@@ -68,10 +68,7 @@ def destroy(confirmed=False):
         loop.run_until_complete(f())
 
 
-@cli.command()
-def seed():
-    """Initialize database with starter data."""
-
+def _seed():
     from ..models import User
 
     loop = get_event_loop()
@@ -99,3 +96,10 @@ def seed():
         )
 
     loop.run_until_complete(f())
+
+
+@cli.command()
+def seed():
+    """Initialize database with starter data."""
+
+    _seed()
