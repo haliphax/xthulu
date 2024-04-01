@@ -17,7 +17,12 @@ from xthulu.ssh.console.banner_app import BannerApp
 from xthulu.ssh.context import SSHContext
 
 # local
-from userland.models import Message, MessageTags
+from userland.models import Message
+from userland.models.message.api import (
+    get_latest_messages,
+    get_newer_messages,
+    get_older_messages,
+)
 from .editor_screen import EditorScreen
 from .filter_modal import FilterModal
 from .view_screen import ViewScreen
@@ -121,38 +126,23 @@ class MessagesApp(BannerApp):
         """Load messages and append/prepend to ListView."""
 
         lv: ListView = self.query_one(ListView)
-        select = Message.select("id", "title")
-        filter = (
-            select
-            if len(self._tags) == 0
-            else select.select_from(
-                Message.join(
-                    MessageTags,
-                    db.and_(
-                        MessageTags.message_id == Message.id,
-                        MessageTags.tag_name.in_(self._tags),
-                    ),
-                )
-            )
-        )
         first = len(lv.children) == 0
+        limit = lv.region.height * 2
+        query_limit = lv.region.height * (2 if first else 1)
+        messages: dict
 
         if first:
-            # app startup; load most recent messages
-            query = filter.order_by(Message.id.desc())
+            messages = await get_latest_messages(self._tags, query_limit)
         elif newer:
-            # load newer messages
-            query = filter.where(Message.id > self._last).order_by(Message.id)
+            messages = await get_newer_messages(
+                self._last, self._tags, query_limit
+            )
         else:
-            # load older messages
-            query = filter.where(Message.id < self._first).order_by(
-                Message.id.desc()
+            messages = await get_older_messages(
+                self._first, self._tags, query_limit
             )
 
-        limit = lv.region.height * 2
-        messages: list[dict] = await query.limit(
-            limit if first else lv.region.height
-        ).gino.all()
+        self.context.log.info(messages)
 
         # remember if result was empty for rate limiting refresh
         if not messages:
