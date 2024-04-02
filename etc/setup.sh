@@ -26,6 +26,6 @@ docker compose pull --ignore-buildable
 cd ../etc
 echo "initializing database"
 ./cli.sh db create --seed
-./user.sh db create --seed
+./userland.sh db create --seed
 echo "building static web site"
 ./build-web.sh
