@@ -5,7 +5,7 @@ host = "redis"
 port = 6379
 
 [db]
-bind = "postgres://xthulu:xthulu@localhost:5432/xthulu"
+bind = "postgres://xthulu:xthulu@db:5432/xthulu"
 
 [debug]
 enabled = false
