@@ -122,7 +122,7 @@ class MessagesApp(BannerApp):
         lv: ListView = self.query_one(ListView)
         first = len(lv.children) == 0
         limit = lv.region.height * 2
-        query_limit = lv.region.height * (2 if first else 1)
+        query_limit = limit if first else lv.region.height
         messages: dict
 
         if first:
