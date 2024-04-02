@@ -16,6 +16,7 @@ the 1990s. Rather than leaning entirely into [DOS][]-era nostalgia, modern
 character sets (UTF-8) and [terminal capabilities][] are taken advantage of.
 
 - [Contributor guide][]
+- [Demo video][] (animated GIF)
 
 ## Progress
 
@@ -183,6 +184,7 @@ a blank password) will work.
 [blessed]: https://blessed.readthedocs.io/en/latest/intro.html
 [bulletin boards]: https://archive.org/details/BBS.The.Documentary
 [contributor guide]: ./CONTRIBUTING.md
+[demo video]: https://github.com/haliphax/xthulu/raw/assets/demo.gif
 [dos]: https://en.wikipedia.org/wiki/MS-DOS
 [fastapi]: https://fastapi.tiangolo.com
 [gino]: https://python-gino.org
