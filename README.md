@@ -15,12 +15,12 @@ a modern SSH terminal interface which pays homage to the [bulletin boards][] of
 the 1990s. Rather than leaning entirely into [DOS][]-era nostalgia, modern
 character sets (UTF-8) and [terminal capabilities][] are taken advantage of.
 
-- [Contributor guide][]
-- [Demo video][] (animated GIF)
+- 📔 [Contributor guide][]
+- 📽️ [Demo video][] (animated GIF)
 
 ## Progress
 
-[Alpha release project board][]
+📊 [Alpha release project board][]
 
 <details>
 <summary>Terminal server checklist</summary>
