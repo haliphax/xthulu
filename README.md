@@ -19,6 +19,8 @@ character sets (UTF-8) and [terminal capabilities][] are taken advantage of.
 
 ## Progress
 
+[Alpha release project board][]
+
 <details>
 <summary>Terminal server checklist</summary>
 
@@ -176,6 +178,7 @@ connected via both the web and the SSH server.
 The same credentials may be used here; for the `guest` account, any password (or
 a blank password) will work.
 
+[alpha release project board]: https://github.com/users/haliphax/projects/1
 [asyncssh]: https://asyncssh.readthedocs.io/en/latest/
 [blessed]: https://blessed.readthedocs.io/en/latest/intro.html
 [bulletin boards]: https://archive.org/details/BBS.The.Documentary
