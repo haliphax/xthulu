@@ -1,3 +1,8 @@
+# [v0.8.1](https://github.com/haliphax/xthulu/compare/v0.8.0...v0.8.1) (2024-04-02)
+
+## 🐛 Bug Fixes
+- [`94b8357`](https://github.com/haliphax/xthulu/commit/94b8357)  fix setup script userland.sh reference
+
 # [v0.8.0](https://github.com/haliphax/xthulu/compare/v0.7.0...v0.8.0) (2024-04-02)
 
 ## ✨ New Features
