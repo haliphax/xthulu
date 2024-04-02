@@ -1,5 +1,7 @@
 # configuration common to all services using the xthulu image
 x-xthulu-common: &xthulu-common
+  build:
+    pull: false
   environment:
     TERM: xterm-256color
   image: xthulu
@@ -43,6 +45,7 @@ services:
   user:
     entrypoint: /usr/local/bin/python3 -m userland
     depends_on:
+      - base-image
       - cache
       - db
     image: xthulu

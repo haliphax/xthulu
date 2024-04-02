@@ -86,6 +86,19 @@ character sets (UTF-8) and [terminal capabilities][] are taken advantage of.
 
 ## Setup
 
+```shell
+# in the project root
+etc/setup.sh
+```
+
+<details>
+<summary>Manual steps</summary>
+
+---
+
+If you want to perform the steps in the setup script manually for some reason,
+here they are:
+
 ### Create a configuration file and generate host keys
 
 ```shell
@@ -98,7 +111,8 @@ ssh-keygen -f ssh_host_key -t rsa -b 4096 -N ""
 
 ```shell
 # in the docker/ directory
-docker compose build
+docker compose build base-image
+docker compose pull --ignore-buildable
 ```
 
 ### Create and seed the database
@@ -119,6 +133,10 @@ etc/user.sh db create --seed
 # in the project root
 etc/build-web.sh
 ```
+
+---
+
+</details>
 
 ### Start the services
 

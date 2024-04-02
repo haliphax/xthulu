@@ -10,6 +10,8 @@ from click import confirm, echo, group, option
 # local
 from ..resources import Resources
 
+db = Resources().db
+
 
 @group("db")
 def cli():
@@ -29,12 +31,11 @@ def create(seed_data=False):
 
     import_module("...models", __name__)
     loop = get_event_loop()
-    res = Resources()
 
     async def f():
-        await res.db.set_bind(res.db.bind)
+        await db.set_bind(db.bind)
         echo("Creating database and tables")
-        await res.db.gino.create_all()
+        await db.gino.create_all()
 
     loop.run_until_complete(f())
 
@@ -53,29 +54,33 @@ def create(seed_data=False):
 def destroy(confirmed=False):
     """Drop database tables."""
 
-    import_module("...models", __name__)
-    loop = get_event_loop()
-    res = Resources()
-
     async def f():
-        await res.db.set_bind(res.db.bind)
+        import_module("...models", __name__)
+
+        # try to load userland models for destruction
+        try:
+            from userland.cli.db import _get_models
+
+            async for _ in _get_models():
+                pass
+        except ImportError:
+            pass
+
+        await db.set_bind(db.bind)
         echo("Dropping database tables")
-        await res.db.gino.drop_all()
+        await db.gino.drop_all()
 
     if confirmed or confirm(
         "Are you sure you want to destroy the database tables?"
     ):
-        loop.run_until_complete(f())
+        get_event_loop().run_until_complete(f())
 
 
 def _seed():
     from ..models import User
 
-    loop = get_event_loop()
-    res = Resources()
-
     async def f():
-        await res.db.set_bind(res.db.bind)
+        await db.set_bind(db.bind)
 
         echo("Creating guest user")
         pwd, salt = User.hash_password("guest")
@@ -95,7 +100,7 @@ def _seed():
             salt=salt,
         )
 
-    loop.run_until_complete(f())
+    get_event_loop().run_until_complete(f())
 
 
 @cli.command()

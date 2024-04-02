@@ -6,14 +6,15 @@ from importlib import import_module
 from inspect import isclass
 
 # 3rd party
-from click import confirm, echo, group, option
+from click import echo, group, option
 
 # api
 from xthulu.resources import Resources
 
+db = Resources().db
+
 
 async def _get_models():
-    db = Resources().db
     await db.set_bind(db.bind)
     models = import_module("...models", __name__)
 
@@ -22,8 +23,6 @@ async def _get_models():
 
         if not (isclass(model) and issubclass(model, db.Model)):
             continue
-
-        print(f"- {model.__name__}")
 
         yield model
 
@@ -46,6 +45,7 @@ def create(seed_data=False):
 
     async def f():
         async for model in _get_models():
+            print(f"- {model.__name__}")
             await model.gino.create()
 
     get_event_loop().run_until_complete(f())
@@ -91,24 +91,3 @@ def seed():
     """Initialize database with seed data."""
 
     _seed()
-
-
-@cli.command()
-@option(
-    "--yes",
-    "confirmed",
-    default=False,
-    flag_value=True,
-    help="Skip confirmation.",
-)
-def destroy(confirmed=False):
-    """Drop database tables."""
-
-    async def f():
-        async for model in _get_models():
-            await model.gino.drop()
-
-    if confirmed or confirm(
-        "Are you sure you want to drop the userland tables?"
-    ):
-        get_event_loop().run_until_complete(f())

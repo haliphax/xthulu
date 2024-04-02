@@ -49,11 +49,12 @@ jobs:
 
   build:
     name: Build
-    needs: validate
+    needs: changes
+    if: needs.changes.outputs.src == 'true' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Check out
         uses: actions/checkout@v4
 
       - name: Build docker image
-        run: docker compose -f docker/docker-compose.yml build
+        run: docker build -t xthulu -f docker/Dockerfile .
