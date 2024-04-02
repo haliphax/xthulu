@@ -36,14 +36,11 @@ RATE_LIMIT_SECONDS = 3
 class MessageFilter:
     """Data class for filtering messages"""
 
-    author: int | None = None
-    """User ID of message author to filter for"""
-
     private = False
     """If `True`, show private messages; if `False`, show public messages"""
 
-    tag: str | None = None
-    """Tag name to filter for"""
+    tags: list[str] | None = None
+    """Tag name(s) to filter for"""
 
 
 class MessagesApp(BannerApp):
@@ -97,9 +94,6 @@ class MessagesApp(BannerApp):
     _last_query_empty = False
     """If last query had no results"""
 
-    _tags = []
-    """List of tags to filter by"""
-
     def __init__(
         self,
         context: SSHContext,
@@ -132,17 +126,15 @@ class MessagesApp(BannerApp):
         messages: dict
 
         if first:
-            messages = await get_latest_messages(self._tags, query_limit)
+            messages = await get_latest_messages(self.filter.tags, query_limit)
         elif newer:
             messages = await get_newer_messages(
-                self._last, self._tags, query_limit
+                self._last, self.filter.tags, query_limit
             )
         else:
             messages = await get_older_messages(
-                self._first, self._tags, query_limit
+                self._first, self.filter.tags, query_limit
             )
-
-        self.context.log.info(messages)
 
         # remember if result was empty for rate limiting refresh
         if not messages:
@@ -225,7 +217,7 @@ class MessagesApp(BannerApp):
     async def _update_tags(self, tags: list[str]) -> None:
         lv = self.query_one(ListView)
         await lv.clear()
-        self._tags = [t for t in tags if t != ""]
+        self.filter.tags = [t for t in tags if t != ""]
         await self._load_messages()
         lv.index = 0
         lv.focus()
@@ -256,7 +248,9 @@ class MessagesApp(BannerApp):
             self.pop_screen()
             return await self.action_filter()
 
-        await self.push_screen(FilterModal(tags=self._tags), self._update_tags)
+        await self.push_screen(
+            FilterModal(tags=self.filter.tags), self._update_tags
+        )
 
     async def action_reply(self) -> None:
         try:
