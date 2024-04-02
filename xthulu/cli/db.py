@@ -59,10 +59,7 @@ def destroy(confirmed=False):
 
         # try to load userland models for destruction
         try:
-            from userland.cli.db import _get_models
-
-            async for _ in _get_models():
-                pass
+            import_module("userland.models")
         except ImportError:
             pass
 
