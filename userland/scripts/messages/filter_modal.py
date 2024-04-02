@@ -60,14 +60,20 @@ class FilterModal(ModalScreen[list[str]]):
             id="wrapper",
         )
 
-    async def on_button_pressed(self, event: Button.Pressed) -> None:
+    def _submit(self) -> None:
+        tags = self.query_one(Input)
+        assert tags
+        self.dismiss(tags.value.split(" "))
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.name == "cancel":
             self.app.pop_screen()  # pop this modal
             return
 
-        tags = self.query_one(Input)
-        assert tags
-        self.dismiss(tags.value.split(" "))
+        self._submit()
+
+    async def on_input_submitted(self, event: Input.Submitted) -> None:
+        self._submit()
 
     async def key_escape(self, _):
         self.app.pop_screen()  # pop this modal
