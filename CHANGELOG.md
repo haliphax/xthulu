@@ -1,3 +1,10 @@
+# [v0.8.0](https://github.com/haliphax/xthulu/compare/v0.7.0...v0.8.0) (2024-04-02)
+
+## ✨ New Features
+- [`9de58d6`](https://github.com/haliphax/xthulu/commit/9de58d6)  command line flags for db commands 
+- [`13a1286`](https://github.com/haliphax/xthulu/commit/13a1286)  submit messages filter modal with enter key 
+- [`a64b7b7`](https://github.com/haliphax/xthulu/commit/a64b7b7)  setup script
+
 # [v0.7.0](https://github.com/haliphax/xthulu/compare/v0.6.0...v0.7.0) (2024-03-28)
 
 ## ✨ New Features
