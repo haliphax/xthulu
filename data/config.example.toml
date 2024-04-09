@@ -8,8 +8,10 @@ port = 6379
 bind = "postgres://xthulu:xthulu@db:5432/xthulu"
 
 [debug]
-enabled = false
 term = false
+
+[logging]
+level = "INFO"
 
 [ssh]
 host = "0.0.0.0"

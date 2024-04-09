@@ -1,7 +1,7 @@
 """Logger setup"""
 
 # stdlib
-from logging import DEBUG, Formatter, getLogger, INFO, StreamHandler
+from logging import Formatter, getLogger, StreamHandler
 from logging.handlers import TimedRotatingFileHandler
 from sys import stdout
 
@@ -26,4 +26,4 @@ fileHandler.setFormatter(formatter)
 streamHandler.setFormatter(formatter)
 log.addHandler(fileHandler)
 log.addHandler(streamHandler)
-log.setLevel(DEBUG if bool(get_config("debug.enabled", False)) else INFO)
+log.setLevel(str(get_config("logging.level", "INFO")).upper())

@@ -15,6 +15,9 @@ default_config = {
     "db": {
         "bind": "postgres://xthulu:xthulu@db:5432/xthulu",
     },
+    "logging": {
+        "level": "INFO",
+    },
     "ssh": {
         "auth": {
             "bad_usernames": [

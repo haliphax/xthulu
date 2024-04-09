@@ -4,6 +4,7 @@
 from typing import Any
 
 # stdlib
+from logging import DEBUG, Logger
 from unittest.async_case import IsolatedAsyncioTestCase
 from unittest.mock import AsyncMock, Mock, patch
 
@@ -94,7 +95,6 @@ class TestStartSSHServer(IsolatedAsyncioTestCase):
         patch_get_config(
             {
                 **test_config,
-                "debug": {"enabled": True},
                 "ssh": {**test_ssh_config, "proxy_protocol": True},
             }
         ),
@@ -103,8 +103,12 @@ class TestStartSSHServer(IsolatedAsyncioTestCase):
     async def test_trace_malloc_start(self, mock_start: Mock):
         """Server should call tracemalloc.start if debugging is enabled."""
 
-        # act
-        await start_server()
+        with patch.object(Logger, "getEffectiveLevel") as mock_level:
+            # arrange
+            mock_level.return_value = DEBUG
 
-        # assert
-        mock_start.assert_called_once()
+            # act
+            await start_server()
+
+            # assert
+            mock_start.assert_called_once()

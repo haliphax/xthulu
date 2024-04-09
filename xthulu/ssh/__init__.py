@@ -4,6 +4,7 @@
 from typing import Any
 
 # stdlib
+from logging import DEBUG
 from tracemalloc import start
 
 # 3rd party
@@ -44,7 +45,7 @@ async def start_server():
         log.info("Using PROXY protocol v1 listener")
         kwargs["tunnel"] = ProxyProtocolListener()
 
-    if bool(get_config("debug.enabled", False)):
+    if log.getEffectiveLevel() == DEBUG:
         start()
 
     await res.db.set_bind(res.db.bind)

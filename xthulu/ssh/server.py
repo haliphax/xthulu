@@ -1,6 +1,7 @@
 """SSH server implementation"""
 
 # stdlib
+from logging import DEBUG
 from secrets import compare_digest
 
 # 3rd party
@@ -27,7 +28,7 @@ class SSHServer(AsyncSSHServer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._debug_enabled = bool(get_config("debug.enabled", False))
+        self._debug_enabled = log.getEffectiveLevel() == DEBUG
         self._no_entry = get_config("ssh.auth.bad_usernames", [])
         self._no_password = get_config("ssh.auth.no_password", [])
 
