@@ -90,15 +90,7 @@ class TestStartSSHServer(IsolatedAsyncioTestCase):
         self.mock_listen.assert_awaited_once()
         assert "tunnel" in self.mock_listen.call_args[1]
 
-    @patch(
-        "xthulu.ssh.get_config",
-        patch_get_config(
-            {
-                **test_config,
-                "ssh": {**test_ssh_config, "proxy_protocol": True},
-            }
-        ),
-    )
+    @patch("xthulu.ssh.get_config", patch_get_config(test_config))
     @patch("xthulu.ssh.start")
     async def test_trace_malloc_start(self, mock_start: Mock):
         """Server should call tracemalloc.start if debugging is enabled."""
