@@ -7,9 +7,8 @@ from typing import Any, Callable, NoReturn, Optional
 from asyncio import Queue, sleep
 from codecs import decode
 from functools import partial, singledispatch
-import logging
-import subprocess
-import sys
+from logging import LoggerAdapter
+from subprocess import Popen, PIPE
 
 # 3rd party
 from asyncssh import SSHServerProcess
@@ -25,7 +24,7 @@ from ..console import XthuluConsole
 from ..exceptions import Goto, ProcessClosing
 from ..structs import Script
 from .lock_manager import _LockManager
-from .log_filter import ContextLogFilter
+from .logger_adapter import ContextLoggerAdapter
 
 
 class SSHContext:
@@ -61,7 +60,7 @@ class SSHContext:
     whoami: str
     """username@host string for session"""
 
-    log: logging.Logger
+    log: LoggerAdapter
     """Context logger instance"""
 
     events: EventQueue
@@ -94,26 +93,14 @@ class SSHContext:
         self.proc = proc
         self.input = Queue(1024)
         self.encoding = encoding
-        self.log = logging.getLogger(self.sid)
+        self.log = ContextLoggerAdapter(
+            log.getChild(self.sid), {"whoami": self.whoami}
+        )
         self.events = EventQueue(self.sid)
         self.env = dict(proc.env)
         self.user = await User.query.where(
             func.lower(User.name) == self.username.lower()
         ).gino.first()
-
-        # set up logging
-        if not self.log.filters:
-            self.log.addFilter(ContextLogFilter(self.whoami))
-            streamHandler = logging.StreamHandler(sys.stdout)
-            streamHandler.setFormatter(
-                logging.Formatter(
-                    "{asctime} {levelname:<7} <{module}.{funcName}> {whoami} "
-                    "{message}",
-                    style="{",
-                )
-            )
-            self.log.addHandler(streamHandler)
-            self.log.setLevel(log.getEffectiveLevel())
 
         return self
 
@@ -229,7 +216,7 @@ class SSHContext:
 
         return locks.release(self.sid, name)
 
-    async def redirect(self, proc: subprocess.Popen | list | tuple | str):
+    async def redirect(self, proc: Popen | list | tuple | str):
         """
         Redirect context IO to other process; convenience method which wraps
         AsyncSSH's redirection routine.
@@ -239,11 +226,11 @@ class SSHContext:
         """
 
         @singledispatch
-        async def f(proc: subprocess.Popen | tuple | list | str):
+        async def f(proc: Popen | tuple | list | str):
             raise NotImplementedError("proc must be Popen, tuple, list, or str")
 
-        @f.register(subprocess.Popen)
-        async def _(proc: subprocess.Popen) -> NoReturn:  # type: ignore
+        @f.register(Popen)
+        async def _(proc: Popen) -> NoReturn:  # type: ignore
             await self.proc.redirect(
                 stdin=proc.stdin,
                 stdout=proc.stdout,
@@ -254,17 +241,17 @@ class SSHContext:
             await self.proc.stdout.drain()
             await self.proc.stderr.drain()
             # reconnect stdin (or else input freezes)
-            await self.proc.redirect(stdin=subprocess.PIPE)
+            await self.proc.redirect(stdin=PIPE)
 
         @f.register(tuple)
         @f.register(list)
         @f.register(str)
         async def _(proc: tuple | list | str) -> NoReturn:  # type: ignore
-            p = subprocess.Popen(
+            p = Popen(
                 proc,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                stdin=PIPE,
+                stdout=PIPE,
+                stderr=PIPE,
                 close_fds=False,
             )
             await self.redirect(p)
