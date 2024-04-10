@@ -1,4 +1,4 @@
-"""Context specific LogFilter implementation"""
+"""Context specific LoggerAdapter implementation"""
 
 # type checking
 from typing import Any, Mapping, MutableMapping
