@@ -20,3 +20,7 @@ class Goto(Exception):
 
 class ProcessClosing(Exception):
     """Thrown when the `asyncssh.SSHServerProcess` is closing"""
+
+
+class ProcessForciblyClosed(Exception):
+    """Thrown when the process is being forcibly closed by the server"""

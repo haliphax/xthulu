@@ -21,7 +21,7 @@ from ...logger import log
 from ...models import User
 from ...scripting import load_userland_module
 from ..console import XthuluConsole
-from ..exceptions import Goto, ProcessClosing
+from ..exceptions import Goto, ProcessClosing, ProcessForciblyClosed
 from ..structs import Script
 from .lock_manager import _LockManager
 from .logger_adapter import ContextLoggerAdapter
@@ -275,7 +275,7 @@ class SSHContext:
             mod = load_userland_module(script.name)
             main: Callable[..., Any] = getattr(mod, "main")
             return await main(self, *script.args, **script.kwargs)
-        except (ProcessClosing, Goto):
+        except (ProcessClosing, ProcessForciblyClosed, Goto):
             raise
         except Exception:
             message = f"Exception in script {script.name}"

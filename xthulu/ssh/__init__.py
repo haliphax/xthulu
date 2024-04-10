@@ -8,7 +8,7 @@ from logging import DEBUG
 from tracemalloc import start
 
 # 3rd party
-from asyncssh import listen
+from asyncssh import SSHAcceptor, listen
 
 # local
 from ..configuration import get_config
@@ -20,7 +20,7 @@ from .proxy_protocol import ProxyProtocolListener
 from .server import SSHServer
 
 
-async def start_server():
+async def start_server() -> SSHAcceptor:
     """Start the SSH server."""
 
     register_encodings()
@@ -49,4 +49,5 @@ async def start_server():
         start()
 
     await res.db.set_bind(res.db.bind)
-    await listen(**kwargs)
+
+    return await listen(**kwargs)

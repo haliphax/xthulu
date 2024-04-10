@@ -12,7 +12,7 @@ from ..configuration import get_config
 from ..events.structs import EventData
 from .console import XthuluConsole
 from .context import SSHContext
-from .exceptions import Goto, ProcessClosing
+from .exceptions import Goto, ProcessClosing, ProcessForciblyClosed
 from .structs import Script
 
 
@@ -66,6 +66,9 @@ async def handle_client(proc: SSHServerProcess) -> None:
 
             except IncompleteReadError:
                 # process is likely closing
+                break
+
+            except ProcessForciblyClosed:
                 break
 
             except TimeoutError:
