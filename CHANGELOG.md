@@ -1,3 +1,9 @@
+# [v0.9.0](https://github.com/haliphax/xthulu/compare/v0.8.1...v0.9.0) (2024-04-10)
+
+## ✨ New Features
+- [`5c2a86d`](https://github.com/haliphax/xthulu/commit/5c2a86d)  configurable log level 
+- [`197bb9f`](https://github.com/haliphax/xthulu/commit/197bb9f)  gzipped log rotation
+
 # [v0.8.1](https://github.com/haliphax/xthulu/compare/v0.8.0...v0.8.1) (2024-04-02)
 
 ## 🐛 Bug Fixes
