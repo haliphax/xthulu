@@ -3,6 +3,7 @@ x-xthulu-common: &xthulu-common
   build:
     pull: false
   environment:
+    COLORTERM: truecolor
     TERM: xterm-256color
   image: xthulu
   tty: true
