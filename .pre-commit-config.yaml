@@ -16,13 +16,10 @@ repos:
     hooks:
       - id: hadolint
         name: Lint Dockerfile with hadolint
-        # args:
-        #   - --ignore
-        #   - DL3013
-        #   - --ignore
-        #   - DL3042
-        #   - --ignore
-        #   - DL3048
+        args:
+          # Avoid use of cache directory with pip
+          - --ignore
+          - DL3042
 
   - repo: local
     hooks:
