@@ -2,14 +2,11 @@
 
 # type checking
 from typing import Any, Callable, NoReturn, Optional
-from types import ModuleType
 
 # stdlib
 from asyncio import Queue, sleep
 from codecs import decode
 from functools import partial, singledispatch
-from importlib.abc import Loader
-from importlib.machinery import PathFinder
 import logging
 import subprocess
 import sys
@@ -20,18 +17,15 @@ from sqlalchemy import func
 
 # local
 from ... import locks
-from ...configuration import get_config
 from ...events import EventQueue
 from ...logger import log
 from ...models import User
+from ...scripting import load_userland_module
 from ..console import XthuluConsole
 from ..exceptions import Goto, ProcessClosing
 from ..structs import Script
 from .lock_manager import _LockManager
 from .log_filter import ContextLogFilter
-
-pathfinder = PathFinder()
-"""PathFinder for loading userland script modules"""
 
 
 class SSHContext:
@@ -289,22 +283,9 @@ class SSHContext:
         """
 
         self.log.info(f"Running {script}")
-        split: list[str] = script.name.split(".")
-        found: Loader | None = None
-        mod: ModuleType | None = None
-
-        for seg in split:
-            if mod is not None:
-                found = pathfinder.find_module(seg, list(mod.__path__))
-            else:
-                found = pathfinder.find_module(
-                    seg, get_config("ssh.userland.paths")
-                )
-
-            if found is not None:
-                mod = found.load_module(seg)
 
         try:
+            mod = load_userland_module(script.name)
             main: Callable[..., Any] = getattr(mod, "main")
             return await main(self, *script.args, **script.kwargs)
         except (ProcessClosing, Goto):
