@@ -1,5 +1,8 @@
 """Messages script"""
 
+# stdlib
+from os import path
+
 # api
 from xthulu.ssh.context import SSHContext
 
@@ -10,5 +13,7 @@ from .app import MessagesApp
 async def main(cx: SSHContext) -> None:
     cx.console.set_window_title("messages")
     await MessagesApp(
-        cx, art_path="userland/artwork/messages.ans", art_encoding="amiga"
+        cx,
+        art_path=path.join("userland", "artwork", "messages.ans"),
+        art_encoding="amiga",
     ).run_async()

@@ -2,6 +2,7 @@
 
 # stdlib
 from importlib.metadata import version
+from os import path
 
 # 3rd party
 from rich.progress import track
@@ -26,7 +27,7 @@ async def main(cx: SSHContext) -> None:
         return
 
     cx.console.set_window_title(f"{cx.username}@79columns")
-    await scroll_art(cx, "userland/artwork/login.ans", "cp437")
+    await scroll_art(cx, path.join("userland", "artwork", "login.ans"), "cp437")
     await cx.inkey("Press any key to continue", "dots8Bit", timeout=5)
 
     # new user application
@@ -41,12 +42,15 @@ async def main(cx: SSHContext) -> None:
             return
 
     cx.console.set_window_title("system information")
-    await scroll_art(cx, "userland/artwork/sysinfo.ans", "amiga")
+    await scroll_art(
+        cx, path.join("userland", "artwork", "sysinfo.ans"), "amiga"
+    )
     cx.echo(
         ":skull: [bold bright_green]x[/][green]thulu[/] ",
         f"terminal server [italic]v{version('xthulu')}[/]\n",
         "[bright_black]https://github.com/haliphax/xthulu[/]\n\n",
     )
+    # alpine only?
     await cx.redirect(["/bin/ash", "-c", "uname -a; echo -e '\\r'; sleep 0.1"])
     await cx.inkey("Press any key to continue", "arc")
 

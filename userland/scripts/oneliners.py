@@ -1,5 +1,8 @@
 """Oneliners script"""
 
+# stdlib
+from os import path
+
 # 3rd party
 from textual.widgets import Input, Label, ListItem, ListView
 
@@ -108,5 +111,7 @@ class OnlinersApp(BannerApp):
 async def main(cx: SSHContext) -> None:
     cx.console.set_window_title("oneliners")
     await OnlinersApp(
-        cx, art_path="userland/artwork/oneliners.ans", art_encoding="amiga"
+        cx,
+        art_path=path.join("userland", "artwork", "oneliners.ans"),
+        art_encoding="amiga",
     ).run_async()
