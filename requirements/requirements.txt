@@ -14,9 +14,7 @@ anyio==4.3.0
     #   starlette
     #   watchfiles
 async-timeout==4.0.3
-    # via
-    #   asyncpg
-    #   redis
+    # via asyncpg
 asyncpg==0.29.0
     # via gino
 asyncssh==2.14.2
@@ -39,7 +37,7 @@ h11==0.14.0
     # via uvicorn
 httptools==0.6.1
     # via uvicorn
-idna==3.6
+idna==3.7
     # via anyio
 linkify-it-py==2.0.3
     # via markdown-it-py
