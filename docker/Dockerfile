@@ -1,7 +1,7 @@
 # syntax = docker/dockerfile-upstream:1-labs
 # asdf
 
-FROM python:3.11-alpine
+FROM python:3.12-alpine
 WORKDIR /app
 STOPSIGNAL SIGTERM
 ENV ENV=/app/.profile

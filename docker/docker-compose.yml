@@ -33,6 +33,7 @@ services:
   cli:
     entrypoint: /usr/local/bin/python3 -m xthulu
     depends_on:
+      - base-image
       - cache
       - db
     image: xthulu
