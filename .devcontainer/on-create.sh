@@ -38,7 +38,6 @@ nvm use
 
 # install application, prerequisites, and dev tools
 pip install -Ue .[dev,hiredis]
-nodeenv -p
 npm ci
 pre-commit install --install-hooks
 etc/gitmoji-hook.sh
