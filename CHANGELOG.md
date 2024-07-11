@@ -1,3 +1,8 @@
+# [v0.10.0](https://github.com/haliphax/xthulu/compare/v0.9.0...v0.10.0) (2024-07-11)
+
+## ✨ New Features
+- [`340373c`](https://github.com/haliphax/xthulu/commit/340373c)  autosuggest message tags in filter
+
 # [v0.9.0](https://github.com/haliphax/xthulu/compare/v0.8.1...v0.9.0) (2024-04-10)
 
 ## ✨ New Features
