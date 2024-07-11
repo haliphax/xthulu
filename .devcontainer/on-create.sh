@@ -3,7 +3,7 @@
 # fail on any errors
 set -eo pipefail
 
-# prerequisites for setting up python 3.11
+# prerequisites for building python
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends \
 	build-essential curl libbz2-dev libffi-dev libncurses-dev libreadline-dev \
@@ -25,8 +25,8 @@ PYENV_ROOT="$HOME/.pyenv"
 PATH="$PYENV_ROOT/versions/xthulu/bin:$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
 eval "$(pyenv virtualenv-init -)"
-pyenv install 3.11
-pyenv virtualenv 3.11 xthulu
+pyenv install 3.12
+pyenv virtualenv 3.12 xthulu
 echo xthulu > .python-version
 
 # install and configure nvm
