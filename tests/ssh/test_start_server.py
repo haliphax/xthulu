@@ -1,36 +1,22 @@
 """SSH server startup tests"""
 
-# type checking
-from typing import Any
-
 # stdlib
 from logging import DEBUG, Logger
 from unittest.async_case import IsolatedAsyncioTestCase
 from unittest.mock import AsyncMock, Mock, patch
 
-# 3rd party
-from fastapi import FastAPI
-from gino import Gino
-from redis import Redis
-
 # local
 from tests.mocks.config import patch_get_config, test_config, test_ssh_config
+from tests.mocks.resources import ResourcesMock
 from xthulu.ssh import SSHServer, start_server
 from xthulu.ssh.process_factory import handle_client
-
-
-class Resources:
-    app = Mock(FastAPI)
-    cache = Mock(Redis)
-    config: dict[str, Any]
-    db = Mock(Gino)
 
 
 class TestStartSSHServer(IsolatedAsyncioTestCase):
     """Test SSH server startup"""
 
     def setUp(self):
-        self._patch_resources = patch("xthulu.ssh.Resources", Resources)
+        self._patch_resources = patch("xthulu.ssh.Resources", ResourcesMock)
         self.mock_resources = self._patch_resources.start()
 
         self._patch_listen = patch("xthulu.ssh.listen", AsyncMock())
