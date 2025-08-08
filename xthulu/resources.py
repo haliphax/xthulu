@@ -9,7 +9,6 @@ from os import environ
 from os.path import exists, join
 
 # 3rd party
-from fastapi import FastAPI
 from gino import Gino
 from redis import Redis
 from toml import load
@@ -23,9 +22,6 @@ log = getLogger(__name__)
 
 class Resources:
     """Shared system resources"""
-
-    app: FastAPI
-    """Web application"""
 
     cache: Redis
     """Redis connection"""
@@ -45,7 +41,6 @@ class Resources:
 
         singleton = super().__new__(cls)
         singleton._load_config()
-        singleton.app = FastAPI()
         singleton.cache = Redis(
             host=singleton._config("cache.host"),
             port=int(singleton._config("cache.port")),
