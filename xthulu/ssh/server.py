@@ -118,7 +118,7 @@ class SSHServer(AsyncSSHServer):
         lowered = username.lower()
 
         if lowered in self._no_entry:
-            log.warn(f"{self.whoami} rejected")
+            log.warning(f"{self.whoami} rejected")
 
             return False
 
@@ -127,14 +127,14 @@ class SSHServer(AsyncSSHServer):
         ).gino.first()
 
         if u is None:
-            log.warn(f"{self.whoami} no such user")
+            log.warning(f"{self.whoami} no such user")
 
             return False
 
         expected, _ = User.hash_password(password, u.salt)
 
         if not compare_digest(expected, u.password):
-            log.warn(f"{self.whoami} failed authentication (password)")
+            log.warning(f"{self.whoami} failed authentication (password)")
 
             return False
 

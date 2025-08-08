@@ -64,4 +64,4 @@ class Resources:
             deep_update(self.config, load(self.config_file))
             log.info(f"Loaded configuration file: {self.config_file}")
         else:
-            log.warn(f"Configuration file not found: {self.config_file}")
+            log.warning(f"Configuration file not found: {self.config_file}")

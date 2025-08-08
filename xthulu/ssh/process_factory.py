@@ -72,7 +72,7 @@ async def handle_client(proc: SSHServerProcess) -> None:
                 break
 
             except TimeoutError:
-                cx.log.warn("Timed out")
+                cx.log.warning("Timed out")
                 cx.echo("\n\n[bright_white on red] TIMED OUT [/]\n\n")
                 break
 
