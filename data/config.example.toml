@@ -1,7 +1,7 @@
 #:schema ./config.schema.json
 [cache]
 db = 0
-host = "redis"
+host = "cache"
 port = 6379
 
 [db]
