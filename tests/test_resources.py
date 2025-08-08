@@ -8,7 +8,6 @@ from unittest import TestCase
 from unittest.mock import Mock, patch
 
 # 3rd party
-from fastapi import FastAPI
 from gino import Gino
 from redis import Redis
 from parameterized import parameterized
@@ -55,7 +54,7 @@ class TestResources(TestCase):
         mock_load.assert_called_once_with("test")
 
     @parameterized.expand(
-        (("app", FastAPI), ("cache", Redis), ("db", Gino)),
+        (("cache", Redis), ("db", Gino)),
     )
     @patch("xthulu.resources.load", lambda *_: {})
     @patch("xthulu.resources.exists", mock_exists)
