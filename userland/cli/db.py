@@ -6,6 +6,7 @@ from importlib import import_module
 from inspect import isclass
 
 # 3rd party
+from asyncpg import DuplicateTableError, UniqueViolationError
 from click import echo, group, option
 
 # api
@@ -46,7 +47,11 @@ def create(seed_data=False):
     async def f():
         async for model in _get_models():
             print(f"- {model.__name__}")
-            await model.gino.create()
+
+            try:
+                await model.gino.create()
+            except DuplicateTableError:
+                echo("Table already exists")
 
     get_event_loop().run_until_complete(f())
 
@@ -62,10 +67,15 @@ def _seed():
     async def f():
         await db.set_bind(db.bind)
         echo("Posting initial messages")
-        tags = (
-            await MessageTag.create(name="demo"),
-            await MessageTag.create(name="introduction"),
-        )
+
+        try:
+            tags = (
+                await MessageTag.create(name="demo"),
+                await MessageTag.create(name="introduction"),
+            )
+        except UniqueViolationError:
+            echo("Tags already exist")
+            return
 
         for i in range(100):
             message = await Message.create(

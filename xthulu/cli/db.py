@@ -5,6 +5,7 @@ from asyncio import get_event_loop
 from importlib import import_module
 
 # 3rd party
+from asyncpg import DuplicateTableError, UniqueViolationError
 from click import confirm, echo, group, option
 
 # local
@@ -35,7 +36,11 @@ def create(seed_data=False):
     async def f():
         await db.set_bind(db.bind)
         echo("Creating database and tables")
-        await db.gino.create_all()
+
+        try:
+            await db.gino.create_all()
+        except DuplicateTableError:
+            echo("Table already exists")
 
     loop.run_until_complete(f())
 
@@ -81,12 +86,17 @@ def _seed():
 
         echo("Creating guest user")
         pwd, salt = User.hash_password("guest")
-        await User.create(
-            name="guest",
-            email="guest@localhost.localdomain",
-            password=pwd,
-            salt=salt,
-        )
+
+        try:
+            await User.create(
+                name="guest",
+                email="guest@localhost.localdomain",
+                password=pwd,
+                salt=salt,
+            )
+        except UniqueViolationError:
+            echo("User already exists")
+            return
 
         echo("Creating user with password")
         pwd, salt = User.hash_password("user")
