@@ -17,8 +17,8 @@ all of the steps detailed below.
 ### Create the environment
 
 ```shell
-pyenv install 3.11  # if 3.11 isn't already installed
-pyenv virtualenv 3.11 xthulu
+pyenv install 3.12  # if 3.12 isn't already installed
+pyenv virtualenv 3.12 xthulu
 pyenv activate xthulu
 ```
 
