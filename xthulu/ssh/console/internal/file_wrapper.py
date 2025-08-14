@@ -1,6 +1,6 @@
 """File wrapper"""
 
-# typing
+# stdlib
 from typing import Any, IO
 
 # 3rd party

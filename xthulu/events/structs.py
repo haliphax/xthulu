@@ -1,10 +1,8 @@
 """Event structs"""
 
-# typing
-from typing import Any
-
 # stdlib
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass

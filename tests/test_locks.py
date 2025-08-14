@@ -1,7 +1,5 @@
-# typing
-from typing import Any
-
 # stdlib
+from typing import Any
 from unittest.mock import patch, Mock
 
 # 3rd party

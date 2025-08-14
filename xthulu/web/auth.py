@@ -1,10 +1,8 @@
 """Web authentication"""
 
-# typing
-from typing import Annotated
-
 # stdlib
 from secrets import compare_digest
+from typing import Annotated
 
 # 3rd party
 from fastapi import Depends, HTTPException, status

@@ -1,13 +1,11 @@
 """Web chat"""
 
-# typing
-from typing import Annotated
-
 # stdlib
 from asyncio import sleep
 import base64
 from datetime import datetime
 from math import floor
+from typing import Annotated
 from uuid import uuid4
 
 # 3rd party

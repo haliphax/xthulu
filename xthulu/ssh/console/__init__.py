@@ -1,6 +1,6 @@
 """An SSH-integrated Console for use with rich/Textual"""
 
-# typing
+# stdlib
 from typing import Any, Literal, Mapping
 
 # 3rd party

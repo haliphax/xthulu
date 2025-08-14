@@ -1,10 +1,8 @@
 """Scripting utilities"""
 
-# typing
-from types import ModuleType
-
 # stdlib
 from importlib.machinery import ModuleSpec, PathFinder
+from types import ModuleType
 
 # local
 from .configuration import get_config
