@@ -16,6 +16,12 @@ from xthulu.ssh.process_factory import handle_client
 
 
 @pytest.fixture(autouse=True)
+def mock_config():
+    with patch("xthulu.ssh.get_config", patch_get_config(test_config)) as p:
+        yield p
+
+
+@pytest.fixture(autouse=True)
 def mock_resources():
     with patch("xthulu.ssh.Resources", ResourcesMock) as p:
         yield p
@@ -28,7 +34,6 @@ def mock_listen():
 
 
 @pytest.mark.asyncio
-@patch("xthulu.ssh.get_config", patch_get_config(test_config))
 async def test_db_bind(mock_resources: Mock):
     """Server should bind database connection during startup."""
 
@@ -40,7 +45,6 @@ async def test_db_bind(mock_resources: Mock):
 
 
 @pytest.mark.asyncio
-@patch("xthulu.ssh.get_config", patch_get_config(test_config))
 async def test_server_args(mock_listen: Mock):
     """Server should bind SSH server to values from configuration."""
 
@@ -82,15 +86,12 @@ async def test_proxy_procotol(mock_listener: Mock, mock_listen: Mock):
 
 
 @pytest.mark.asyncio
-@patch("xthulu.ssh.get_config", patch_get_config(test_config))
 @patch("xthulu.ssh.start")
 async def test_trace_malloc_start(mock_start: Mock):
     """Server should call tracemalloc.start if debugging is enabled."""
 
-    with patch.object(Logger, "getEffectiveLevel") as mock_level:
-        # arrange
-        mock_level.return_value = DEBUG
-
+    # arrange
+    with patch.object(Logger, "getEffectiveLevel", return_value=DEBUG):
         # act
         await start_server()
 
