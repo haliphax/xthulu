@@ -5,7 +5,7 @@ from asyncio import get_event_loop
 from importlib import import_module
 
 # 3rd party
-from asyncpg import DuplicateTableError, UniqueViolationError
+from asyncpg import DuplicateTableError, UniqueViolationError  # type: ignore
 from click import confirm, echo, group, option
 
 # local

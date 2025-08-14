@@ -57,8 +57,7 @@ jobs:
           pip install -e .[dev]
 
       - name: Unit tests
-        run: coverage run --source=xthulu --omit="xthulu/__main__.py"
-          -m unittest
+        run: pytest --mypy --cov xthulu --ignore userland
 
       - name: Coverage report
         run: |

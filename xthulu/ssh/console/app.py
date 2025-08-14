@@ -37,7 +37,7 @@ class XthuluApp(App):
         self.context = context
         super().__init__(driver_class=SSHDriver, **kwargs)
         self.console = context.console
-        self.error_console = _ErrorConsoleProxy()
+        self.error_console = _ErrorConsoleProxy()  # type: ignore
         self.run_worker(self._watch_for_resize, exclusive=True)
 
     async def _watch_for_resize(self):
@@ -51,7 +51,7 @@ class XthuluApp(App):
             new_size = Size(*ev[-1].data)
             self._driver.process_event(events.Resize(new_size, new_size))
 
-    def exit(self, **kwargs) -> None:
+    def exit(self, **kwargs) -> None:  # type: ignore
         # avoid cyclic import
         from .internal.driver import SSHDriver
 

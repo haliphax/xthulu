@@ -67,10 +67,10 @@ class ProxyProtocolSession:
                     int(conn_info[4]),
                 )
                 self._conn = self._conn_factory("", 0)
-                self._conn.connection_made(self)
+                self._conn.connection_made(self)  # type: ignore
 
                 if data:
-                    self._conn.data_received(data)
+                    self._conn.data_received(data)  # type: ignore
             else:
                 self._inpbuf.append(data)
 
@@ -125,7 +125,7 @@ class ProxyProtocolListener:
             return ProxyProtocolSession(conn_factory)
 
         return await get_event_loop().create_server(
-            tunnel_factory,
+            tunnel_factory,  # type: ignore
             listen_host,
             listen_port,  # type: ignore
         )

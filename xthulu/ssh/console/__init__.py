@@ -1,7 +1,7 @@
 """An SSH-integrated Console for use with rich/Textual"""
 
 # typing
-from typing import Any, Mapping
+from typing import Any, Literal, Mapping
 
 # 3rd party
 from asyncssh import SSHWriter
@@ -32,7 +32,9 @@ class XthuluConsole(Console):
         self.encoding = encoding
         color_term = _environ.get("COLORTERM") if _environ else None
         term_type = (_environ.get("TERM") if _environ else None) or ""
-        color_system = (
+        color_system: (
+            Literal["auto", "standard", "256", "truecolor", "windows"] | None
+        ) = (
             "truecolor"
             if color_term == "truecolor" or term_type.find("truecolor") >= 0
             else "256"
@@ -42,7 +44,7 @@ class XthuluConsole(Console):
         super().__init__(
             **kwargs,
             color_system=color_system,
-            file=FileWrapper(ssh_writer, encoding),
+            file=FileWrapper(ssh_writer, encoding),  # type: ignore
             force_interactive=True,
             force_terminal=True,
             highlight=False,

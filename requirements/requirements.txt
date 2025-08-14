@@ -81,7 +81,7 @@ pydantic==2.7.3
     # via fastapi
 pydantic-core==2.18.4
     # via pydantic
-pygments==2.18.0
+pygments==2.19.2
     # via rich
 python-dotenv==1.0.1
     # via uvicorn
@@ -116,7 +116,7 @@ toml==0.10.2
     # via -r requirements.in
 typer==0.12.3
     # via fastapi-cli
-typing-extensions==4.12.2
+typing-extensions==4.14.1
     # via
     #   asyncssh
     #   fastapi

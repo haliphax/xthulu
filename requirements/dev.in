@@ -3,4 +3,9 @@ coverage
 parameterized
 pip-tools
 pre-commit
+pytest
+pytest-asyncio
+pytest-cov
+pytest-mypy
 ruff
+types-aiofiles

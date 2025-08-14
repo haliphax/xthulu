@@ -106,20 +106,19 @@ services:
 
 ### Framework
 
-The project's chosen testing framework is the standard library's own `unittest`.
+The project's chosen testing framework is `pytest`.
 
 ```shell
-python -m unittest     # run all tests
-python -m unittest -h  # list test runner options
+# run tests, type checks, and generate coverage report
+pytest --mypy --cov xthulu --ignore userland
 ```
 
 ### Test coverage
 
 The [coverage][] application is used to calculate test coverage after unit tests
-have been run.
+have been run. You may view the cached report at any time:
 
 ```shell
-coverage run --source=xthulu --omit="xthulu/__main__.py" -m unittest
 coverage report
 ```
 

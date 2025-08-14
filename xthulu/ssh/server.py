@@ -6,7 +6,7 @@ from secrets import compare_digest
 
 # 3rd party
 from asyncssh import SSHServer as AsyncSSHServer, SSHServerConnection
-from sqlalchemy import func
+from sqlalchemy import func  # type: ignore
 
 # local
 from .. import locks
@@ -50,7 +50,7 @@ class SSHServer(AsyncSSHServer):
         self._sid = "{}:{}".format(*self._peername)
         log.info(f"{self._sid} connecting")
 
-    def connection_lost(self, exc: Exception):
+    def connection_lost(self, exc: Exception | None):
         """
         Connection lost.
 

@@ -12,7 +12,7 @@ from subprocess import Popen, PIPE
 
 # 3rd party
 from asyncssh import SSHServerProcess
-from sqlalchemy import func
+from sqlalchemy import func  # type: ignore
 
 # local
 from ... import locks
@@ -115,7 +115,7 @@ class SSHContext:
                 context's encoding will be used.
         """
 
-        if not str:
+        if not args:
             return
 
         text: list[str] = []

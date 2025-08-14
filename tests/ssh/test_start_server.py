@@ -2,8 +2,11 @@
 
 # stdlib
 from logging import DEBUG, Logger
-from unittest.async_case import IsolatedAsyncioTestCase
+from typing import Any
 from unittest.mock import AsyncMock, Mock, patch
+
+# 3rd party
+import pytest
 
 # local
 from tests.mocks.config import patch_get_config, test_config, test_ssh_config
@@ -12,81 +15,84 @@ from xthulu.ssh import SSHServer, start_server
 from xthulu.ssh.process_factory import handle_client
 
 
-class TestStartSSHServer(IsolatedAsyncioTestCase):
-    """Test SSH server startup"""
+@pytest.fixture(autouse=True)
+def mock_resources():
+    with patch("xthulu.ssh.Resources", ResourcesMock) as p:
+        yield p
 
-    def setUp(self):
-        self._patch_resources = patch("xthulu.ssh.Resources", ResourcesMock)
-        self.mock_resources = self._patch_resources.start()
 
-        self._patch_listen = patch("xthulu.ssh.listen", AsyncMock())
-        self.mock_listen = self._patch_listen.start()
+@pytest.fixture(autouse=True)
+def mock_listen():
+    with patch("xthulu.ssh.listen", AsyncMock()) as p:
+        yield p
 
-    def tearDown(self):
-        self._patch_resources.stop()
-        self._patch_listen.stop()
 
-    @patch("xthulu.ssh.get_config", patch_get_config(test_config))
-    async def test_db_bind(self):
-        """Server should bind database connection during startup."""
+@pytest.mark.asyncio
+@patch("xthulu.ssh.get_config", patch_get_config(test_config))
+async def test_db_bind(mock_resources: Mock):
+    """Server should bind database connection during startup."""
 
-        # act
-        await start_server()
+    # act
+    await start_server()
 
-        # assert
-        self.mock_resources.db.set_bind.assert_awaited_once_with(
-            self.mock_resources.db.bind
-        )
+    # assert
+    mock_resources.db.set_bind.assert_awaited_once_with(mock_resources.db.bind)
 
-    @patch("xthulu.ssh.get_config", patch_get_config(test_config))
-    async def test_server_args(self):
-        """Server should bind SSH server to values from configuration."""
 
-        # act
-        await start_server()
+@pytest.mark.asyncio
+@patch("xthulu.ssh.get_config", patch_get_config(test_config))
+async def test_server_args(mock_listen: Mock):
+    """Server should bind SSH server to values from configuration."""
 
-        # assert
-        ssh_config = test_config["ssh"]
-        self.mock_listen.assert_awaited_once_with(
-            **{
-                "host": ssh_config["host"],
-                "port": int(ssh_config["port"]),
-                "server_factory": SSHServer,
-                "server_host_keys": ssh_config["host_keys"],
-                "process_factory": handle_client,
-                "encoding": None,
-            }
-        )
+    # act
+    await start_server()
 
-    @patch(
-        "xthulu.ssh.get_config",
-        patch_get_config(
-            {**test_config, "ssh": {**test_ssh_config, "proxy_protocol": True}}
-        ),
+    # assert
+    ssh_config: dict[str, Any] = test_config["ssh"]  # type: ignore
+    mock_listen.assert_awaited_once_with(
+        **{
+            "host": ssh_config["host"],
+            "port": int(ssh_config["port"]),
+            "server_factory": SSHServer,
+            "server_host_keys": ssh_config["host_keys"],
+            "process_factory": handle_client,
+            "encoding": None,
+        }
     )
-    @patch("xthulu.ssh.ProxyProtocolListener")
-    async def test_proxy_procotol(self, mock_listener: Mock):
-        """Server should use a PROXY tunnel if configured to do so."""
+
+
+@pytest.mark.asyncio
+@patch(
+    "xthulu.ssh.get_config",
+    patch_get_config(
+        {**test_config, "ssh": {**test_ssh_config, "proxy_protocol": True}}
+    ),
+)
+@patch("xthulu.ssh.ProxyProtocolListener")
+async def test_proxy_procotol(mock_listener: Mock, mock_listen: Mock):
+    """Server should use a PROXY tunnel if configured to do so."""
+
+    # act
+    await start_server()
+
+    # assert
+    mock_listener.assert_called_once()
+    mock_listen.assert_awaited_once()
+    assert "tunnel" in mock_listen.call_args[1]
+
+
+@pytest.mark.asyncio
+@patch("xthulu.ssh.get_config", patch_get_config(test_config))
+@patch("xthulu.ssh.start")
+async def test_trace_malloc_start(mock_start: Mock):
+    """Server should call tracemalloc.start if debugging is enabled."""
+
+    with patch.object(Logger, "getEffectiveLevel") as mock_level:
+        # arrange
+        mock_level.return_value = DEBUG
 
         # act
         await start_server()
 
         # assert
-        mock_listener.assert_called_once()
-        self.mock_listen.assert_awaited_once()
-        assert "tunnel" in self.mock_listen.call_args[1]
-
-    @patch("xthulu.ssh.get_config", patch_get_config(test_config))
-    @patch("xthulu.ssh.start")
-    async def test_trace_malloc_start(self, mock_start: Mock):
-        """Server should call tracemalloc.start if debugging is enabled."""
-
-        with patch.object(Logger, "getEffectiveLevel") as mock_level:
-            # arrange
-            mock_level.return_value = DEBUG
-
-            # act
-            await start_server()
-
-            # assert
-            mock_start.assert_called_once()
+        mock_start.assert_called_once()

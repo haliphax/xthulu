@@ -1,15 +1,17 @@
-**/*.override.yml
+__pycache__/
 *.pyc
-/*.egg-info/
+**/*.override.yml
 /.coverage
+/.mypy_cache/
+/.pytest_cache/
 /.python-version
+/*.egg-info/
 /build/
 /data/*.toml
 /data/ssh_host_key*
 /db/
 /html/
 /run/logs/*.log*
-__pycache__/
 node_modules/
 
 # exclusions

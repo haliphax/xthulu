@@ -42,7 +42,7 @@ class ArtLog(XthuluApp):
         yield Log()
 
     async def _worker(self):
-        artlog: Log = self.query_one(Log)
+        artlog: Log = self.query_one(Log)  # type: ignore
 
         for line in self.artwork:
             if self._exit:
@@ -160,6 +160,8 @@ async def scroll_art(
 
         if key:
             return key
+
+    return None
 
 
 async def show_art(context: SSHContext, path: str, encoding="cp437") -> None:

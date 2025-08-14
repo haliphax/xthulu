@@ -9,9 +9,9 @@ from os import environ
 from os.path import exists, join
 
 # 3rd party
-from gino import Gino
+from gino import Gino  # type: ignore
 from redis import Redis
-from toml import load
+from toml import load  # type: ignore
 
 # local
 from .configuration import deep_update, get_config

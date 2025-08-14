@@ -1,56 +1,61 @@
 """Web server tests"""
 
 # stdlib
-from unittest import TestCase
 from unittest.mock import Mock, patch
+
+# 3rd party
+import pytest
 
 # local
 from tests.mocks.config import patch_get_config, test_config, test_web_config
 from xthulu.web import create_app, start_server
 
 
-@patch("xthulu.web.get_config", patch_get_config(test_config))
-class TestStartWebServer(TestCase):
-    """Web server tests"""
+@pytest.fixture(autouse=True)
+def mock_config():
+    with patch("xthulu.web.get_config", patch_get_config(test_config)) as p:
+        yield p
 
-    def setUp(self):
-        self._patch_import = patch("xthulu.web.import_module")
-        self.mock_import: Mock = self._patch_import.start()
 
-    def tearDown(self):
-        self._patch_import.stop()
+@pytest.fixture(autouse=True)
+def mock_import_module():
+    with patch("xthulu.web.import_module") as p:
+        yield p
 
-    @patch("xthulu.web.run")
-    def test_uses_config(self, mock_run: Mock):
-        """Server should bind listener using loaded configuration."""
 
-        # act
-        start_server()
+@patch("xthulu.web.run")
+def test_uses_config(mock_run: Mock):
+    """Server should bind listener using loaded configuration."""
 
-        # assert
-        mock_run.assert_called_once_with(
-            "xthulu.web.asgi:app",
-            host=test_web_config["host"],
-            port=test_web_config["port"],
-            lifespan="on",
-        )
+    # act
+    start_server()
 
-    @patch("xthulu.web.FastAPI.include_router")
-    def test_includes_router(self, mock_include_router: Mock):
-        """Server should include the API router."""
+    # assert
+    mock_run.assert_called_once_with(
+        "xthulu.web.asgi:app",
+        host=test_web_config["host"],
+        port=test_web_config["port"],
+        lifespan="on",
+    )
 
-        # act
-        create_app()
 
-        # assert
-        mock_include_router.assert_called()
+@patch("xthulu.web.FastAPI.include_router")
+def test_includes_router(mock_include_router: Mock):
+    """Server should include the API router."""
 
-    def test_imports_userland_modules(self):
-        """Server should import userland modules."""
+    # act
+    create_app()
 
-        # act
-        create_app()
+    # assert
+    mock_include_router.assert_called()
 
-        # assert
-        for mod in test_web_config["userland"]["modules"]:
-            self.mock_import.assert_called_with(mod)
+
+def test_imports_userland_modules(mock_import_module: Mock):
+    """Server should import userland modules."""
+
+    # act
+    create_app()
+
+    # assert
+    for mod in test_web_config["userland"]["modules"]:  # type: ignore
+        mock_import_module.assert_called_with(mod)

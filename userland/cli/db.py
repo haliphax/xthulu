@@ -6,7 +6,7 @@ from importlib import import_module
 from inspect import isclass
 
 # 3rd party
-from asyncpg import DuplicateTableError, UniqueViolationError
+from asyncpg import DuplicateTableError, UniqueViolationError  # type: ignore
 from click import echo, group, option
 
 # api

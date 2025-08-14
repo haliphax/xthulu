@@ -8,6 +8,20 @@ requires-python = ">=3.12"
 version = "0.10.0"
 dynamic = ["dependencies", "optional-dependencies"]
 
+[tool.coverage.run]
+omit = ["xthulu/__main__.py"]
+
+[tool.pytest.ini_options]
+filterwarnings = ["ignore"]
+
+[tool.ruff]
+lint.ignore = [
+	# ambiguous variable name
+	"E741",
+]
+line-length = 80
+target-version = "py312"
+
 [tool.setuptools]
 packages = ["xthulu"]
 
@@ -17,14 +31,3 @@ dependencies = { file = "requirements/requirements.txt" }
 [tool.setuptools.dynamic.optional-dependencies]
 dev = { file = "requirements/dev.txt" }
 hiredis = { file = "requirements/hiredis.txt" }
-
-[tool.black]
-line-length = 80
-
-[tool.ruff]
-lint.ignore = [
-	# ambiguous variable name
-	"E741",
-]
-line-length = 80
-target-version = "py312"

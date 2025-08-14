@@ -64,3 +64,5 @@ async def wait_for_key(
 
     except TimeoutError:
         pass
+
+    return None

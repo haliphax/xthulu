@@ -67,7 +67,7 @@ jobs:
           pip install -e .[dev]
 
       - name: Ruff
-        run: ruff format .
+        run: ruff format --diff .
 
   prettier:
     name: Prettier (formatter)
@@ -137,4 +137,4 @@ jobs:
           pip install -e .[dev]
 
       - name: Ruff
-        run: ruff check .
+        run: ruff check --diff .

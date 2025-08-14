@@ -25,7 +25,7 @@ def start():
     """Start SSH server process"""
 
     loop = get_event_loop()
-    server: SSHAcceptor
+    server: SSHAcceptor  # type: ignore
 
     def shutdown():
         log.info("Shutting down")

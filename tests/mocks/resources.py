@@ -6,7 +6,7 @@ from unittest.mock import Mock
 
 # 3rd party
 from fastapi import FastAPI
-from gino import Gino
+from gino import Gino  # type: ignore
 from redis import Redis
 
 

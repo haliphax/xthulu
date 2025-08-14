@@ -5,7 +5,7 @@ from datetime import datetime
 
 # 3rd party
 import bcrypt
-from sqlalchemy import (
+from sqlalchemy import (  # type: ignore
     Column,
     DateTime,
     func,
@@ -21,7 +21,7 @@ from ..resources import Resources
 db = Resources().db
 
 
-class User(db.Model):
+class User(db.Model):  # type: ignore
     """User model"""
 
     id = Column(Integer(), primary_key=True)

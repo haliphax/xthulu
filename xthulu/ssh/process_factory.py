@@ -106,7 +106,7 @@ async def handle_client(proc: SSHServerProcess) -> None:
         # prep script stack with top scripts;
         # since we're treating it as a stack and not a queue, add them
         # reversed so they are executed in the order they were defined
-        top_names: list[str] = get_config("ssh.userland.top", ("top",))
+        top_names: list[str] = get_config("ssh.userland.top", ("top",))  # type: ignore
         cx.stack = [Script(s, (), {}) for s in reversed(top_names)]
 
         # main script engine loop
