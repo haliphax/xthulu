@@ -2,7 +2,7 @@
 from typing import Any
 
 # stdlib
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, Mock
 
 # 3rd party
 import pytest
@@ -14,7 +14,7 @@ from xthulu.locks import _Locks
 
 @pytest.fixture(autouse=True)
 def mock_cache():
-    with patch("xthulu.locks.cache", MagicMock()) as p:
+    with patch("xthulu.locks.cache") as p:
         yield p
 
 
@@ -36,12 +36,12 @@ def test_get_lock():
     assert "test_name" in _Locks.locks
 
 
-def test_get_lock_fails_if_exists(mock_cache: MagicMock):
+def test_get_lock_fails_if_exists(mock_cache: Mock):
     """Attempting to acquire an existing lock should fail."""
 
     # arrange
-    mock_cache.lock.return_value = MagicMock()
-    mock_cache.lock.return_value.acquire = MagicMock(return_value=False)
+    mock_cache.lock.return_value = Mock()
+    mock_cache.lock.return_value.acquire = Mock(return_value=False)
 
     # act
     success = locks.get("test_name", "test_lock")
@@ -61,12 +61,12 @@ def test_hold_lock():
         assert "test_name" in _Locks.locks
 
 
-def test_hold_lock_fails_if_exists(mock_cache: MagicMock):
+def test_hold_lock_fails_if_exists(mock_cache: Mock):
     """Attempting to hold an existing lock should fail."""
 
     # arrange
-    mock_cache.lock.return_value = MagicMock()
-    mock_cache.lock.return_value.acquire = MagicMock(return_value=False)
+    mock_cache.lock.return_value = Mock()
+    mock_cache.lock.return_value.acquire = Mock(return_value=False)
 
     # act
     with locks.hold("test_name", "test_lock") as l:
@@ -79,7 +79,7 @@ def test_release_lock():
     """Releasing a lock should remove it from the singleton."""
 
     # arrange
-    locks_: dict[str, Any] = {"test_lock": MagicMock()}  # type: ignore
+    locks_: dict[str, Any] = {"test_lock": Mock()}  # type: ignore
     _Locks.locks["test_name"] = locks_
 
     # act
@@ -94,7 +94,7 @@ def test_release_lock_removes_parent_when_empty():
     """Releasing a user's only lock should remove the parent object."""
 
     # arrange
-    _Locks.locks["test_name"] = {"test_lock": MagicMock()}  # type: ignore
+    _Locks.locks["test_name"] = {"test_lock": Mock()}  # type: ignore
 
     # act
     success = locks.release("test_name", "test_lock")
@@ -109,8 +109,8 @@ def test_expire_locks():
 
     # arrange
     _Locks.locks["test_name"] = {  # type: ignore
-        "test_lock_1": MagicMock(),
-        "test_lock_2": MagicMock(),
+        "test_lock_1": Mock(),
+        "test_lock_2": Mock(),
     }
 
     # act
