@@ -1,10 +1,14 @@
 """Filter messages screen"""
 
 # 3rd party
+from sqlmodel import select
 from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, Input, Label, OptionList
 from textual.widgets.option_list import Option
+
+# api
+from xthulu.resources import get_session
 
 # local
 from userland.models.message.tag import MessageTag
@@ -76,7 +80,10 @@ class FilterModal(ModalScreen[list[str]]):
         self.dismiss(tags.value.split(" "))
 
     async def on_mount(self) -> None:
-        self._alltags = [t.name for t in await MessageTag.query.gino.all()]
+        async with get_session() as db:
+            tags_result = (await db.exec(select(MessageTag))).all()
+
+        self._alltags = [t.name for t in tags_result]  # type: ignore
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.name == "cancel":

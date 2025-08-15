@@ -47,6 +47,7 @@ class SSHDriver(LinuxDriver):
         feed = parser.feed
         decode = getincrementaldecoder("utf-8")().decode
 
+        # TODO look at LinuxDriver.run_input_thread and refactor, ESC is broken
         while not self.exit_event.is_set():
             try:
                 r = self.context.input.get_nowait()

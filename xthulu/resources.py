@@ -1,16 +1,16 @@
 """Shared resource singleton"""
 
-# type checking
-from typing import Any
-
 # stdlib
+from contextlib import asynccontextmanager
 from logging import getLogger
+from typing import Any
 from os import environ
 from os.path import exists, join
 
 # 3rd party
-from gino import Gino  # type: ignore
 from redis import Redis
+from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
+from sqlmodel.ext.asyncio.session import AsyncSession
 from toml import load  # type: ignore
 
 # local
@@ -32,8 +32,8 @@ class Resources:
     config_file: str
     """Configuration file path"""
 
-    db: Gino
-    """Database connection"""
+    db: AsyncEngine
+    """Database engine"""
 
     def __new__(cls):
         if hasattr(cls, "_singleton"):
@@ -46,7 +46,9 @@ class Resources:
             port=int(singleton._config("cache.port")),
             db=int(singleton._config("cache.db")),
         )
-        singleton.db = Gino(bind=singleton._config("db.bind"))
+        singleton.db = create_async_engine(
+            singleton._config("db.bind"), future=True
+        )
         cls._singleton = singleton
 
         return cls._singleton
@@ -65,3 +67,11 @@ class Resources:
             log.info(f"Loaded configuration file: {self.config_file}")
         else:
             log.warning(f"Configuration file not found: {self.config_file}")
+
+
+@asynccontextmanager
+async def get_session():
+    """Get a `sqlmodel.ext.asyncio.session.AsyncSession` object."""
+
+    async with AsyncSession(Resources().db) as session:
+        yield session

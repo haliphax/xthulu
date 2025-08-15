@@ -13,7 +13,6 @@ from asyncssh import SSHAcceptor, listen
 # local
 from ..configuration import get_config
 from ..logger import log
-from ..resources import Resources
 from .codecs import register_encodings
 from .process_factory import handle_client
 from .proxy_protocol import ProxyProtocolListener
@@ -24,7 +23,6 @@ async def start_server() -> SSHAcceptor:
     """Start the SSH server."""
 
     register_encodings()
-    res = Resources()
     ssh_config: dict[str, Any] = get_config("ssh")
     host: str = ssh_config["host"]
     port = int(ssh_config["port"])
@@ -47,7 +45,5 @@ async def start_server() -> SSHAcceptor:
 
     if log.getEffectiveLevel() == DEBUG:
         start()
-
-    await res.db.set_bind(res.db.bind)
 
     return await listen(**kwargs)

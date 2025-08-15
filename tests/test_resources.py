@@ -7,9 +7,9 @@ from typing import Type
 from unittest.mock import Mock, patch
 
 # 3rd party
-from gino import Gino  # type: ignore
 import pytest
 from redis import Redis
+from sqlalchemy.ext.asyncio.engine import AsyncEngine
 
 # local
 from xthulu.resources import Resources
@@ -56,7 +56,9 @@ def test_config_file_from_env_used(mock_load: Mock):
     mock_load.assert_called_once_with("test")
 
 
-@pytest.mark.parametrize(["name", "cls"], [["cache", Redis], ["db", Gino]])
+@pytest.mark.parametrize(
+    ["name", "cls"], [["cache", Redis], ["db", AsyncEngine]]
+)
 @patch("xthulu.resources.load", lambda *_: {})
 def test_property_assignment(name: str, cls: Type):
     """Constructor should assign properties to singleton appropriately."""

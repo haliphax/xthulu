@@ -2,30 +2,13 @@
 
 # stdlib
 from asyncio import get_event_loop
-from importlib import import_module
-from inspect import isclass
 
 # 3rd party
-from asyncpg import DuplicateTableError, UniqueViolationError  # type: ignore
 from click import echo, group, option
+from sqlmodel import SQLModel
 
 # api
-from xthulu.resources import Resources
-
-db = Resources().db
-
-
-async def _get_models():
-    await db.set_bind(db.bind)
-    models = import_module("...models", __name__)
-
-    for m in dir(models):
-        model = getattr(models, m)
-
-        if not (isclass(model) and issubclass(model, db.Model)):
-            continue
-
-        yield model
+from xthulu.resources import get_session, Resources
 
 
 @group("db")
@@ -45,13 +28,11 @@ def create(seed_data=False):
     """Create database tables."""
 
     async def f():
-        async for model in _get_models():
-            print(f"- {model.__name__}")
+        from .. import models  # noqa: F401
+        from xthulu import models as server_models  # noqa: F401
 
-            try:
-                await model.gino.create()
-            except DuplicateTableError:
-                echo("Table already exists")
+        async with Resources().db.begin() as conn:
+            await conn.run_sync(SQLModel.metadata.create_all)
 
     get_event_loop().run_until_complete(f())
 
@@ -62,36 +43,42 @@ def create(seed_data=False):
 def _seed():
     from ..models import Message, MessageTag, MessageTags
 
-    db = Resources().db
-
     async def f():
-        await db.set_bind(db.bind)
         echo("Posting initial messages")
 
-        try:
+        async with get_session() as db:
             tags = (
-                await MessageTag.create(name="demo"),
-                await MessageTag.create(name="introduction"),
-            )
-        except UniqueViolationError:
-            echo("Tags already exist")
-            return
-
-        for i in range(100):
-            message = await Message.create(
-                author_id=1,
-                title=f"Hello, world! #{i}",
-                content=(
-                    "# Hello\n\nHello, world! ✌️\n\n"
-                    "## Demo\n\nThis is a demonstration message.\n\n"
-                )
-                * 20,
+                MessageTag(name="demo"),
+                MessageTag(name="introduction"),
             )
 
             for tag in tags:
-                await MessageTags.create(
-                    message_id=message.id, tag_name=tag.name
+                db.add(tag)
+                await db.commit()
+
+            for i in range(100):
+                message = Message(
+                    author_id=1,
+                    title=f"Hello, world! #{i}",
+                    content=(
+                        "# Hello\n\nHello, world! ✌️\n\n"
+                        "## Demo\n\nThis is a demonstration message.\n\n"
+                    )
+                    * 20,
                 )
+                db.add(message)
+                await db.commit()
+
+                for tag in tags:
+                    await db.refresh(message)
+                    await db.refresh(tag)
+                    db.add(
+                        MessageTags(
+                            message_id=message.id,  # type: ignore
+                            tag_name=tag.name,  # type: ignore
+                        )
+                    )
+                    await db.commit()
 
     get_event_loop().run_until_complete(f())
 

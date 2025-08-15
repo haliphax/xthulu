@@ -10,6 +10,7 @@ from asyncssh import SSHServerProcess, TerminalSizeChanged
 # local
 from ..configuration import get_config
 from ..events.structs import EventData
+from ..resources import get_session
 from .console import XthuluConsole
 from .context import SSHContext
 from .exceptions import Goto, ProcessClosing, ProcessForciblyClosed
@@ -50,7 +51,12 @@ async def handle_client(proc: SSHServerProcess) -> None:
     w, h, _, _ = proc.get_terminal_size()
     cx.env["COLUMNS"] = str(w)
     cx.env["LINES"] = str(h)
-    await cx.user.update(last=datetime.utcnow()).apply()  # type: ignore
+    cx.user.last = datetime.now()
+
+    async with get_session() as db:
+        db.add(cx.user)
+        await db.commit()
+        await db.refresh(cx.user)
 
     async def input_loop():
         timeout = int(get_config("ssh.session.timeout", 120))

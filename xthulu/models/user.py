@@ -5,47 +5,33 @@ from datetime import datetime
 
 # 3rd party
 import bcrypt
-from sqlalchemy import (  # type: ignore
-    Column,
-    DateTime,
-    func,
-    Index,
-    Integer,
-    LargeBinary,
-    String,
-)
-
-# local
-from ..resources import Resources
-
-db = Resources().db
+from sqlmodel import Field, func, Index, SQLModel
 
 
-class User(db.Model):  # type: ignore
+class User(SQLModel, table=True):
     """User model"""
 
-    id = Column(Integer(), primary_key=True)
+    id: int | None = Field(primary_key=True, default=None)
     """Unique ID"""
 
-    name = Column(String(24), unique=True, nullable=False)
+    name: str = Field(max_length=24, unique=True)
     """User name"""
 
-    email = Column(String(64), unique=True, nullable=False)
+    email: str = Field(max_length=64, unique=True)
     """Email address"""
 
-    password = Column(LargeBinary(64), nullable=True)
+    password: bytes | None = Field(max_length=64, default=None)
     """Encrypted password"""
 
-    salt = Column(LargeBinary(32), nullable=True)
+    salt: bytes | None = Field(max_length=32, default=None)
     """Password salt"""
 
-    created = Column(DateTime(), default=datetime.utcnow, nullable=False)
+    created: datetime = Field(default_factory=datetime.now)
     """Creation time"""
 
-    last = Column(DateTime(), default=datetime.utcnow, nullable=False)
+    last: datetime = Field(default_factory=datetime.now)
     """Last login"""
 
-    __tablename__ = "user"
     __table_args__ = (
         Index("idx_user_name_lower", func.lower("name")),
         Index("idx_user_email_lower", func.lower("email")),

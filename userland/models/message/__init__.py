@@ -2,67 +2,61 @@
 
 # stdlib
 from datetime import datetime
+from typing import Optional
 
 # 3rd party
-from sqlalchemy import (
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    String,
-    Text,
-)
+from sqlmodel import Field, Relationship, SQLModel
 
 # api
-from xthulu.resources import Resources
-from xthulu.models import User
-
-db = Resources().db
+from xthulu.models.user import User
 
 
-class Message(db.Model):
+class Message(SQLModel, table=True):
     """Message model"""
 
-    id = Column(Integer(), primary_key=True)
+    id: int | None = Field(primary_key=True, default=None)
     """Unique ID"""
 
-    parent_id = Column(
-        None,
-        ForeignKey("message.id", onupdate="cascade", ondelete="set null"),
-        nullable=True,
+    parent_id: int | None = Field(foreign_key="message.id", default=None)
+    """Parent message ID (if any)"""
+
+    parent: Optional["Message"] = Relationship(
+        back_populates="children",
+        sa_relationship_kwargs={"remote_side": "Message.id"},
     )
     """Parent message (if any)"""
 
-    parent: "Message | None"
+    children: list["Message"] = Relationship(back_populates="parent")
+    """Child messages"""
 
-    author_id = Column(
-        None,
-        ForeignKey(User.id, onupdate="cascade", ondelete="set null"),
-        nullable=True,
+    author_id: int | None = Field(foreign_key="user.id", default=None)
+    """Author ID of the message"""
+
+    author: User | None = Relationship(
+        sa_relationship_kwargs={
+            "primaryjoin": "Message.author_id == User.id",
+        }
     )
     """Author of the message"""
 
-    author: User
+    recipient_id: int | None = Field(foreign_key="user.id", default=None)
+    """Recipient ID of the message (`None` for public messages)"""
 
-    recipient_id = Column(
-        None,
-        ForeignKey(User.id, onupdate="cascade", ondelete="cascade"),
-        nullable=True,
+    recipient: User | None = Relationship(
+        sa_relationship_kwargs={
+            "primaryjoin": "Message.recipient_id == User.id",
+        }
     )
-    """Recipient of the message (`None` for public messages)"""
+    """Recipient of the message"""
 
-    recipient: User | None
-
-    created = Column(DateTime(), default=datetime.utcnow, nullable=False)
+    created: datetime = Field(default_factory=datetime.now)
     """Creation time"""
 
-    title = Column(String(120), nullable=False)
+    title: str = Field(max_length=120)
     """Title of the message"""
 
-    content = Column(Text(), nullable=False)
+    content: str = Field()
     """The message's content"""
-
-    __tablename__ = "message"
 
     def __repr__(self):
         return f"Message(#{self.id})"

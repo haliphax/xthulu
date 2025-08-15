@@ -13,7 +13,7 @@ default_config = {
         "port": 6379,
     },
     "db": {
-        "bind": "postgres://xthulu:xthulu@db:5432/xthulu",
+        "bind": "postgresql+asyncpg://xthulu:xthulu@db:5432/xthulu",
     },
     "logging": {
         "level": "INFO",

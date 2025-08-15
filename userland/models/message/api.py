@@ -1,17 +1,20 @@
 """Shared userland messages API"""
 
+# stdlib
+from typing import Sequence, Tuple
+
 # 3rd party
-from sqlalchemy.orm import Query
+from sqlmodel import and_, col, select
 
 # api
-from xthulu.resources import Resources
+from xthulu.resources import get_session
 
 # local
 from . import Message
 from .message_tags import MessageTags
 
 
-def get_messages_query(tags: list[str] | None = None) -> Query:
+def get_messages_query(tags: list[str] | None = None):
     """
     Query for pulling messages, optionally filtered by tag(s).
 
@@ -22,25 +25,25 @@ def get_messages_query(tags: list[str] | None = None) -> Query:
         A query object
     """
 
-    db = Resources().db
-    select = Message.select("id", "title")
+    query = select(Message.id, Message.title)
 
     return (
-        select
+        query
         if not tags or len(tags) == 0
-        else select.select_from(
-            Message.join(
-                MessageTags,
-                db.and_(
-                    MessageTags.message_id == Message.id,
-                    MessageTags.tag_name.in_(tags),
-                ),
+        else query.select_from(Message)
+        .join(MessageTags)
+        .where(
+            and_(
+                MessageTags.message_id == Message.id,
+                MessageTags.tag_name in tags,
             )
         )
     )
 
 
-async def get_latest_messages(tags: list[str] | None = None, limit=100) -> dict:
+async def get_latest_messages(
+    tags: list[str] | None = None, limit=100
+) -> Sequence[Tuple[int, str]]:
     """
     Get the latest messages (in descending order).
 
@@ -52,17 +55,19 @@ async def get_latest_messages(tags: list[str] | None = None, limit=100) -> dict:
         A list of messages matching the provided criteria
     """
 
-    return (
-        await get_messages_query(tags)
-        .order_by(Message.id.desc())
-        .limit(limit)  # type: ignore
-        .gino.all()
-    )
+    async with get_session() as db:
+        return (
+            await db.exec(
+                get_messages_query(tags)
+                .order_by(col(Message.id).desc())
+                .limit(limit)
+            )
+        ).all()  # type: ignore
 
 
 async def get_newer_messages(
     id: int, tags: list[str] | None = None, limit=100
-) -> dict:
+) -> Sequence[Tuple[int, str]]:
     """
     Get messages newer than the provided ID (in ascending order).
 
@@ -75,18 +80,20 @@ async def get_newer_messages(
         A list of messages matching the provided criteria
     """
 
-    return (
-        await get_messages_query(tags)
-        .where(Message.id > id)  # type: ignore
-        .order_by(Message.id.asc())
-        .limit(limit)
-        .gino.all()
-    )
+    async with get_session() as db:
+        return (
+            await db.exec(
+                get_messages_query(tags)
+                .where(Message.id > id)  # type: ignore
+                .order_by(col(Message.id).asc())
+                .limit(limit)
+            )
+        ).all()  # type: ignore
 
 
 async def get_older_messages(
     id: int, tags: list[str] | None = None, limit=100
-) -> dict:
+) -> Sequence[Tuple[int, str]]:
     """
     Get messages older than the provided ID (in descending order).
 
@@ -99,10 +106,12 @@ async def get_older_messages(
         A list of messages matching the provided criteria
     """
 
-    return (
-        await get_messages_query(tags)
-        .where(Message.id < id)  # type: ignore
-        .order_by(Message.id.desc())
-        .limit(limit)
-        .gino.all()
-    )
+    async with get_session() as db:
+        return (
+            await db.exec(
+                get_messages_query(tags)
+                .where(Message.id < id)  # type: ignore
+                .order_by(col(Message.id).desc())
+                .limit(limit)
+            )
+        ).all()

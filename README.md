@@ -80,7 +80,7 @@ character sets (UTF-8) and [terminal capabilities][] are taken advantage of.
   - [ ] Global IPC (CLI, web, etc.) via Redis PubSub
 - [ ] Data layer
   - [x] PostgreSQL for data
-  - [x] Asynchronous ORM ([GINO][])
+  - [x] Asynchronous ORM ([SQLModel][])
   - [x] User model
   - [x] Message bases
   - [ ] Simple pickle table for miscellaneous data storage?
@@ -187,8 +187,8 @@ a blank password) will work.
 [demo video]: https://github.com/haliphax/xthulu/raw/assets/demo.gif
 [dos]: https://en.wikipedia.org/wiki/MS-DOS
 [fastapi]: https://fastapi.tiangolo.com
-[gino]: https://python-gino.org
 [rich]: https://rich.readthedocs.io/en/latest/
+[sqlmodel]: https://sqlmodel.tiangolo.com/
 [terminal capabilities]: https://en.wikipedia.org/wiki/Terminal_capabilities
 [textual]: https://github.com/Textualize/textual
 [traefik]: https://traefik.io/traefik

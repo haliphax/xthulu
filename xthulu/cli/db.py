@@ -2,16 +2,13 @@
 
 # stdlib
 from asyncio import get_event_loop
-from importlib import import_module
 
 # 3rd party
-from asyncpg import DuplicateTableError, UniqueViolationError  # type: ignore
 from click import confirm, echo, group, option
+from sqlmodel import SQLModel
 
 # local
-from ..resources import Resources
-
-db = Resources().db
+from ..resources import get_session, Resources
 
 
 @group("db")
@@ -30,17 +27,15 @@ def cli():
 def create(seed_data=False):
     """Create database tables."""
 
-    import_module("...models", __name__)
+    from .. import models  # noqa: F401
+
     loop = get_event_loop()
 
     async def f():
-        await db.set_bind(db.bind)
         echo("Creating database and tables")
 
-        try:
-            await db.gino.create_all()
-        except DuplicateTableError:
-            echo("Table already exists")
+        async with Resources().db.begin() as conn:
+            await conn.run_sync(SQLModel.metadata.create_all)
 
     loop.run_until_complete(f())
 
@@ -60,17 +55,17 @@ def destroy(confirmed=False):
     """Drop database tables."""
 
     async def f():
-        import_module("...models", __name__)
+        from .. import models  # noqa: F401
 
-        # try to load userland models for destruction
         try:
-            import_module("userland.models")
+            from userland import models as user_models  # noqa: F401
         except ImportError:
             pass
 
-        await db.set_bind(db.bind)
         echo("Dropping database tables")
-        await db.gino.drop_all()
+
+        async with Resources().db.begin() as conn:
+            await conn.run_sync(SQLModel.metadata.drop_all)
 
     if confirmed or confirm(
         "Are you sure you want to destroy the database tables?"
@@ -82,30 +77,33 @@ def _seed():
     from ..models import User
 
     async def f():
-        await db.set_bind(db.bind)
-
         echo("Creating guest user")
         pwd, salt = User.hash_password("guest")
 
-        try:
-            await User.create(
-                name="guest",
-                email="guest@localhost.localdomain",
-                password=pwd,
-                salt=salt,
+        async with get_session() as db:
+            db.add(
+                User(
+                    name="guest",
+                    email="guest@localhost.localdomain",
+                    password=pwd,
+                    salt=salt,
+                )
             )
-        except UniqueViolationError:
-            echo("User already exists")
-            return
+            await db.commit()
 
         echo("Creating user with password")
         pwd, salt = User.hash_password("user")
-        await User.create(
-            name="user",
-            email="user@localhost.localdomain",
-            password=pwd,
-            salt=salt,
-        )
+
+        async with get_session() as db:
+            db.add(
+                User(
+                    name="user",
+                    email="user@localhost.localdomain",
+                    password=pwd,
+                    salt=salt,
+                )
+            )
+            await db.commit()
 
     get_event_loop().run_until_complete(f())
 

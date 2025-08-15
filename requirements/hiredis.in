@@ -1,2 +1,2 @@
--c requirements.in
+-c requirements.txt
 hiredis

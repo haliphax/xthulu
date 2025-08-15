@@ -10,7 +10,6 @@ import pytest
 
 # local
 from tests.mocks.config import patch_get_config, test_config, test_ssh_config
-from tests.mocks.resources import ResourcesMock
 from xthulu.ssh import SSHServer, start_server
 from xthulu.ssh.process_factory import handle_client
 
@@ -22,26 +21,9 @@ def mock_config():
 
 
 @pytest.fixture(autouse=True)
-def mock_resources():
-    with patch("xthulu.ssh.Resources", ResourcesMock) as p:
-        yield p
-
-
-@pytest.fixture(autouse=True)
 def mock_listen():
     with patch("xthulu.ssh.listen", AsyncMock()) as p:
         yield p
-
-
-@pytest.mark.asyncio
-async def test_db_bind(mock_resources: Mock):
-    """Server should bind database connection during startup."""
-
-    # act
-    await start_server()
-
-    # assert
-    mock_resources.db.set_bind.assert_awaited_once_with(mock_resources.db.bind)
 
 
 @pytest.mark.asyncio

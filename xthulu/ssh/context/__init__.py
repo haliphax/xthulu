@@ -12,13 +12,14 @@ from subprocess import Popen, PIPE
 
 # 3rd party
 from asyncssh import SSHServerProcess
-from sqlalchemy import func  # type: ignore
+from sqlmodel import func, select
 
 # local
 from ... import locks
 from ...events import EventQueue
 from ...logger import log
 from ...models import User
+from ...resources import get_session
 from ...scripting import load_userland_module
 from ..console import XthuluConsole
 from ..exceptions import Goto, ProcessClosing, ProcessForciblyClosed
@@ -98,9 +99,15 @@ class SSHContext:
         )
         self.events = EventQueue(self.sid)
         self.env = dict(proc.env)
-        self.user = await User.query.where(
-            func.lower(User.name) == self.username.lower()
-        ).gino.first()
+
+        async with get_session() as db:
+            self.user = (
+                await db.exec(
+                    select(User).where(
+                        func.lower(User.name) == self.username.lower()
+                    )
+                )
+            ).one()
 
         return self
 

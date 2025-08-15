@@ -2,40 +2,34 @@
 
 # stdlib
 from datetime import datetime
+from typing import ClassVar
 
 # 3rd party
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, Unicode
+from sqlmodel import Field, Relationship, SQLModel
 
 # api
-from xthulu.models import User
-from xthulu.resources import Resources
-
-db = Resources().db
+from xthulu.models.user import User
 
 
-class Oneliner(db.Model):
+class Oneliner(SQLModel, table=True):
     """Oneliner model"""
 
-    MAX_LENGTH = 120
+    MAX_LENGTH: ClassVar = 120
     """Maximum length of oneliner messages"""
 
-    id = Column(Integer(), primary_key=True)
+    id: int | None = Field(primary_key=True, default=None)
     """Unique ID"""
 
-    user_id = Column(
-        Integer(),
-        ForeignKey(User.id, onupdate="cascade", ondelete="set null"),
-        nullable=True,
-    )
+    user_id: int | None = Field(foreign_key="user.id", default=None)
     """User who left the oneliner"""
 
-    message = Column(Unicode(MAX_LENGTH))
+    user: User | None = Relationship()
+
+    message: str = Field(max_length=MAX_LENGTH)
     """The oneliner message"""
 
-    timestamp = Column(DateTime(), default=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=datetime.now)
     """When the oneliner was posted"""
-
-    __tablename__ = "oneliner"
 
     def __repr__(self):
         return f"Oneliner(#{self.id})"

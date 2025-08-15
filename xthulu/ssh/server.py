@@ -6,7 +6,7 @@ from secrets import compare_digest
 
 # 3rd party
 from asyncssh import SSHServer as AsyncSSHServer, SSHServerConnection
-from sqlalchemy import func  # type: ignore
+from sqlmodel import func, select
 
 # local
 from .. import locks
@@ -14,6 +14,7 @@ from ..configuration import get_config
 from ..events import EventQueues
 from ..logger import log
 from ..models import User
+from ..resources import get_session
 
 
 class SSHServer(AsyncSSHServer):
@@ -64,10 +65,7 @@ class SSHServer(AsyncSSHServer):
         locks.expire(self._sid)
 
         if exc:
-            if self._debug_enabled:
-                log.error(exc.with_traceback(None))
-            else:
-                log.error(exc)
+            log.exception("Subprocess error", exc_info=exc)
 
         log.info(f"{self.whoami} disconnected")
 
@@ -122,9 +120,12 @@ class SSHServer(AsyncSSHServer):
 
             return False
 
-        u = await User.query.where(
-            func.lower(User.name) == lowered
-        ).gino.first()
+        async with get_session() as db:
+            u = (
+                await db.exec(
+                    select(User).where(func.lower(User.name) == lowered)
+                )
+            ).one()
 
         if u is None:
             log.warning(f"{self.whoami} no such user")
@@ -132,6 +133,7 @@ class SSHServer(AsyncSSHServer):
             return False
 
         expected, _ = User.hash_password(password, u.salt)
+        assert u.password
 
         if not compare_digest(expected, u.password):
             log.warning(f"{self.whoami} failed authentication (password)")

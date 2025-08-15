@@ -3,16 +3,18 @@
 # stdlib
 from asyncio import sleep
 from datetime import datetime
+from typing import Sequence, Tuple
 
 # 3rd party
+from sqlalchemy.orm import joinedload
+from sqlmodel import select
 from textual import events
 from textual.app import ComposeResult
 from textual.css.query import NoMatches
 from textual.widgets import Footer, Label, ListItem, ListView
 
 # api
-from xthulu.models import User
-from xthulu.resources import Resources
+from xthulu.resources import get_session
 from xthulu.ssh.console.banner_app import BannerApp
 from xthulu.ssh.context import SSHContext
 
@@ -26,8 +28,6 @@ from userland.models.message.api import (
 from .editor_screen import EditorScreen
 from .filter_modal import FilterModal
 from .view_screen import ViewScreen
-
-db = Resources().db
 
 RATE_LIMIT_SECONDS = 3
 """Time to wait before allowing refresh after empty query result"""
@@ -123,7 +123,7 @@ class MessagesApp(BannerApp):
         first = len(lv.children) == 0
         limit = lv.region.height * 2
         query_limit = limit if first else lv.region.height
-        messages: dict
+        messages: Sequence[Tuple[int, str]]
 
         if first:
             messages = await get_latest_messages(self.filter.tags, query_limit)
@@ -145,9 +145,7 @@ class MessagesApp(BannerApp):
         coros = []
 
         # append/prepend items to ListView
-        for idx, m in enumerate(messages):
-            message_id = int(m["id"])
-
+        for idx, [message_id, title] in enumerate(messages):
             if self._first == -1 or message_id < self._first:
                 self._first = message_id
 
@@ -156,10 +154,10 @@ class MessagesApp(BannerApp):
 
             item = ListItem(
                 Label(
-                    f"[italic][white]({m['id']})[/][/]", classes="message_id"
+                    f"[italic][white]({message_id})[/][/]", classes="message_id"
                 ),
-                Label(m["title"], classes="message_title", markup=False),
-                id=f"message_{m['id']}",
+                Label(title, classes="message_title", markup=False),
+                id=f"message_{message_id}",
                 classes="even" if idx % 2 else "",
             )
 
@@ -264,20 +262,28 @@ class MessagesApp(BannerApp):
         selected = lv.children[lv.index]
         assert selected.id
         message_id = int(selected.id.split("_")[1])
-        message: Message = await db.one(
-            Message.load(author=User.on(Message.author_id == User.id)).where(
-                Message.id == message_id
+
+        async with get_session() as db:
+            message: Message = (
+                await db.exec(
+                    select(Message)
+                    .where(Message.id == message_id)
+                    .options(joinedload(Message.author))  # type: ignore
+                )
+            ).one()
+
+            await self.push_screen(
+                EditorScreen(
+                    content=(
+                        "\n\n---"
+                        f"\n\n{
+                            message.author.name if message.author else 'Unknown'
+                        } wrote:"
+                        f"\n\n{message.content}"
+                    ),
+                    reply_to=message,
+                )
             )
-        )
-        await self.push_screen(
-            EditorScreen(
-                content=(
-                    f"\n\n---\n\n{message.author.name} wrote:"
-                    f"\n\n{message.content}"
-                ),
-                reply_to=message,
-            )
-        )
 
     async def on_key(self, event: events.Key) -> None:
         if event.key not in [
@@ -333,7 +339,11 @@ class MessagesApp(BannerApp):
 
         assert event.item.id
         message_id = int(event.item.id.split("_")[1])
-        message: Message = await Message.get(message_id)
+
+        async with get_session() as db:
+            message = await db.get(Message, message_id)
+
+        assert message
         await self.push_screen(ViewScreen(message=message))
 
     async def on_event(self, event: events.Event | events.MouseScrollDown):

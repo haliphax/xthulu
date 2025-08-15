@@ -40,9 +40,7 @@ async def wait_for_key(
                     except TimeoutError:
                         pass
 
-                    break
-                else:
-                    break
+                break
 
             except QueueEmpty:
                 await sleep(0.01)

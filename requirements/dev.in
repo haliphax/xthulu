@@ -1,6 +1,4 @@
--c requirements.in
-coverage
-parameterized
+-c requirements.txt
 pip-tools
 pre-commit
 pytest

@@ -1,13 +1,18 @@
 aiofiles
+asyncpg
 asyncssh
 bcrypt
 click
 fastapi
-gino
 redis
 rich
+sqlalchemy[asyncio]
+sqlmodel
 sse-starlette
-textual
+textual==0.66.0  # pinned until ESC handling is fixed
 toml
 uvicorn[standard]
 wrapt
+
+# overrides
+h11==0.14.0

@@ -7,11 +7,12 @@ from typing import Annotated
 # 3rd party
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from sqlmodel import func, select
 
 # local
 from ..configuration import get_config
 from ..models.user import User
-from ..resources import Resources
+from ..resources import get_session
 
 auth = HTTPBasic()
 
@@ -27,15 +28,14 @@ async def login_user(
         A `xthulu.models.user.User` model object for the authenticated user.
     """
 
-    db = Resources().db
-    await db.set_bind(get_config("db.bind"))
-
-    try:
-        user: User | None = await db.one_or_none(
-            User.query.where(User.name == credentials.username)
-        )
-    finally:
-        await db.pop_bind().close()
+    async with get_session() as db:
+        user = (
+            await db.exec(
+                select(User).where(
+                    func.lower(User.name) == credentials.username.lower()
+                )
+            )
+        ).one_or_none()
 
     if not user:
         raise HTTPException(
@@ -49,6 +49,7 @@ async def login_user(
         return user
 
     expected, _ = User.hash_password(credentials.password, user.salt)
+    assert user.password
 
     if not compare_digest(expected, user.password):
         raise HTTPException(

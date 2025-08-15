@@ -4,10 +4,11 @@
 from os import path
 
 # 3rd party
+from sqlmodel import col, select
 from textual.widgets import Input, Label, ListItem, ListView
 
 # api
-from xthulu.resources import Resources
+from xthulu.resources import get_session
 from xthulu.ssh.console.banner_app import BannerApp
 from xthulu.ssh.context import SSHContext
 
@@ -81,22 +82,28 @@ class OnlinersApp(BannerApp):
         val = event.input.value.strip()
 
         if val != "":
-            await Oneliner.create(message=val, user_id=self.context.user.id)
+            async with get_session() as db:
+                db.add(Oneliner(message=val, user_id=self.context.user.id))
+                await db.commit()
 
         self.exit()
 
     async def on_mount(self) -> None:
-        db = Resources().db
         recent = (
-            Oneliner.select("id")
-            .order_by(Oneliner.id.desc())
+            select(Oneliner.id)
+            .order_by(col(Oneliner.id).desc())
             .limit(LIMIT)
             .alias("recent")
             .select()
         )
-        oneliners: list[Oneliner] = await db.all(
-            Oneliner.query.where(Oneliner.id.in_(recent))
-        )
+
+        async with get_session() as db:
+            oneliners = (
+                await db.exec(
+                    select(Oneliner).where(col(Oneliner.id).in_(recent))
+                )
+            ).all()
+
         lv = self.query_one(ListView)
 
         for idx, o in enumerate(oneliners):

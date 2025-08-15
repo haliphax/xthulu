@@ -1,12 +1,14 @@
 """Message details screen"""
 
 # 3rd party
+from sqlmodel import col, select
 from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
 from textual import validation
 from textual.widgets import Button, Input, Label, TextArea
 
 # api
+from xthulu.resources import get_session
 from xthulu.ssh.console.app import XthuluApp
 
 # local
@@ -93,14 +95,16 @@ class DetailsModal(ModalScreen):
         if not self.reply_to:
             return
 
-        tags = " ".join(
-            [
-                t.tag_name
-                for t in await MessageTags.query.where(
-                    MessageTags.message_id == self.reply_to.id
-                ).gino.all()
-            ]
-        )
+        async with get_session() as db:
+            tag_results = (
+                await db.exec(
+                    select(MessageTags).where(
+                        MessageTags.message_id == self.reply_to.id
+                    )
+                )
+            ).all()
+
+        tags = " ".join([t.tag_name for t in tag_results])
         inp: Input = self.get_widget_by_id("tags")  # type: ignore
         inp.value = tags
 
@@ -120,31 +124,41 @@ class DetailsModal(ModalScreen):
             return
 
         all_tags = set(tags.value.split(" "))
-        existing_tags = set(
-            [
-                t.name
-                for t in await MessageTag.query.where(
-                    MessageTag.name.in_(all_tags)
-                ).gino.all()
-            ]
-        )
+
+        async with get_session() as db:
+            tag_results = (
+                await db.exec(
+                    select(MessageTag).where(col(MessageTag.name).in_(all_tags))
+                )
+            ).all()
+
+        existing_tags = set([t.name for t in tag_results])
         nonexistent_tags = all_tags.difference(existing_tags)
 
         # create missing tags
         for t in nonexistent_tags:
-            await MessageTag.create(name=t)
+            async with get_session() as db:
+                db.add(MessageTag(name=t))
+                await db.commit()
 
         # create message
-        message = await Message.create(
-            author_id=app.context.user.id,
-            title=title.value,
-            content=content.text,
-            parent_id=self.reply_to.id if self.reply_to else None,
-        )
+        async with get_session() as db:
+            message = Message(
+                author_id=app.context.user.id,
+                title=title.value,
+                content=content.text,
+                parent_id=self.reply_to.id if self.reply_to else None,
+            )
+            db.add(message)
+            await db.commit()
+            await db.refresh(message)
+            assert message.id
 
         # link tags to message
         for t in all_tags:
-            await MessageTags.create(message_id=message.id, tag_name=t)
+            async with get_session() as db:
+                db.add(MessageTags(message_id=message.id, tag_name=t))
+                await db.commit()
 
         self.app.pop_screen()  # pop this modal
         self.app.pop_screen()  # pop the editor
