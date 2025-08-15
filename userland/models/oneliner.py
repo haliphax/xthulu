@@ -21,9 +21,10 @@ class Oneliner(SQLModel, table=True):
     """Unique ID"""
 
     user_id: int | None = Field(foreign_key="user.id", default=None)
-    """User who left the oneliner"""
+    """User ID of the author"""
 
     user: User | None = Relationship()
+    """Author of the oneliner"""
 
     message: str = Field(max_length=MAX_LENGTH)
     """The oneliner message"""
