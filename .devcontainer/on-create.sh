@@ -40,7 +40,7 @@ nvm use
 pip install -Ue .[dev,hiredis]
 npm ci
 pre-commit install --install-hooks
-etc/gitmoji-hook.sh
+etc/gitmoji-hook
 cd docker || exit 1
 cp ../.devcontainer/docker-compose.override.yml .
 docker compose build

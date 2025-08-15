@@ -23,9 +23,9 @@ echo "building base image"
 docker compose build base-image
 echo "pulling service images"
 docker compose pull --ignore-buildable
-cd ../etc
+cd ../bin
 echo "initializing database"
-./cli.sh db create --seed
-./userland.sh db create --seed
+./xt db create --seed
+./xtu db create --seed
 echo "building static web site"
-./build-web.sh
+./build-web

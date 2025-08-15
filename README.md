@@ -91,7 +91,7 @@ character sets (UTF-8) and [terminal capabilities][] are taken advantage of.
 
 ```shell
 # in the project root
-etc/setup.sh
+etc/setup
 ```
 
 <details>
@@ -120,21 +120,20 @@ docker compose pull --ignore-buildable
 
 ### Create and seed the database
 
-> Note the names of the scripts. The `etc/cli.sh` script is the command line
-> interface for server tasks, while the `etc/userland.sh` script is for
-> userland.
+> Note the names of the scripts. The `bin/xt` script is the command line
+> interface for server tasks, while the `bin/xtu` script is for userland.
 
 ```shell
 # in the project root
-etc/cli.sh db create --seed
-etc/user.sh db create --seed
+bin/xt db create --seed
+bin/xtu db create --seed
 ```
 
 ### Build the static web assets
 
 ```shell
 # in the project root
-etc/build-web.sh
+bin/build-web
 ```
 
 ---

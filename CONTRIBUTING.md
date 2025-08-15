@@ -62,7 +62,7 @@ standard. The `prepare-commit-msg` hook for crafting appropriately-categorized
 commit messages can be installed with the provided script.
 
 ```shell
-etc/gitmoji-hook.sh
+etc/gitmoji-hook
 ```
 
 ### docker compose
