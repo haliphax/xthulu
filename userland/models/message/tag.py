@@ -18,5 +18,5 @@ class MessageTag(SQLModel, table=True):
 
     __tablename__ = "message_tag"  # type: ignore
 
-    def __repr__(self):
+    def __repr__(self):  # pragma: no cover
         return f"MessageTag({self.name})"

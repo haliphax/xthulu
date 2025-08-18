@@ -32,5 +32,5 @@ class Oneliner(SQLModel, table=True):
     timestamp: datetime = Field(default_factory=datetime.now)
     """When the oneliner was posted"""
 
-    def __repr__(self):
+    def __repr__(self):  # pragma: no cover
         return f"Oneliner(#{self.id})"

@@ -37,7 +37,7 @@ class User(SQLModel, table=True):
         Index("idx_user_email_lower", func.lower("email")),
     )
 
-    def __repr__(self):
+    def __repr__(self):  # pragma: no cover
         return f"User({self.name}#{self.id})"
 
     @staticmethod
