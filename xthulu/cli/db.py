@@ -29,15 +29,13 @@ def create(seed_data=False):
 
     from .. import models  # noqa: F401
 
-    loop = get_event_loop()
-
     async def f():
         echo("Creating database and tables")
 
         async with Resources().db.begin() as conn:
             await conn.run_sync(SQLModel.metadata.create_all)
 
-    loop.run_until_complete(f())
+    get_event_loop().run_until_complete(f())
 
     if seed_data:
         _seed()
