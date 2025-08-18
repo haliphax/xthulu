@@ -10,10 +10,6 @@ It is all but _required_ that you use a Python virtual environment for
 development. These instructions will assume that you are using [pyenv][], and
 have already installed and configured it on your system.
 
-If you are using [Dev Containers][], you may use the repository's configuration
-to create a new development container. Its `onCreateCommand` script will handle
-all of the steps detailed below.
-
 ### Create the environment
 
 ```shell
@@ -122,14 +118,13 @@ have been run. You may view the cached report at any time:
 coverage report
 ```
 
-[coverage]: https://coverage.readthedocs.io/en/latest/
-[dev containers]: https://containers.dev/
-[eslint]: https://eslint.org/
+[coverage]: https://coverage.readthedocs.io/en/latest
+[eslint]: https://eslint.org
 [gitmoji]: https://gitmoji.dev
 [node.js]: https://nodejs.org
 [nvm]: https://github.com/nvm-sh/nvm
 [open an issue]: https://github.com/haliphax/xthulu/issues/new?labels=enhancement&title=Proposal:%20
-[pre-commit]: https://pre-commit.com/
-[prettier]: https://prettier.io/
+[pre-commit]: https://pre-commit.com
+[prettier]: https://prettier.io
 [pyenv]: https://github.com/pyenv/pyenv
-[ruff]: https://beta.ruff.rs/docs/
+[ruff]: https://beta.ruff.rs/docs

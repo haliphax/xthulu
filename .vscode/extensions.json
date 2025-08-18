@@ -5,7 +5,7 @@
 		"esbenp.prettier-vscode",
 		"ms-python.isort",
 		"ms-python.python",
-		"ms-vscode-remote.remote-containers",
+		"pamaron.pytest-runner",
 		"seatonjiang.gitmoji-vscode",
 		"tamasfe.even-better-toml",
 		"textualize.textual-syntax-highlighter",
