@@ -10,7 +10,7 @@ from asyncssh import SSHServerProcess, TerminalSizeChanged
 # local
 from ..configuration import get_config
 from ..events.structs import EventData
-from ..resources import get_session
+from ..resources import db_session
 from .console import XthuluConsole
 from .context import SSHContext
 from .exceptions import Goto, ProcessClosing, ProcessForciblyClosed
@@ -53,7 +53,7 @@ async def handle_client(proc: SSHServerProcess) -> None:
     cx.env["LINES"] = str(h)
     cx.user.last = datetime.now()
 
-    async with get_session() as db:
+    async with db_session() as db:
         db.add(cx.user)
         await db.commit()
         await db.refresh(cx.user)

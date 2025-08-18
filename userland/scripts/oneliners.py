@@ -8,7 +8,7 @@ from sqlmodel import col, select
 from textual.widgets import Input, Label, ListItem, ListView
 
 # api
-from xthulu.resources import get_session
+from xthulu.resources import db_session
 from xthulu.ssh.console.banner_app import BannerApp
 from xthulu.ssh.context import SSHContext
 
@@ -82,7 +82,7 @@ class OnlinersApp(BannerApp):
         val = event.input.value.strip()
 
         if val != "":
-            async with get_session() as db:
+            async with db_session() as db:
                 db.add(Oneliner(message=val, user_id=self.context.user.id))
                 await db.commit()
 
@@ -97,7 +97,7 @@ class OnlinersApp(BannerApp):
             .select()
         )
 
-        async with get_session() as db:
+        async with db_session() as db:
             oneliners = (
                 await db.exec(
                     select(Oneliner).where(col(Oneliner.id).in_(recent))

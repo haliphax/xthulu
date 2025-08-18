@@ -8,7 +8,7 @@ from click import confirm, echo, group, option
 from sqlmodel import SQLModel
 
 # local
-from ..resources import get_session, Resources
+from ..resources import db_session, Resources
 
 
 @group("db")
@@ -80,7 +80,7 @@ def _seed():
         echo("Creating guest user")
         pwd, salt = User.hash_password("guest")
 
-        async with get_session() as db:
+        async with db_session() as db:
             db.add(
                 User(
                     name="guest",
@@ -94,7 +94,7 @@ def _seed():
         echo("Creating user with password")
         pwd, salt = User.hash_password("user")
 
-        async with get_session() as db:
+        async with db_session() as db:
             db.add(
                 User(
                     name="user",

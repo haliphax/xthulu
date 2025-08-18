@@ -19,7 +19,7 @@ from ... import locks
 from ...events import EventQueue
 from ...logger import log
 from ...models import User
-from ...resources import get_session
+from ...resources import db_session
 from ...scripting import load_userland_module
 from ..console import XthuluConsole
 from ..exceptions import Goto, ProcessClosing, ProcessForciblyClosed
@@ -100,7 +100,7 @@ class SSHContext:
         self.events = EventQueue(self.sid)
         self.env = dict(proc.env)
 
-        async with get_session() as db:
+        async with db_session() as db:
             self.user = (
                 await db.exec(
                     select(User).where(

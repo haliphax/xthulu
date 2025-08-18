@@ -8,7 +8,7 @@ from textual.widgets import Button, Input, Label, OptionList
 from textual.widgets.option_list import Option
 
 # api
-from xthulu.resources import get_session
+from xthulu.resources import db_session
 
 # local
 from userland.models.message.tag import MessageTag
@@ -80,7 +80,7 @@ class FilterModal(ModalScreen[list[str]]):
         self.dismiss(tags.value.split(" "))
 
     async def on_mount(self) -> None:
-        async with get_session() as db:
+        async with db_session() as db:
             tags_result = (await db.exec(select(MessageTag))).all()
 
         self._alltags = [t.name for t in tags_result]  # type: ignore

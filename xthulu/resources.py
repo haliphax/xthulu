@@ -70,7 +70,7 @@ class Resources:
 
 
 @asynccontextmanager
-async def get_session():
+async def db_session():
     """Get a `sqlmodel.ext.asyncio.session.AsyncSession` object."""
 
     async with AsyncSession(Resources().db) as session:

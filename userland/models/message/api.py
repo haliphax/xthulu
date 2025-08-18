@@ -7,7 +7,7 @@ from typing import Sequence, Tuple
 from sqlmodel import and_, col, select
 
 # api
-from xthulu.resources import get_session
+from xthulu.resources import db_session
 
 # local
 from . import Message
@@ -55,7 +55,7 @@ async def get_latest_messages(
         A list of messages matching the provided criteria
     """
 
-    async with get_session() as db:
+    async with db_session() as db:
         return (
             await db.exec(
                 get_messages_query(tags)
@@ -80,7 +80,7 @@ async def get_newer_messages(
         A list of messages matching the provided criteria
     """
 
-    async with get_session() as db:
+    async with db_session() as db:
         return (
             await db.exec(
                 get_messages_query(tags)
@@ -106,7 +106,7 @@ async def get_older_messages(
         A list of messages matching the provided criteria
     """
 
-    async with get_session() as db:
+    async with db_session() as db:
         return (
             await db.exec(
                 get_messages_query(tags)

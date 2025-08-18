@@ -8,7 +8,7 @@ from click import echo, group, option
 from sqlmodel import SQLModel
 
 # api
-from xthulu.resources import get_session, Resources
+from xthulu.resources import db_session, Resources
 
 
 @group("db")
@@ -46,7 +46,7 @@ def _seed():
     async def f():
         echo("Posting initial messages")
 
-        async with get_session() as db:
+        async with db_session() as db:
             tags = (
                 MessageTag(name="demo"),
                 MessageTag(name="introduction"),

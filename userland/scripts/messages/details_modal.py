@@ -8,7 +8,7 @@ from textual import validation
 from textual.widgets import Button, Input, Label, TextArea
 
 # api
-from xthulu.resources import get_session
+from xthulu.resources import db_session
 from xthulu.ssh.console.app import XthuluApp
 
 # local
@@ -95,7 +95,7 @@ class DetailsModal(ModalScreen):
         if not self.reply_to:
             return
 
-        async with get_session() as db:
+        async with db_session() as db:
             tag_results = (
                 await db.exec(
                     select(MessageTags).where(
@@ -125,7 +125,7 @@ class DetailsModal(ModalScreen):
 
         all_tags = set(tags.value.split(" "))
 
-        async with get_session() as db:
+        async with db_session() as db:
             tag_results = (
                 await db.exec(
                     select(MessageTag).where(col(MessageTag.name).in_(all_tags))
@@ -137,12 +137,12 @@ class DetailsModal(ModalScreen):
 
         # create missing tags
         for t in nonexistent_tags:
-            async with get_session() as db:
+            async with db_session() as db:
                 db.add(MessageTag(name=t))
                 await db.commit()
 
         # create message
-        async with get_session() as db:
+        async with db_session() as db:
             message = Message(
                 author_id=app.context.user.id,
                 title=title.value,
@@ -156,7 +156,7 @@ class DetailsModal(ModalScreen):
 
         # link tags to message
         for t in all_tags:
-            async with get_session() as db:
+            async with db_session() as db:
                 db.add(MessageTags(message_id=message.id, tag_name=t))
                 await db.commit()
 

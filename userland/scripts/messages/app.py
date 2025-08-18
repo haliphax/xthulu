@@ -14,7 +14,7 @@ from textual.css.query import NoMatches
 from textual.widgets import Footer, Label, ListItem, ListView
 
 # api
-from xthulu.resources import get_session
+from xthulu.resources import db_session
 from xthulu.ssh.console.banner_app import BannerApp
 from xthulu.ssh.context import SSHContext
 
@@ -263,7 +263,7 @@ class MessagesApp(BannerApp):
         assert selected.id
         message_id = int(selected.id.split("_")[1])
 
-        async with get_session() as db:
+        async with db_session() as db:
             message: Message = (
                 await db.exec(
                     select(Message)
@@ -340,7 +340,7 @@ class MessagesApp(BannerApp):
         assert event.item.id
         message_id = int(event.item.id.split("_")[1])
 
-        async with get_session() as db:
+        async with db_session() as db:
             message = await db.get(Message, message_id)
 
         assert message

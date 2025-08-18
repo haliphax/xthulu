@@ -14,7 +14,7 @@ from ..configuration import get_config
 from ..events import EventQueues
 from ..logger import log
 from ..models import User
-from ..resources import get_session
+from ..resources import db_session
 
 
 class SSHServer(AsyncSSHServer):
@@ -120,7 +120,7 @@ class SSHServer(AsyncSSHServer):
 
             return False
 
-        async with get_session() as db:
+        async with db_session() as db:
             u = (
                 await db.exec(
                     select(User).where(func.lower(User.name) == lowered)

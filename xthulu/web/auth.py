@@ -12,7 +12,7 @@ from sqlmodel import func, select
 # local
 from ..configuration import get_config
 from ..models.user import User
-from ..resources import get_session
+from ..resources import db_session
 
 auth = HTTPBasic()
 
@@ -28,7 +28,7 @@ async def login_user(
         A `xthulu.models.user.User` model object for the authenticated user.
     """
 
-    async with get_session() as db:
+    async with db_session() as db:
         user = (
             await db.exec(
                 select(User).where(
