@@ -6,6 +6,7 @@
 		"ms-python.isort",
 		"ms-python.python",
 		"pamaron.pytest-runner",
+		"ryanluker.vscode-coverage-gutters",
 		"seatonjiang.gitmoji-vscode",
 		"tamasfe.even-better-toml",
 		"textualize.textual-syntax-highlighter",

@@ -57,7 +57,7 @@ jobs:
           pip install -e .[dev]
 
       - name: Unit tests
-        run: pytest --mypy --cov xthulu --ignore userland
+        run: pytest --mypy --cov .
 
       - name: Coverage report
         run: |

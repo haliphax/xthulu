@@ -12,6 +12,7 @@ __pycache__/
 /db/
 /html/
 /run/logs/*.log*
+coverage.xml
 node_modules/
 
 # exclusions

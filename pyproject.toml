@@ -9,9 +9,11 @@ version = "0.10.0"
 dynamic = ["dependencies", "optional-dependencies"]
 
 [tool.coverage.run]
-omit = ["xthulu/__main__.py"]
+source = ["xthulu"]
+omit = ["userland/**", "tests/**", "**/__main__.py"]
 
 [tool.pytest.ini_options]
+addopts = "--ignore=userland"
 filterwarnings = ["ignore"]
 
 [tool.ruff]
