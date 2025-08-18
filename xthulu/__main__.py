@@ -1,5 +1,3 @@
 """Main entry point"""
 
-from .cli import main
-
-main()
+from .cli import __main__  # noqa: F401
