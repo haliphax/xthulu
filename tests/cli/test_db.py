@@ -76,6 +76,8 @@ def test_destroy(mock_confirm: Mock, is_confirmed: bool, mock_conn: Mock):
     """The 'db destroy' command should destroy all model tables."""
 
     # arrange
+    from xthulu import models  # noqa: F401
+
     try:
         from userland import models as user_models  # noqa: F401
     except ImportError:
@@ -98,6 +100,8 @@ def test_destroy_force(mock_confirm: Mock, mock_conn: Mock):
     """The 'db destroy --yes' command should not ask for confirmation."""
 
     # arrange
+    from xthulu import models  # noqa: F401
+
     try:
         from userland import models as user_models  # noqa: F401
     except ImportError:
