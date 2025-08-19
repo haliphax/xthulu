@@ -1,6 +1,5 @@
 -c requirements.txt
 pip-tools
-pre-commit
 pytest
 pytest-asyncio
 pytest-cov

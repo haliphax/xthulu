@@ -35,31 +35,20 @@ npm ci
 
 ## Configure development tools
 
-### pre-commit
+### husky
 
-This project makes use of the [pre-commit][] system. The following applications
-are used to lint source code and check formatting:
+This project makes use of the [husky][] git hooks system. The following
+applications are used to lint source code and check formatting:
 
 - [ESLint][] - TypeScript linter/formatter
 - [Prettier][] - Miscellaneous formatter
 - [Ruff][] - Python linter/formatter
 
-You must initialize the system and install the appropriate hooks. Once
-installed, they will be invoked automatically when you commit.
-
-```shell
-pre-commit install --install-hooks
-```
-
 ### gitmoji
 
 For conventional commit messages, this project has adopted the [gitmoji][]
 standard. The `prepare-commit-msg` hook for crafting appropriately-categorized
-commit messages can be installed with the provided script.
-
-```shell
-etc/gitmoji-hook
-```
+commit messages is handled by _husky_.
 
 ### docker compose
 
@@ -69,9 +58,10 @@ configuration for the `docker compose` stack. This configuration will mount the
 live source code directory into the running containers so that restarting them
 should be sufficient to pick up any changes.
 
-ℹ️ Userland scripts do not require a restart; a new session will import a fresh
-copy of the file(s). Changes to static web resources (HTML, CSS, Javascript,
-images) should be reflected immediately upon reloading the browser.
+> ℹ️ Userland scripts do not require a restart; a new session will import a
+> fresh copy of the file(s). Changes to static web resources (HTML, CSS,
+> Javascript, images) should be reflected immediately upon reloading the
+> browser.
 
 <details>
 <summary>docker/docker-compose.override.yml</summary>
@@ -106,7 +96,7 @@ The project's chosen testing framework is `pytest`.
 
 ```shell
 # run tests, type checks, and generate coverage report
-pytest --mypy --cov xthulu --ignore userland
+pytest --mypy --cov .
 ```
 
 ### Test coverage
@@ -121,10 +111,10 @@ coverage report
 [coverage]: https://coverage.readthedocs.io/en/latest
 [eslint]: https://eslint.org
 [gitmoji]: https://gitmoji.dev
+[husky]: https://typicode.github.io/husky
 [node.js]: https://nodejs.org
 [nvm]: https://github.com/nvm-sh/nvm
 [open an issue]: https://github.com/haliphax/xthulu/issues/new?labels=enhancement&title=Proposal:%20
-[pre-commit]: https://pre-commit.com
 [prettier]: https://prettier.io
 [pyenv]: https://github.com/pyenv/pyenv
 [ruff]: https://beta.ruff.rs/docs

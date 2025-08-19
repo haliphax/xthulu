@@ -1,0 +1,2 @@
+node .husky/scripts/no-commit-to-main.mjs
+node_modules/.bin/nano-staged

@@ -1,0 +1,6 @@
+# prompt for gitmoji
+exec < /dev/tty
+cat .git/COMMIT_EDITMSG | npx commitlint -q || {
+	npx --package=gitmoji-cli -- gitmoji --hook $1 $2;
+	cat .git/COMMIT_EDITMSG | npx commitlint
+}

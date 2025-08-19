@@ -91,7 +91,7 @@ character sets (UTF-8) and [terminal capabilities][] are taken advantage of.
 
 ```shell
 # in the project root
-etc/setup
+bin/setup
 ```
 
 <details>

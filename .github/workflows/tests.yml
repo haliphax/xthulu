@@ -80,7 +80,7 @@ jobs:
           file: .coverage
 
       - name: Push result to Testspace server
-        if: always() && github.ref_name == 'main'
+        if: always() && contains(github.event_name, 'push') && github.ref_name == 'main'
         run: testspace ./junit.xml ./coverage.xml
 
       - name: Output Coveralls success/fail
