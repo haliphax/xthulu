@@ -81,3 +81,16 @@ jobs:
       - name: Push result to Testspace server
         run: testspace ./junit.xml ./coverage.xml
         if: always() && github.ref_name == 'main'
+
+  # Re-run in case of 503 from coveralls.io
+  retry:
+    name: Retry
+    needs: tests
+    if: failure() && fromJSON(github.run_attempt) < 3
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+          GH_DEBUG: api
+        run: gh workflow run retry.yml -F run_id=${{ github.run_id }}
