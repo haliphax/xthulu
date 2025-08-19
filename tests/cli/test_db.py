@@ -17,20 +17,14 @@ from xthulu.cli.db import cli as db_cli
 def mock_conn():
     with patch("xthulu.cli.db.Resources") as p:
         conn = AsyncMock()
-        ctxman = AsyncMock()
-        ctxman.__aenter__.return_value = conn
-        res = Mock()
-        res.db.begin.return_value = ctxman
-        p.return_value = res
+        p.return_value.db.begin.return_value.__aenter__.return_value = conn
         yield conn
 
 
 @pytest.fixture
-def mock_db_session():
+def mock_session():
     with patch("xthulu.cli.db.db_session") as p:
-        ctxman = AsyncMock()
-        p.return_value = ctxman
-        yield ctxman.__aenter__.return_value
+        yield p.return_value.__aenter__.return_value
 
 
 def test_cli_includes_group():
@@ -55,7 +49,7 @@ def test_cli_includes_commands(command_name: str):
 
 
 @pytest.mark.parametrize("seed", [False, True])
-def test_create(seed: bool, mock_conn: Mock, mock_db_session: Mock):
+def test_create(seed: bool, mock_conn: Mock, mock_session: Mock):
     """The 'db create' command should create all model tables."""
 
     # arrange
@@ -73,7 +67,7 @@ def test_create(seed: bool, mock_conn: Mock, mock_db_session: Mock):
     mock_conn.run_sync.assert_awaited_once_with(SQLModel.metadata.create_all)
 
     if seed:
-        mock_db_session.commit.assert_awaited()
+        mock_session.commit.assert_awaited()
 
 
 @pytest.mark.parametrize("is_confirmed", [False, True])
@@ -117,11 +111,11 @@ def test_destroy_force(mock_confirm: Mock, mock_conn: Mock):
     mock_confirm.assert_not_called()
 
 
-def test_seed(mock_db_session: Mock):
+def test_seed(mock_session: Mock):
     """The 'db seed' command should import example records."""
 
     # act
     CliRunner().invoke(cli, ["db", "seed"], catch_exceptions=False)
 
     # assert
-    mock_db_session.commit.assert_awaited()
+    mock_session.commit.assert_awaited()
