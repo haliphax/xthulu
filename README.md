@@ -6,7 +6,7 @@ xthulu _("ch-THOO-loo")_ Python asyncio community server
 
 [![Build](https://img.shields.io/github/actions/workflow/status/haliphax/xthulu/docker-build.yml?label=Build)](https://github.com/haliphax/xthulu/actions/workflows/docker-build.yml)
 [![Checks](https://img.shields.io/github/actions/workflow/status/haliphax/xthulu/checks.yml?label=Checks)](https://github.com/haliphax/xthulu/actions/workflows/checks.yml)
-[![Tests](https://img.shields.io/github/actions/workflow/status/haliphax/xthulu/tests.yml?label=Tests)](https://github.com/haliphax/xthulu/actions/workflows/tests.yml)
+[![Tests](https://img.shields.io/github/actions/workflow/status/haliphax/xthulu/tests.yml?label=Tests)](https://haliphax.testspace.com/spaces/318003?utm_campaign=metric&utm_medium=referral&utm_source=badge)
 [![Coverage](https://img.shields.io/coverallsCoverage/github/haliphax/xthulu?label=Coverage)](https://coveralls.io/github/haliphax/xthulu)
 
 While **xthulu** is intended to be a _community_ server with multiple avenues of

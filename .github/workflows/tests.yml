@@ -56,8 +56,12 @@ jobs:
           pip install -U pip setuptools
           pip install -e .[dev]
 
+      - uses: testspace-com/setup-testspace@v1
+        with:
+          domain: ${{ github.repository_owner }}
+
       - name: Unit tests
-        run: pytest --mypy --cov .
+        run: pytest --mypy --cov . --junit-xml junit.xml
 
       - name: Coverage report
         run: |
@@ -66,9 +70,14 @@ jobs:
           **:test_tube: :chart_with_upwards_trend: Test coverage: ${total}%**
           EOF
           coverage report --format=markdown >> $GITHUB_STEP_SUMMARY
+          coverage xml
 
-      - name: Coveralls
-        if: github.ref == 'refs/heads/main'
-        env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
-        run: pip install coveralls && coveralls
+      - name: Upload coverage report or add comment
+        uses: coverallsapp/github-action@v2
+        with:
+          file: .coverage
+        if: always()
+
+      - name: Push result to Testspace server
+        run: testspace ./junit.xml ./coverage.xml
+        if: always() && github.ref_name == 'main'
