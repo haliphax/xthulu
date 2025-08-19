@@ -111,12 +111,15 @@ def hold(owner: str, name: str):
         release(owner, name)
 
 
-def expire(owner: str):
+def expire(owner: str) -> bool:
     """
     Remove all locks owned by user for this connection.
 
     Args:
         owner: The sid of the owner.
+
+    Returns:
+        If there were any locks to expire.
     """
 
     log.debug(f"Releasing locks owned by {owner}")
@@ -125,7 +128,9 @@ def expire(owner: str):
     if not locks:
         log.debug(f"No locks owned by {owner}")
 
-        return
+        return False
 
     for lock in locks.copy():
         release(owner, lock)
+
+    return True
