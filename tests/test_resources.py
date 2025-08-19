@@ -12,7 +12,8 @@ from redis import Redis
 from sqlalchemy.ext.asyncio.engine import AsyncEngine
 
 # local
-from xthulu.resources import Resources
+from xthulu.configuration.default import default_config
+from xthulu.resources import db_session, Resources
 
 
 @pytest.fixture(autouse=True)
@@ -44,6 +45,17 @@ def test_config_file_loaded(mock_load: Mock):
     mock_load.assert_called_once_with("data/config.toml")
 
 
+@patch("xthulu.resources.exists", return_value=False)
+def test_config_fall_back(*_):
+    """Constructor should use default config if file isn't found."""
+
+    # act
+    res = Resources()
+
+    # assert
+    assert res.config == default_config
+
+
 @patch("xthulu.resources.environ", Mock(get=lambda *_: "test"))
 @patch("xthulu.resources.load")
 def test_config_file_from_env_used(mock_load: Mock):
@@ -68,3 +80,20 @@ def test_property_assignment(name: str, cls: Type):
 
     # assert
     assert isinstance(getattr(resources, name), cls)
+
+
+@pytest.mark.asyncio
+@patch("xthulu.resources.AsyncSession")
+@patch("xthulu.resources.Resources")
+async def test_db_session(mock_resources: Mock, mock_session: Mock):
+    """The `db_session` function should wrap the Resources.db engine."""
+
+    res = Mock()
+    mock_resources.return_value = res
+
+    # act
+    async with db_session():
+        pass
+
+    # assert
+    mock_session.assert_called_once_with(res.db)

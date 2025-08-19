@@ -8,8 +8,22 @@ from click.testing import CliRunner
 import pytest
 
 # local
+from xthulu import locks
 from xthulu.cli import cli
 from xthulu.cli.ssh import cli as ssh_cli
+
+
+@pytest.fixture(autouse=True)
+def mock_resources():
+    with patch("xthulu.locks.Resources") as p:
+        yield p
+
+
+@pytest.fixture(autouse=True)
+def clear_locks():
+    locks._Locks.locks.clear()
+    yield
+    locks._Locks.locks.clear()
 
 
 @pytest.fixture(autouse=True)
@@ -40,12 +54,12 @@ def test_cli_includes_commands(command_name: str):
 
 
 @patch("xthulu.cli.ssh.start_server")
-def test_start(mock_start: AsyncMock, mock_loop: Mock):
+def test_start(mock_start: AsyncMock, *, mock_loop: Mock):
     """The 'ssh start' command should start an SSH server in the event loop."""
 
     # arrange
     mock_loop.run_until_complete = Mock(return_value=mock_start)
-    mock_loop.run_forever = AsyncMock(side_effect=KeyboardInterrupt())
+    mock_loop.run_forever = Mock(side_effect=KeyboardInterrupt())
 
     # act
     CliRunner().invoke(cli, ["ssh", "start"], catch_exceptions=False)
@@ -56,11 +70,11 @@ def test_start(mock_start: AsyncMock, mock_loop: Mock):
 
 
 @patch("xthulu.cli.ssh.start_server")
-def test_shutdown(mock_start: AsyncMock, mock_loop: Mock):
+def test_shutdown(mock_start: AsyncMock, *, mock_loop: Mock):
     """The 'ssh start' command should run lifespan function on shutdown."""
 
     # arrange
-    mock_start.return_value = AsyncMock()
+    locks._Locks.locks = {"test_name": {"test_lock": Mock()}}
     CliRunner().invoke(cli, ["ssh", "start"], catch_exceptions=False)
     shutdown = mock_loop.add_signal_handler.call_args_list[0].args[1]
 
@@ -69,3 +83,4 @@ def test_shutdown(mock_start: AsyncMock, mock_loop: Mock):
 
     # assert
     mock_loop.stop.assert_called_once()
+    assert "test_name" not in locks._Locks.locks

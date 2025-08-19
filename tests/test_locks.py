@@ -102,6 +102,34 @@ def test_release_lock_removes_parent_when_empty():
     assert "test_name" not in _Locks.locks
 
 
+def test_release_lock_fails_if_not_present():
+    """Attempting to release a lock not in the dict should fail."""
+
+    # arrange
+    _Locks.locks["test_name"] = {"test_lock1": Mock()}  # type: ignore
+
+    # act
+    success = locks.release("test_name", "test_lock2")
+
+    # assert
+    assert not success
+
+
+def test_release_lock_fails_if_not_locked():
+    """Attempting to release a lock that is not locked should fail."""
+
+    # arrange
+    mock_lock = Mock()
+    mock_lock.locked.return_value = False
+    _Locks.locks["test_name"] = {"test_lock": mock_lock}  # type: ignore
+
+    # act
+    success = locks.release("test_name", "test_lock")
+
+    # assert
+    assert not success
+
+
 def test_expire_locks():
     """Expiring a user's locks should remove the parent object."""
 
@@ -112,7 +140,21 @@ def test_expire_locks():
     }
 
     # act
-    locks.expire("test_name")
+    success = locks.expire("test_name")
 
     # assert
+    assert success
     assert "test_name" not in _Locks.locks
+
+
+def test_expire_exits_early_if_no_locks():
+    """Expiring a user's locks should exit early if they have none."""
+
+    # arrange
+    _Locks.locks["test_name"] = dict()
+
+    # act
+    success = locks.expire("test_name")
+
+    # assert
+    assert not success
