@@ -33,7 +33,7 @@ nvm use
 npm ci
 ```
 
-## Configure development tools
+## Development tools
 
 ### husky
 
@@ -92,7 +92,7 @@ services:
 
 ### Framework
 
-The project's chosen testing framework is `pytest`.
+The project's chosen testing framework is [pytest][].
 
 ```shell
 # run tests, type checks, and generate coverage report
@@ -101,7 +101,7 @@ pytest --mypy --cov .
 
 ### Test coverage
 
-The [coverage][] application is used to calculate test coverage after unit tests
+The [coverage][] package is used to calculate test coverage after unit tests
 have been run. You may view the cached report at any time:
 
 ```shell
@@ -117,4 +117,5 @@ coverage report
 [open an issue]: https://github.com/haliphax/xthulu/issues/new?labels=enhancement&title=Proposal:%20
 [prettier]: https://prettier.io
 [pyenv]: https://github.com/pyenv/pyenv
+[pytest]: https://pytest.org
 [ruff]: https://beta.ruff.rs/docs
