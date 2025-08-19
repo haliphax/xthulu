@@ -73,14 +73,19 @@ jobs:
           coverage xml
 
       - name: Upload coverage report or add comment
+        id: coveralls
+        if: always()
         uses: coverallsapp/github-action@v2
         with:
           file: .coverage
-        if: always()
 
       - name: Push result to Testspace server
-        run: testspace ./junit.xml ./coverage.xml
         if: always() && github.ref_name == 'main'
+        run: testspace ./junit.xml ./coverage.xml
+
+      - name: Output Coveralls success/fail
+        if: always() && steps.coveralls.outcome == 'failure'
+        run: exit 1
 
   # Re-run in case of 503 from coveralls.io
   retry:

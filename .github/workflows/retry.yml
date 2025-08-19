@@ -17,5 +17,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_DEBUG: api
         run: |
+          # wait for teardown to finish
           gh run watch ${{ inputs.run_id }} &>/dev/null
+
+          # rerun failed jobs
           gh run rerun ${{ inputs.run_id }} --failed
