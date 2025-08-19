@@ -10,7 +10,6 @@ dynamic = ["dependencies", "optional-dependencies"]
 
 [tool.coverage.run]
 omit = ["userland/**", "tests/**", "**/__main__.py"]
-source = ["xthulu"]
 
 [tool.coverage.report]
 fail_under = 50
