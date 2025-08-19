@@ -43,7 +43,7 @@ def start():
 
     try:
         server = loop.run_until_complete(start_server())
-    except (OSError, AsyncSSHError) as exc:
+    except (OSError, AsyncSSHError) as exc:  # pragma: no cover
         sys.exit(f"Error: {exc}")
 
     try:

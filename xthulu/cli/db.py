@@ -57,7 +57,7 @@ def destroy(confirmed=False):
 
         try:
             from userland import models as user_models  # noqa: F401
-        except ImportError:
+        except ImportError:  # pragma: no cover
             pass
 
         echo("Dropping database tables")
