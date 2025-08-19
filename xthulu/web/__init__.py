@@ -42,7 +42,7 @@ def create_app():
         m = import_module(mod)
         mod_api = getattr(m, "api")
 
-        if not mod_api:
+        if not mod_api:  # pragma: no cover
             log.warning(f"No APIRouter found in userland web module {mod}")
             continue
 
