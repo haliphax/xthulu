@@ -1,0 +1,1 @@
+pytest --mypy --cov .
