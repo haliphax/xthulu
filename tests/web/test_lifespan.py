@@ -16,9 +16,8 @@ async def test_lifespan(mock_get_logger: Mock):
     """Lifespan method should add a logging handler."""
 
     # act
-    ctx = lifespan(Mock())
-    await ctx.__aenter__()
-    await ctx.__aexit__(None, None, None)
+    async with lifespan(Mock()):
+        pass
 
     # assert
     mock_get_logger.return_value.addHandler.assert_called_once()
