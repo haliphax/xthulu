@@ -30,6 +30,7 @@ jobs:
         with:
           filters: |
             src:
+              - "**"
               - .editorconfig
               - .prettier-ignore
               - pyproject.toml
@@ -75,9 +76,10 @@ jobs:
       - name: Upload coverage report or add comment
         id: coveralls
         if: always()
-        uses: coverallsapp/github-action@v2
-        with:
-          file: .coverage
+        run: exit 1
+        # uses: coverallsapp/github-action@v2
+        # with:
+        #   file: .coverage
 
       - name: Push result to Testspace server
         if: always() && github.ref_name == 'main'
