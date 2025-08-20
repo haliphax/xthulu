@@ -1,0 +1,15 @@
+x-live-source: &live-source
+  volumes:
+    - ../xthulu:/app/xthulu:ro
+
+services:
+  cli: *live-source
+  user: *live-source
+  ssh: *live-source
+  web: *live-source
+
+  web-static:
+    volumes:
+      # parent volume cannot be read-only or subvolumes will not mount
+      - ../xthulu/web/static:/usr/share/nginx/html
+      - ../userland/web/static:/usr/share/nginx/html/user:ro

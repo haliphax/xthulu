@@ -63,30 +63,12 @@ should be sufficient to pick up any changes.
 > Javascript, images) should be reflected immediately upon reloading the
 > browser.
 
-<details>
-<summary>docker/docker-compose.override.yml</summary>
+Copy the provided override configuration and adjust as necessary:
 
-```yaml
-version: "3"
-
-x-live-source: &live-source
-  volumes:
-    - ../xthulu:/app/xthulu:ro
-
-services:
-  cli: *live-source
-  user: *live-source
-  ssh: *live-source
-  web: *live-source
-
-  web-static:
-    volumes:
-      # parent volume cannot be read-only or subvolumes will not mount
-      - ../xthulu/web/static:/usr/share/nginx/html
-      - ../userland/web/static:/usr/share/nginx/html/user:ro
+```shell
+# in the docker/ directory
+cp docker-compose.dev.yml docker-compose.override.yml
 ```
-
-</details>
 
 ## Unit tests
 
