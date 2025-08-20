@@ -120,7 +120,7 @@ docker compose pull --ignore-buildable
 
 ### Create and seed the database
 
-> Note the names of the scripts. The `bin/xt` script is the command line
+> ℹ️ Note the names of the scripts. The `bin/xt` script is the command line
 > interface for server tasks, while the `bin/xtu` script is for userland.
 
 ```shell
