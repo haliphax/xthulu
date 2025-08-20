@@ -110,7 +110,7 @@ cp config.example.toml config.toml
 ssh-keygen -f ssh_host_key -t rsa -b 4096 -N ""
 ```
 
-### Build the docker images
+### Prepare the docker images
 
 ```shell
 # in the docker/ directory
@@ -158,8 +158,7 @@ bypass authentication.
 ssh guest@localhost
 ```
 
-There is also a `user` account with a password for testing password
-authentication.
+There is a `user` account with a password for testing password authentication.
 
 ```shell
 ssh user@localhost  # password is also "user"
