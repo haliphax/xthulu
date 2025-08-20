@@ -1,8 +1,8 @@
 # Contributor guide
 
-⚠️ Contribution at this point is not recommended, but isn't necessarily
-unwelcome. Please [open an issue][] with the `enhancement` label with your
-proposed changes before beginning any work in earnest.
+> ⚠️ Contribution at this point is not recommended, but isn't necessarily
+> unwelcome. Please [open an issue][] with the `enhancement` label with your
+> proposed changes before beginning any work in earnest.
 
 ## Virtual environment
 
