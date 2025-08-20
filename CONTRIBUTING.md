@@ -87,8 +87,24 @@ mypy xthulu
 The project's chosen testing framework is [pytest][].
 
 ```shell
-# run tests, type checks, and generate coverage report
+# run tests
+pytest
+
+# run tests, check types, and generate coverage report
 pytest --mypy --cov .
+```
+
+Asynchronous test cases _are_ supported via the `pytest-asyncio` plugin, but you
+must decorate your `async` test functions with `@pytest.mark.asyncio` for them
+to run successfully:
+
+```python
+from asyncio import sleep
+import pytest
+
+@pytest.mark.asyncio
+async def test_sleep():
+    await sleep(1)
 ```
 
 ### coverage
