@@ -1,6 +1,6 @@
 # syntax = docker/dockerfile-upstream:1-labs
 
-FROM python:3.12-alpine
+FROM python:3.13-alpine
 WORKDIR /app
 STOPSIGNAL SIGTERM
 ENV ENV=/app/.profile
