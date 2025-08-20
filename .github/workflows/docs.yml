@@ -54,10 +54,14 @@ jobs:
                     <h2>Packages</h2>
                     <ul>
                       <li>
-                        <a href="xthulu/">xthulu</a>
+                        <code>
+                          <a href="xthulu/">xthulu</a>
+                        </code>
                       </li>
                       <li>
-                        <a href="userland/">userland</a>
+                        <code>
+                          <a href="userland/">userland</a>
+                        </code>
                       </li>
                     </ul>
                   </section>
