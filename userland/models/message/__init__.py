@@ -2,7 +2,7 @@
 
 # stdlib
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 
 # 3rd party
 from sqlmodel import Field, Relationship, SQLModel
@@ -57,6 +57,9 @@ class Message(SQLModel, table=True):
 
     content: str = Field()
     """The message's content"""
+
+    def __init__(self, **data: Any):
+        super().__init__(**data)
 
     def __repr__(self):  # pragma: no cover
         return f"Message(#{self.id})"

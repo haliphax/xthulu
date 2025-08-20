@@ -1,5 +1,8 @@
 """Message tag relationship model"""
 
+# stdlib
+from typing import Any
+
 # 3rd party
 from sqlmodel import Field, SQLModel
 
@@ -19,3 +22,6 @@ class MessageTags(SQLModel, table=True):
     """The name of the tag"""
 
     __tablename__ = "message_x_message_tag"  # type: ignore
+
+    def __init__(self, **data: Any):
+        super().__init__(**data)

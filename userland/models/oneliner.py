@@ -2,7 +2,7 @@
 
 # stdlib
 from datetime import datetime
-from typing import ClassVar
+from typing import Any, ClassVar
 
 # 3rd party
 from sqlmodel import Field, Relationship, SQLModel
@@ -31,6 +31,9 @@ class Oneliner(SQLModel, table=True):
 
     timestamp: datetime = Field(default_factory=datetime.now)
     """When the oneliner was posted"""
+
+    def __init__(self, **data: Any):
+        super().__init__(**data)
 
     def __repr__(self):  # pragma: no cover
         return f"Oneliner(#{self.id})"

@@ -2,6 +2,7 @@
 
 # stdlib
 from datetime import datetime
+from typing import Any
 
 # 3rd party
 from sqlmodel import Field, SQLModel
@@ -17,6 +18,9 @@ class MessageTag(SQLModel, table=True):
     """When the tag was created"""
 
     __tablename__ = "message_tag"  # type: ignore
+
+    def __init__(self, **data: Any):
+        super().__init__(**data)
 
     def __repr__(self):  # pragma: no cover
         return f"MessageTag({self.name})"

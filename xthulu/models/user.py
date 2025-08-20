@@ -2,6 +2,7 @@
 
 # stdlib
 from datetime import datetime
+from typing import Any
 
 # 3rd party
 import bcrypt
@@ -36,6 +37,9 @@ class User(SQLModel, table=True):
         Index("idx_user_name_lower", func.lower("name")),
         Index("idx_user_email_lower", func.lower("email")),
     )
+
+    def __init__(self, **data: Any):
+        super().__init__(**data)
 
     def __repr__(self):  # pragma: no cover
         return f"User({self.name}#{self.id})"
