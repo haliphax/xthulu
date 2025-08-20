@@ -20,7 +20,7 @@
 		"semantic-release": "^22.0.5",
 		"semantic-release-gitmoji": "^1.6.5",
 		"semantic-release-replace-plugin": "^1.2.7",
-		"typescript": "^5.4.3",
+		"typescript": "^5.9.2",
 		"vite": "^7.1.1"
 	},
 	"engines": {
