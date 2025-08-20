@@ -70,9 +70,19 @@ Copy the provided override configuration and adjust as necessary:
 cp docker-compose.dev.yml docker-compose.override.yml
 ```
 
-## Unit tests
+## Testing
 
-### Framework
+### mypy
+
+Type safety is enforced by the [mypy][] package. You may run it individually,
+or you may use the example command in the [pytest section](#pytest) to include
+type checking as part of test execution.
+
+```shell
+mypy xthulu
+```
+
+### pytest
 
 The project's chosen testing framework is [pytest][].
 
@@ -81,7 +91,7 @@ The project's chosen testing framework is [pytest][].
 pytest --mypy --cov .
 ```
 
-### Test coverage
+### coverage
 
 The [coverage][] package is used to calculate test coverage after unit tests
 have been run. You may view the cached report at any time:
@@ -94,6 +104,7 @@ coverage report
 [eslint]: https://eslint.org
 [gitmoji]: https://gitmoji.dev
 [husky]: https://typicode.github.io/husky
+[mypy]: https://www.mypy-lang.org
 [node.js]: https://nodejs.org
 [nvm]: https://github.com/nvm-sh/nvm
 [open an issue]: https://github.com/haliphax/xthulu/issues/new?labels=enhancement&title=Proposal:%20
