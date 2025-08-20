@@ -13,6 +13,3 @@ textual==0.66.0  # pinned until ESC handling is fixed
 toml
 uvicorn[standard]
 wrapt
-
-# overrides
-h11==0.14.0

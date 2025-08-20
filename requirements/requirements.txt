@@ -31,10 +31,8 @@ fastapi==0.116.1
     # via -r requirements.in
 greenlet==3.2.4
     # via sqlalchemy
-h11==0.14.0
-    # via
-    #   -r requirements.in
-    #   uvicorn
+h11==0.16.0
+    # via uvicorn
 httptools==0.6.4
     # via uvicorn
 idna==3.10
