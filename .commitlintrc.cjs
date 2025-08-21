@@ -1,4 +1,4 @@
-// npx gitmoji -l
+// npx gitmoji -lx
 const gitmojis = [
 	"⏪️",
 	"♻️",
