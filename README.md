@@ -11,7 +11,7 @@ xthulu _("ch-THOO-loo")_ Python asyncio community server
 
 While **xthulu** is intended to be a _community_ server with multiple avenues of
 interaction (e.g. terminal, browser, REST API), its primary focus is to provide
-a modern SSH terminal interface which pays homage to the [bulletin boards][] of
+a modern SSH terminal interface which pays tribute to the [bulletin boards][] of
 the 1990s. Rather than leaning entirely into [DOS][]-era nostalgia, modern
 character sets (UTF-8) and [terminal capabilities][] are taken advantage of.
 
