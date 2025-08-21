@@ -27,6 +27,31 @@ jobs:
         run: npm ci
 
       - name: Lint pull request title
+        id: lint
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: echo "$PR_TITLE" | npx commitlint
+
+      - name: Find comment
+        id: find
+        if: always()
+        uses: peter-evans/find-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-includes: <a name="commitlint-workflow"></a>
+
+      - name: Failure comment
+        if: failure()
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            <a name="commitlint-workflow"></a>❌ Your pull request title does not follow the conventional commit standard enforced by the project. It must begin with one of the emoji from the [gitmoji](https://gitmoji.dev) set appropriate for the change(s) being made.
+
+      - name: Delete comment
+        if: steps.find.outputs.comment-id != 0
+        uses: detomarco/delete-comments@1.1.0
+        with:
+          comment-id: ${{ steps.find.outputs.comment-id }}
