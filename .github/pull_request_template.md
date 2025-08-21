@@ -1,5 +1,7 @@
 <!--
 Your pull request title must begin with one of the emoji from the gitmoji set, followed by the commit message that will be used when your pull request is squash-merged. If your changes span multiple categories and would require more than a single emoji, the pull request should be broken up into multiple, focused pull requests.
+
+https://gitmoji.dev
 -->
 
 # Summary
