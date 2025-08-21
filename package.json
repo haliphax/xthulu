@@ -1,5 +1,6 @@
 {
 	"devDependencies": {
+		"@commitlint/config-conventional": "^19.8.1",
 		"@semantic-release/changelog": "^6.0.3",
 		"@semantic-release/git": "^10.0.1",
 		"@semantic-release/github": "^10.0.2",
@@ -7,7 +8,6 @@
 		"@typescript-eslint/eslint-plugin": "^7.4.0",
 		"@typescript-eslint/parser": "^7.4.0",
 		"commitlint": "^19.8.1",
-		"commitlint-config-gitmoji": "^2.3.1",
 		"eslint": "^8.57.0",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-prettier": "^5.1.3",
