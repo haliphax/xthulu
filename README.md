@@ -2,7 +2,7 @@
 
 xthulu _("ch-THOO-loo")_ Python asyncio community server
 
-![Header image](https://github.com/haliphax/xthulu/raw/assets/xthulu.jpg)
+![Header image](https://github.com/haliphax/xthulu/raw/assets/banner.jpg)
 
 [![Build](https://img.shields.io/github/actions/workflow/status/haliphax/xthulu/docker-build.yml?label=Build)](https://github.com/haliphax/xthulu/actions/workflows/docker-build.yml)
 [![Checks](https://img.shields.io/github/actions/workflow/status/haliphax/xthulu/checks.yml?label=Checks)](https://github.com/haliphax/xthulu/actions/workflows/checks.yml)
