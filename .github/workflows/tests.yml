@@ -67,14 +67,13 @@ jobs:
         run: |
           total=$(coverage report --format=total)
           cat >> $GITHUB_STEP_SUMMARY <<EOF
-          **:test_tube: :chart_with_upwards_trend: Test coverage: ${total}%**
+          **🧪📈 Test coverage: ${total}%**
           EOF
           coverage report --format=markdown >> $GITHUB_STEP_SUMMARY
           coverage xml
 
       - name: Upload coverage report or add comment
         id: coveralls
-        if: always()
         uses: coverallsapp/github-action@v2
         with:
           file: .coverage
@@ -83,9 +82,41 @@ jobs:
         if: always() && contains(github.event_name, 'push') && github.ref_name == 'main'
         run: testspace ./junit.xml ./coverage.xml
 
-      - name: Output Coveralls success/fail
+      - name: Resolve Coveralls failure
         if: always() && steps.coveralls.outcome == 'failure'
         run: exit 1
+
+  # Clean up retry comment (if any) on success or eventual failure
+  finish:
+    name: Finish
+    needs: tests
+    if: contains(github.event_name, 'pull') && (success() || fromJSON(github.run_attempt) >= 3)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Find retry comment
+        if: contains(github.event_name, 'pull')
+        id: find
+        uses: peter-evans/find-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-includes: <a name="retry-workflow"></a>
+
+      - name: Delete comment
+        id: delete
+        if: fromJSON(github.run_attempt) < 3 && steps.find.outputs.comment-id != 0
+        uses: detomarco/delete-comments@1.1.0
+        with:
+          comment-id: ${{ steps.find.outputs.comment-id }}
+
+      - name: Post failure comment
+        if: fromJSON(github.run_attempt) >= 3
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: append
+          body: |
+            <a name="retry-workflow"></a>❌ `Attempt #${{ github.run_attempt }}` The Coveralls report upload has failed. Retry limit has been reached.
 
   # Re-run in case of 503 from coveralls.io
   retry:
@@ -94,6 +125,40 @@ jobs:
     if: failure() && fromJSON(github.run_attempt) < 3
     runs-on: ubuntu-latest
     steps:
+      - name: Find comment
+        if: contains(github.event_name, 'pull')
+        id: find
+        uses: peter-evans/find-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-includes: <a name="retry-workflow"></a>
+
+      - name: Delete existing comment if first run
+        id: delete
+        if: fromJSON(github.run_attempt) == 1 && steps.find.outputs.comment-id != 0
+        uses: detomarco/delete-comments@1.1.0
+        with:
+          comment-id: ${{ steps.find.outputs.comment-id }}
+
+      - name: Prep retry comment id
+        id: comment-id
+        run: |
+          if [[ "${{ steps.delete.outcome }}" == "success" ]]; then
+            echo "id=0" >> $GITHUB_OUTPUT
+          else
+            echo "id=${{ steps.find.outputs.comment-id }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Post retry comment
+        if: contains(github.event_name, 'pull')
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.comment-id.outputs.id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: append
+          body: |
+            <a name="retry-workflow"></a>♻️ `Attempt #${{ github.run_attempt }}` The Coveralls report upload has failed. The workflow is being retried.
+
       - env:
           GH_REPO: ${{ github.repository }}
           GH_TOKEN: ${{ github.token }}
