@@ -18,11 +18,13 @@ class FileWrapper(IO[str]):
         self._wrapped = wrapped
         super().__init__()
 
-    def write(self, string: str):
+    def write(self, string: str) -> int:
         try:
             self._wrapped.write(
                 string.replace("\n", "\r\n").encode(self._encoding)
             )
         except BrokenPipeError:
             # process is likely closing
-            pass
+            return 0
+
+        return len(string)

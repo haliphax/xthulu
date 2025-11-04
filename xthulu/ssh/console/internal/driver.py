@@ -6,6 +6,7 @@ from codecs import getincrementaldecoder
 from time import sleep
 
 # 3rd party
+from textual import events
 from textual._parser import ParseError
 from textual._xterm_parser import XTermParser
 from textual.drivers.linux_driver import LinuxDriver
@@ -43,26 +44,39 @@ class SSHDriver(LinuxDriver):
         pass
 
     def run_input_thread(self) -> None:
-        parser = XTermParser(lambda: True, self._debug)
-        feed = parser.feed
-        decode = getincrementaldecoder("utf-8")().decode
+        """Wait for input and dispatch events."""
 
-        # TODO look at LinuxDriver.run_input_thread and refactor, ESC is broken
+        parser = XTermParser(self._debug)
+        feed = parser.feed
+        tick = parser.tick
+        utf8_decoder = getincrementaldecoder("utf-8")().decode
+        decode = utf8_decoder
+
         while not self.exit_event.is_set():
             try:
-                r = self.context.input.get_nowait()
-                unicode_data = decode(r)
+                unicode_data = decode(self.context.input.get_nowait())
 
                 for event in feed(unicode_data):
-                    self.process_event(event)
-
+                    if isinstance(event, events.CursorPosition):
+                        self.cursor_origin = (event.x, event.y)
+                    else:
+                        self.process_message(event)
             except QueueEmpty:
                 sleep(0.01)
-                pass
-
             except ParseError:
-                # process is likely closing; end the loop
                 break
+
+            for event in tick():
+                if isinstance(event, events.CursorPosition):
+                    self.cursor_origin = (event.x, event.y)
+                else:
+                    self.process_message(event)
+
+        try:
+            for event in feed(""):
+                pass
+        except ParseError:
+            pass
 
     def write(self, data: str) -> None:
         try:

@@ -9,7 +9,7 @@ rich
 sqlalchemy[asyncio]
 sqlmodel
 sse-starlette
-textual==0.66.0  # pinned until ESC handling is fixed
+textual
 toml
 uvicorn[standard]
 wrapt

@@ -45,9 +45,13 @@ markdown-it-py[linkify,plugins]==4.0.0
     #   rich
     #   textual
 mdit-py-plugins==0.5.0
-    # via markdown-it-py
+    # via
+    #   markdown-it-py
+    #   textual
 mdurl==0.1.2
     # via markdown-it-py
+platformdirs==4.5.0
+    # via textual
 pycparser==2.22
     # via cffi
 pydantic==2.11.7
@@ -57,7 +61,9 @@ pydantic==2.11.7
 pydantic-core==2.33.2
     # via pydantic
 pygments==2.19.2
-    # via rich
+    # via
+    #   rich
+    #   textual
 python-dotenv==1.1.1
     # via uvicorn
 pyyaml==6.0.2
@@ -80,7 +86,7 @@ sse-starlette==3.0.2
     # via -r requirements.in
 starlette==0.47.2
     # via fastapi
-textual==0.66.0
+textual==6.2.1
     # via -r requirements.in
 toml==0.10.2
     # via -r requirements.in
