@@ -18,7 +18,8 @@ def cli():
 
 @cli.command()
 @option(
-    "-s/--seed",
+    "-s",
+    "--seed",
     "seed_data",
     default=False,
     flag_value=True,
