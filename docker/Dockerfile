@@ -8,18 +8,11 @@ RUN \
 	--mount=type=cache,target=/var/cache/apk,sharing=locked \
 	--mount=type=cache,target=/app/.cache/pip,uid=1000,gid=1000,sharing=locked \
 	<<-EOF
-	apk add -U \
-		cargo=1.87.0-r0 \
-		gcc=14.2.0-r6 \
-		g++=14.2.0-r6 \
-		libffi-dev=3.4.8-r0 \
-		musl-dev=1.2.5-r10 \
-		openssl=3.5.1-r0 \
-		openssl-dev=3.5.1-r0
+	apk add -U cargo gcc g++ libffi-dev musl-dev openssl openssl-dev
 	addgroup --gid 1000 xthulu
 	adduser --disabled-password --home /app --uid 1000 --ingroup xthulu xthulu
 	chown -R xthulu:xthulu /app
-	pip install -U pip==25.2 setuptools==80.9.0
+	pip install -U 'pip<25.3' setuptools
 EOF
 
 COPY --chown=xthulu:xthulu ./pyproject.toml /app/pyproject.toml
