@@ -39,6 +39,8 @@ class MenuApp(XthuluApp):
                 )
             )
         )
+        # disable alternate buffer for main menu
+        self.context.proc.stdout.write(b"\x1b[?1049l")
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         assert event.button.name
@@ -55,6 +57,7 @@ async def main(cx: SSHContext) -> None:
             return
 
         if result.startswith("goto_"):
+            cx.console.clear()
             return cx.goto(result[5:])
 
         await cx.gosub(result)
