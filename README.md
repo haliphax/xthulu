@@ -32,7 +32,6 @@ character sets (UTF-8) and [terminal capabilities][] are taken advantage of.
   - [x] Guest (no-auth) users
   - [ ] Key authentication
 - [x] PROXY v1 support
-- [ ] SCP subsystem
 - [ ] SFTP subsystem
 - [x] Composite userland script stack
   - [x] Goto
