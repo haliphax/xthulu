@@ -215,7 +215,7 @@ class MessagesApp(BannerApp):
     async def _update_tags(self, tags: list[str]) -> None:
         lv = self.query_one(ListView)
         await lv.clear()
-        self.filter.tags = [t for t in tags if t != ""]
+        self.filter.tags = tags
         await self._load_messages()
         lv.index = 0
         lv.focus()

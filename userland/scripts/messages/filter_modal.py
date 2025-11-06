@@ -1,11 +1,14 @@
 """Filter messages screen"""
 
+# stdlib
+from typing import Sequence
+
 # 3rd party
-from sqlmodel import select
+from sqlmodel import and_, col, select
 from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
-from textual.widgets import Button, Input, Label, OptionList
-from textual.widgets.option_list import Option
+from textual.widgets import Button, SelectionList
+from textual.widgets.selection_list import Selection
 
 # api
 from xthulu.resources import db_session
@@ -28,16 +31,8 @@ class FilterModal(ModalScreen[list[str]]):
             width: 50%;
         }
 
-        Label {
-            margin-top: 1;
-        }
-
-        Input {
-            width: 54;
-        }
-
-        #autocomplete_wrapper {
-            height: 5;
+        SelectionList {
+            height: 10;
         }
 
         #filter {
@@ -47,14 +42,13 @@ class FilterModal(ModalScreen[list[str]]):
 
         #wrapper {
             background: $primary-background;
-            height: 15;
+            height: 16;
             padding: 1;
             width: 60;
         }
     """
 
     _tags: list[str]
-    _alltags: list[str] = []
 
     def __init__(self, *args, tags: list[str] | None = None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -62,11 +56,7 @@ class FilterModal(ModalScreen[list[str]]):
 
     def compose(self):
         yield Vertical(
-            Horizontal(
-                Label("Tags"),
-                Input(" ".join(self._tags)),
-            ),
-            Horizontal(OptionList(disabled=True), id="autocomplete_wrapper"),
+            SelectionList(id="tags"),
             Horizontal(
                 Button("Filter", variant="success", id="filter", name="filter"),
                 Button("Cancel", variant="error", id="cancel", name="cancel"),
@@ -75,15 +65,28 @@ class FilterModal(ModalScreen[list[str]]):
         )
 
     def _submit(self) -> None:
-        tags = self.query_one(Input)
+        tags = self.query_one(SelectionList)
         assert tags
-        self.dismiss(tags.value.split(" "))
+        self.dismiss(tags.selected)
 
     async def on_mount(self) -> None:
-        async with db_session() as db:
-            tags_result = (await db.exec(select(MessageTag))).all()
+        tags = self.query_one(SelectionList)
+        assert tags
+        tags.add_options([Selection(t, t, True) for t in self._tags])
 
-        self._alltags = [t.name for t in tags_result]  # type: ignore
+        async with db_session() as db:
+            all_tags: Sequence[str] = (  # type: ignore
+                await db.exec(
+                    select(MessageTag.name).where(
+                        and_(
+                            col(MessageTag.name).is_not(None),
+                            col(MessageTag.name).not_in(self._tags),
+                        )
+                    )
+                )
+            ).all()
+
+        tags.add_options([Selection(t, t, False) for t in all_tags])
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.name == "cancel":
@@ -91,35 +94,6 @@ class FilterModal(ModalScreen[list[str]]):
             return
 
         self._submit()
-
-    async def on_input_changed(self, event: Input.Changed) -> None:
-        last_word = event.input.value.split(" ")[-1]
-        selections = self.query_one(OptionList)
-        selections.clear_options()
-
-        if last_word == "":
-            selections.disabled = True
-            return
-
-        suggestions = [
-            Option(t) for t in self._alltags if t.startswith(last_word)
-        ]
-        selections.disabled = False
-        selections.add_options(suggestions)
-
-    async def on_input_submitted(self, event: Input.Submitted) -> None:
-        self._submit()
-
-    async def on_option_list_option_selected(
-        self, event: OptionList.OptionSelected
-    ) -> None:
-        tags_input = self.query_one(Input)
-        tags = tags_input.value.split(" ")[:-1]
-        tags.append(str(event.option.prompt))
-        tags_input.value = "".join([" ".join(tags), " "])
-        tags_input.focus()
-        event.option_list.clear_options()
-        event.option_list.disabled = True
 
     async def key_escape(self, _):
         self.app.pop_screen()  # pop this modal

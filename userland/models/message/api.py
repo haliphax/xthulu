@@ -35,7 +35,7 @@ def get_messages_query(tags: list[str] | None = None):
         .where(
             and_(
                 MessageTags.message_id == Message.id,
-                MessageTags.tag_name in tags,
+                col(MessageTags.tag_name).in_(tags),
             )
         )
     )
