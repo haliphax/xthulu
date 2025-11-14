@@ -40,6 +40,7 @@ class BannerApp(XthuluApp):
 
     def _update_banner(self):
         padded = []
+        # assumes art is 80 columns wide; improve this
         pad_left = " " * floor(self.context.console.width / 2 - 40)
 
         for line in self.artwork:
@@ -56,7 +57,10 @@ class BannerApp(XthuluApp):
         banner = Static(id="banner", markup=False)
         lines = len(self.artwork)
 
-        if self.console.height < lines + BANNER_PADDING:
+        if (
+            self.console.height < lines + BANNER_PADDING
+            or self.console.width < 80
+        ):
             banner.display = False
         elif lines > 0:
             self._update_banner()
@@ -71,7 +75,10 @@ class BannerApp(XthuluApp):
         # banner
         banner: Static = self.get_widget_by_id("banner")  # type: ignore
 
-        if event.size.height < len(self.artwork) + BANNER_PADDING:
+        if (
+            event.size.height < len(self.artwork) + BANNER_PADDING
+            or event.size.width < 80
+        ):
             banner.update("")
             banner.display = False
         else:
