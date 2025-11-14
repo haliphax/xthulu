@@ -13,6 +13,7 @@ from .details_modal import DetailsModal
 class SaveModal(ModalScreen):
     """Save confirmation screen"""
 
+    BINDINGS = [("escape", "app.pop_screen", "")]
     CSS = """
         SaveModal {
             align: center middle;
@@ -68,6 +69,3 @@ class SaveModal(ModalScreen):
 
         self.app.pop_screen()  # pop this modal
         self.app.pop_screen()  # pop the editor
-
-    async def key_escape(self, _):
-        self.app.pop_screen()  # pop this modal

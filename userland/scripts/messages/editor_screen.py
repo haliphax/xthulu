@@ -13,6 +13,7 @@ from .save_modal import SaveModal
 class EditorScreen(ModalScreen):
     """Message compose/reply screen"""
 
+    BINDINGS = [("escape", "", "")]
     _content: str
     reply_to: Message | None
 
@@ -30,4 +31,5 @@ class EditorScreen(ModalScreen):
         if isinstance(self.app.screen_stack[-1], SaveModal):
             return
 
+        key.stop()
         await self.app.push_screen(SaveModal(reply_to=self.reply_to))

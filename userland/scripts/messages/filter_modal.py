@@ -20,6 +20,7 @@ from userland.models.message.tag import MessageTag
 class FilterModal(ModalScreen[list[str]]):
     """Filter messages screen"""
 
+    BINDINGS = [("escape", "app.pop_screen", "")]
     CSS = """
         FilterModal {
             align: center middle;
@@ -94,6 +95,3 @@ class FilterModal(ModalScreen[list[str]]):
             return
 
         self._submit()
-
-    async def key_escape(self, _):
-        self.app.pop_screen()  # pop this modal

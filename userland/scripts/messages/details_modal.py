@@ -22,6 +22,7 @@ MAX_TITLE_LENGTH = 120
 class DetailsModal(ModalScreen):
     """Message details screen"""
 
+    BINDINGS = [("escape", "app.pop_screen", "")]
     CSS = """
         DetailsModal {
             align: center middle;
@@ -168,6 +169,3 @@ class DetailsModal(ModalScreen):
             return
 
         await self.submit()
-
-    async def key_escape(self, _):
-        self.app.pop_screen()  # pop this modal

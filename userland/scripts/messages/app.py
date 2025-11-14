@@ -47,10 +47,10 @@ class MessagesApp(BannerApp):
     """Message bases Textual app"""
 
     BINDINGS = [
+        ("escape", "quit", "Exit"),
         ("f", "filter", "Filter"),
         ("n", "compose", "Compose"),
         ("r", "reply", "Reply"),
-        ("escape", "", "Exit"),
     ]
 
     CSS = """
@@ -247,7 +247,8 @@ class MessagesApp(BannerApp):
             return await self.action_filter()
 
         await self.push_screen(
-            FilterModal(tags=self.filter.tags), self._update_tags
+            FilterModal(tags=self.filter.tags),
+            self._update_tags,  # type: ignore
         )
 
     async def action_reply(self) -> None:
@@ -285,11 +286,13 @@ class MessagesApp(BannerApp):
                 )
             )
 
+    async def action_quit(self) -> None:
+        self.exit()
+
     async def on_key(self, event: events.Key) -> None:
         if event.key not in [
             "down",
             "end",
-            "escape",
             "home",
             "pagedown",
             "pageup",
@@ -302,9 +305,6 @@ class MessagesApp(BannerApp):
         except NoMatches:
             # we're not in the messages list screen; bail out
             return
-
-        if event.key == "escape":
-            self.exit()
 
         if event.key in ("home", "pageup"):
             if lv.index == 0 and self._allow_refresh():

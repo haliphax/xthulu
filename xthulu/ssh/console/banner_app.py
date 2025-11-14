@@ -6,6 +6,7 @@ from math import floor
 # 3rd party
 from rich.text import Text
 from textual import events
+from textual.app import ComposeResult
 from textual.widgets import Static
 
 # local
@@ -50,7 +51,7 @@ class BannerApp(XthuluApp):
         banner: Static = self.get_widget_by_id("banner")  # type: ignore
         banner.update(text)
 
-    def compose(self):
+    def compose(self) -> ComposeResult:
         # banner
         banner = Static(id="banner", markup=False)
         lines = len(self.artwork)
