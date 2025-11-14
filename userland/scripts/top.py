@@ -9,6 +9,7 @@ from rich.progress import track
 
 # api
 from xthulu.ssh.console.art import scroll_art
+from xthulu.ssh.console.internal.file_wrapper import FileWrapper
 from xthulu.ssh.context import SSHContext
 
 
@@ -19,12 +20,19 @@ async def main(cx: SSHContext) -> None:
         cx.echo("\x1b%@\x1b(U")
 
     if cx.encoding != "utf-8":
-        # if you don't use Textual apps, you can lift this restriction
         cx.echo(
             "[red]ERROR:[/] Unfortunately, only [bright_white]utf-8[/] "
-            "encoding is currently supported\n"
+            "encoding is currently supported. Encoding will be forced if "
+            "you proceed.\n"
         )
-        return
+
+        if not await cx.inkey("Press any key to continue", timeout=30):
+            return
+
+        cx.console._encoding = "utf-8"
+        f: FileWrapper = cx.console._file  # type: ignore
+        f._encoding = "utf-8"
+        cx.encoding = "utf-8"
 
     cx.console.set_window_title(f"{cx.username}@79columns")
     await scroll_art(cx, path.join("userland", "artwork", "login.ans"), "cp437")
