@@ -49,8 +49,11 @@ f.addEventListener("submit", async (ev: SubmitEvent) => {
 	ev.preventDefault();
 	ev.stopPropagation();
 
-	const message = inp.value;
+	const message = inp.value.trim();
 	inp.value = "";
+
+	// squash empty messages
+	if (message.length === 0) return;
 
 	// post to server
 	await fetch("/api/chat/", {

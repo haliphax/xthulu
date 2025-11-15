@@ -104,6 +104,7 @@ def chat(
     return EventSourceResponse(generate())
 
 
+# TODO need rate-limiting decorator/Depends
 @api.post("/chat/")
 async def post_chat(
     message: ChatPost,
