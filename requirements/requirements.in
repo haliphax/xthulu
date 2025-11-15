@@ -4,6 +4,7 @@ asyncssh
 bcrypt
 click
 fastapi
+hiredis
 redis
 rich
 sqlalchemy[asyncio]

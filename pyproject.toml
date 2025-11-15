@@ -34,4 +34,3 @@ dependencies = { file = "requirements/requirements.txt" }
 
 [tool.setuptools.dynamic.optional-dependencies]
 dev = { file = "requirements/dev.txt" }
-hiredis = { file = "requirements/hiredis.txt" }

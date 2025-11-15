@@ -20,5 +20,5 @@ COPY --chown=xthulu:xthulu ./requirements /app/requirements
 COPY --chown=xthulu:xthulu ./xthulu /app/xthulu
 USER xthulu
 RUN --mount=type=cache,target=/app/.cache/pip,uid=1000,gid=1000,sharing=locked \
-	pip install --no-warn-script-location -Ue ".[hiredis]"
+	pip install --no-warn-script-location -Ue .
 ENTRYPOINT ["/usr/local/bin/python3", "-m", "xthulu"]

@@ -35,6 +35,8 @@ greenlet==3.2.4
     # via sqlalchemy
 h11==0.16.0
     # via uvicorn
+hiredis==3.3.0
+    # via -r requirements.in
 httptools==0.7.1
     # via uvicorn
 idna==3.11

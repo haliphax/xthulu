@@ -27,7 +27,7 @@ come from the [node.js][] ecosystem. You should use a node version manager such
 as [nvm][] in order to select the appropriate runtime version.
 
 ```shell
-pip install -e .[dev,hiredis]
+pip install -e .[dev]
 nvm install
 nvm use
 npm ci
