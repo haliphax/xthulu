@@ -41,22 +41,26 @@ class XthuluApp(App):
         self.run_worker(self._watch_for_resize, exclusive=True)
 
     async def _watch_for_resize(self):
+        # avoid cyclic import
+        from .internal.driver import SSHDriver
+
         while True:
-            ev: list[EventData] = self.context.events.get("resize")  # type: ignore
+            ev: list[EventData] = self.context.events.get("resize")
 
             if not ev:
                 await sleep(0.5)
                 continue
 
             new_size = Size(*ev[-1].data)
-            self._driver.process_event(events.Resize(new_size, new_size))
+            d: SSHDriver = self._driver  # type: ignore
+            d.process_message(events.Resize(new_size, new_size))
 
     def exit(self, **kwargs) -> None:  # type: ignore
         # avoid cyclic import
         from .internal.driver import SSHDriver
 
         super().exit(**kwargs)
-        self._driver: SSHDriver
-        self._driver._disable_bracketed_paste()
-        self._driver._disable_mouse_support()
-        self._driver.exit_event.set()
+        d: SSHDriver = self._driver  # type: ignore
+        d._disable_bracketed_paste()
+        d._disable_mouse_support()
+        d.exit_event.set()

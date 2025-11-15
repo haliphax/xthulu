@@ -30,6 +30,9 @@ class BannerApp(XthuluApp):
     artwork: list[str]
     """Lines from loaded banner artwork"""
 
+    banner: Static
+    """Banner widget"""
+
     def __init__(
         self, context: SSHContext, art_path: str, art_encoding: str, **kwargs
     ):
@@ -49,38 +52,34 @@ class BannerApp(XthuluApp):
         text = Text.from_ansi(
             "".join(padded), overflow="crop", no_wrap=True, end=""
         )
-        banner: Static = self.get_widget_by_id("banner")  # type: ignore
-        banner.update(text)
+        self.banner.update(text)
 
     def compose(self) -> ComposeResult:
         # banner
-        banner = Static(id="banner", markup=False)
+        self.banner = Static(id="banner", markup=False)
         lines = len(self.artwork)
 
         if (
             self.console.height < lines + BANNER_PADDING
             or self.console.width < 80
         ):
-            banner.display = False
+            self.banner.display = False
         elif lines > 0:
             self._update_banner()
 
-        yield banner
+        yield self.banner
 
     async def on_mount(self):
         self.artwork = await load_art(self.art_path, self.art_encoding)
         self._update_banner()
 
     def on_resize(self, event: events.Resize) -> None:
-        # banner
-        banner: Static = self.get_widget_by_id("banner")  # type: ignore
-
         if (
             event.size.height < len(self.artwork) + BANNER_PADDING
             or event.size.width < 80
         ):
-            banner.update("")
-            banner.display = False
+            self.banner.update("")
+            self.banner.display = False
         else:
             self._update_banner()
-            banner.display = True
+            self.banner.display = True
