@@ -1,7 +1,7 @@
 """SSH server CLI"""
 
 # stdlib
-from asyncio import get_event_loop
+from asyncio import get_event_loop, new_event_loop
 from signal import SIGTERM
 import sys
 
@@ -24,7 +24,11 @@ def cli():
 def start():
     """Start SSH server process"""
 
-    loop = get_event_loop()
+    try:
+        loop = get_event_loop()
+    except RuntimeError:
+        loop = new_event_loop()
+
     server: SSHAcceptor  # type: ignore
 
     def shutdown():
