@@ -24,7 +24,7 @@ class _ErrorConsoleProxy:
         log.error(what)
 
 
-class XthuluApp(App):
+class XthuluApp(App[str | None]):
     """SSH wrapper for Textual apps"""
 
     context: SSHContext
