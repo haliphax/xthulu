@@ -1,5 +1,5 @@
 """Routes"""
 
-from . import chat
+from . import chat, logout
 
-__all__ = ("chat",)
+__all__ = ("chat", "logout")

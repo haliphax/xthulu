@@ -9,6 +9,7 @@ export default defineConfig({
 			input: {
 				chat: resolve(__dirname, "chat/index.html"),
 				index: resolve(__dirname, "index.html"),
+				logout: resolve(__dirname, "logout/index.html"),
 			},
 		},
 		target: "esnext",
