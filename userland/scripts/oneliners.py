@@ -24,7 +24,6 @@ class OnlinersApp(BannerApp):
 
     CSS = """
         $accent: ansi_red;
-        $error: ansi_bright_red;
 
         Label {
             width: 100%;
@@ -38,13 +37,8 @@ class OnlinersApp(BannerApp):
             background: $secondary-background;
         }
 
-        ListView:focus ListItem.--highlight {
+        ListView:focus ListItem.-highlight {
             background: $accent;
-        }
-
-        #err {
-            background: $error;
-            color: black;
         }
     """
     """Stylesheet"""
@@ -64,11 +58,6 @@ class OnlinersApp(BannerApp):
         lv.styles.scrollbar_color_active = "white"
         lv.styles.scrollbar_color_hover = "ansi_bright_yellow"
         yield lv
-
-        # error message
-        err = Label(id="err")
-        err.display = False
-        yield err
 
         # input
         input_widget = Input(
