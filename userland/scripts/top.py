@@ -9,6 +9,7 @@ from rich.progress import track
 
 # api
 from xthulu.ssh.console.art import scroll_art
+from xthulu.ssh.console.choice import choice
 from xthulu.ssh.console.internal.file_wrapper import FileWrapper
 from xthulu.ssh.context import SSHContext
 
@@ -49,6 +50,11 @@ async def main(cx: SSHContext) -> None:
         if not result or result == "logoff":
             return
 
+    if await choice(cx, "Skip to main menu? ", ("No", "Yes")) == "Yes":
+        cx.goto("main")
+        return
+
+    cx.echo("\n")
     cx.console.set_window_title("system information")
     await scroll_art(
         cx, path.join("userland", "artwork", "sysinfo.ans"), "amiga"
