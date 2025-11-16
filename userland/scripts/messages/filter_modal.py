@@ -29,7 +29,7 @@ class FilterModal(ModalScreen[list[str]]):
 
         Button {
             margin: 1;
-            width: 50%;
+            width: 33.3333%;
         }
 
         SelectionList {
@@ -59,8 +59,9 @@ class FilterModal(ModalScreen[list[str]]):
         yield Vertical(
             SelectionList(id="tags"),
             Horizontal(
-                Button("Filter", variant="success", id="filter", name="filter"),
-                Button("Cancel", variant="error", id="cancel", name="cancel"),
+                Button("Filter", variant="success", id="filter"),
+                Button("Reset", id="reset"),
+                Button("Cancel", variant="error", id="cancel"),
             ),
             id="wrapper",
         )
@@ -90,8 +91,12 @@ class FilterModal(ModalScreen[list[str]]):
         tags.add_options([Selection(t, t, False) for t in all_tags])
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.name == "cancel":
+        if event.button.id == "cancel":
             self.app.pop_screen()  # pop this modal
+            return
+
+        if event.button.id == "reset":
+            self.dismiss([])
             return
 
         self._submit()
