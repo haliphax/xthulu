@@ -14,7 +14,7 @@ from xthulu.ssh.console.banner_app import BannerApp
 from xthulu.ssh.context import SSHContext
 
 
-class NuaApp(BannerApp):
+class NuaApp(BannerApp[str]):
     """New user application"""
 
     CSS = """

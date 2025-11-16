@@ -6,7 +6,7 @@ from math import floor
 # 3rd party
 from rich.text import Text
 from textual import events
-from textual.app import ComposeResult
+from textual.app import ComposeResult, ReturnType
 from textual.widgets import Static
 
 # local
@@ -18,7 +18,7 @@ BANNER_PADDING = 10
 """Required space left over to display banner art"""
 
 
-class BannerApp(XthuluApp):
+class BannerApp(XthuluApp[ReturnType]):
     """Textual app with banner display"""
 
     art_encoding: str

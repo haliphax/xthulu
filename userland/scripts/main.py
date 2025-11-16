@@ -10,7 +10,7 @@ from xthulu.ssh.console.app import XthuluApp
 from xthulu.ssh.context import SSHContext
 
 
-class MenuApp(XthuluApp):
+class MenuApp(XthuluApp[str]):
     """Main menu"""
 
     BINDINGS = [("escape", "quit", "Log off")]

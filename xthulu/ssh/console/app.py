@@ -6,7 +6,7 @@ from asyncio import sleep
 # 3rd party
 from rich.segment import Segments
 from textual import events
-from textual.app import App
+from textual.app import App, ReturnType
 from textual.geometry import Size
 
 # local
@@ -24,7 +24,7 @@ class _ErrorConsoleProxy:
         log.error(what)
 
 
-class XthuluApp(App[str | None]):
+class XthuluApp(App[ReturnType]):
     """SSH wrapper for Textual apps"""
 
     context: SSHContext
@@ -34,6 +34,7 @@ class XthuluApp(App[str | None]):
         # avoid cyclic import
         from .internal.driver import SSHDriver
 
+        self.use_command_palette = False
         self.context = context
         super().__init__(driver_class=SSHDriver, **kwargs)
         self.console = context.console
