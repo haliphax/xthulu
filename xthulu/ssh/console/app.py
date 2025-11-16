@@ -36,7 +36,7 @@ class XthuluApp(App[ReturnType]):
         # avoid cyclic import
         from .internal.driver import SSHDriver
 
-        super().__init__(driver_class=SSHDriver, **kwargs)
+        super(XthuluApp, self).__init__(driver_class=SSHDriver, **kwargs)
         self.context = context
         self.console = context.console
         self.error_console = _ErrorConsoleProxy()  # type: ignore
@@ -61,7 +61,7 @@ class XthuluApp(App[ReturnType]):
         # avoid cyclic import
         from .internal.driver import SSHDriver
 
-        super().exit(**kwargs)
+        super(XthuluApp, self).exit(**kwargs)
         d: SSHDriver = self._driver  # type: ignore
         d._disable_bracketed_paste()
         d._disable_mouse_support()

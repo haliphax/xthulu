@@ -42,7 +42,7 @@ class ViewScreen(Screen):
     tags: Sequence[str]
 
     def __init__(self, *args, message: Message, tags: Sequence[str], **kwargs):
-        super().__init__(*args, **kwargs)
+        super(ViewScreen, self).__init__(*args, **kwargs)
         self.message = message
         self.tags = tags
 

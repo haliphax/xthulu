@@ -33,7 +33,7 @@ class Oneliner(SQLModel, table=True):
     """When the oneliner was posted"""
 
     def __init__(self, **data: Any):
-        super().__init__(**data)
+        super(Oneliner, self).__init__(**data)
 
     def __repr__(self):  # pragma: no cover
         return f"Oneliner(#{self.id})"

@@ -59,7 +59,7 @@ class Message(SQLModel, table=True):
     """The message's content"""
 
     def __init__(self, **data: Any):
-        super().__init__(**data)
+        super(Message, self).__init__(**data)
 
     def __repr__(self):  # pragma: no cover
         return f"Message(#{self.id})"

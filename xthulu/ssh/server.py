@@ -28,7 +28,7 @@ class SSHServer(AsyncSSHServer):
     _no_entry: list[str]
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(SSHServer, self).__init__(*args, **kwargs)
         self._debug_enabled = log.getEffectiveLevel() == DEBUG
         self._no_entry = get_config("ssh.auth.bad_usernames", [])
         self._no_password = get_config("ssh.auth.no_password", [])

@@ -31,7 +31,7 @@ class ArtLog(XthuluApp):
     ):
         self.artwork = artwork
         self.delay = delay
-        super().__init__(context, **kwargs)
+        super(ArtLog, self).__init__(context, **kwargs)
         self.run_worker(self._worker, exclusive=True)
 
     @property

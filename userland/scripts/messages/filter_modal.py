@@ -52,7 +52,7 @@ class FilterModal(ModalScreen[list[str]]):
     _tags: list[str]
 
     def __init__(self, *args, tags: list[str] | None = None, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(FilterModal, self).__init__(*args, **kwargs)
         self._tags = tags or []
 
     def compose(self):

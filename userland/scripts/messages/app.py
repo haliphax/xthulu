@@ -9,7 +9,7 @@ from typing import Sequence, Tuple
 from sqlalchemy.orm import joinedload
 from sqlmodel import select
 from textual import events
-from textual.app import ComposeResult
+from textual.app import ComposeResult, ScreenStackError
 from textual.widgets import Footer, Label, ListItem, ListView
 
 # api
@@ -110,7 +110,7 @@ class MessagesApp(BannerApp):
         **kwargs,
     ):
         self.filter = MessageFilter()
-        super().__init__(context, **kwargs)
+        super(MessagesApp, self).__init__(context, **kwargs)
 
     async def _allow_refresh(self) -> bool:
         """Avoid database call for a while if last refresh was empty."""
@@ -234,7 +234,7 @@ class MessagesApp(BannerApp):
 
     def compose(self) -> ComposeResult:
         # load widgets from BannerApp
-        for widget in super().compose():
+        for widget in super(MessagesApp, self).compose():
             yield widget
 
         yield ListView(id="messages_list")
@@ -364,9 +364,12 @@ class MessagesApp(BannerApp):
         await self.push_screen(ViewScreen(message=message, tags=tags))
 
     async def on_event(self, event: events.Event | events.MouseScrollDown):
-        await super().on_event(event)
+        await super(MessagesApp, self).on_event(event)
 
-        if self.screen.id != "_default":
+        try:
+            if self.screen.id != "_default":
+                return
+        except ScreenStackError:
             return
 
         down = False

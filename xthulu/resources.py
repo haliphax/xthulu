@@ -39,7 +39,7 @@ class Resources:
         if hasattr(cls, "_singleton"):
             return cls._singleton
 
-        singleton = super().__new__(cls)
+        singleton = super(Resources, cls).__new__(cls)
         singleton._load_config()
         singleton.cache = Redis(
             host=singleton._config("cache.host"),

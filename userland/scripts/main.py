@@ -30,7 +30,7 @@ class MenuApp(XthuluApp[str]):
     _last: str | None = None
 
     def __init__(self, context: SSHContext, last: str | None = None, **kwargs):
-        super().__init__(context, **kwargs)
+        super(MenuApp, self).__init__(context, **kwargs)
         self._last = last
 
     def compose(self) -> ComposeResult:

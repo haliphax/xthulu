@@ -24,4 +24,4 @@ class MessageTags(SQLModel, table=True):
     __tablename__ = "message_x_message_tag"  # type: ignore
 
     def __init__(self, **data: Any):
-        super().__init__(**data)
+        super(MessageTags, self).__init__(**data)

@@ -64,7 +64,7 @@ class DetailsModal(ModalScreen):
     response: str
 
     def __init__(self, *args, reply_to: Message | None = None, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(DetailsModal, self).__init__(*args, **kwargs)
         self.reply_to = reply_to
 
     def compose(self):

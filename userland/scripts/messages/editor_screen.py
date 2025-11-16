@@ -22,7 +22,7 @@ class EditorScreen(ModalScreen):
     ):
         self._content = content
         self.reply_to = reply_to
-        super().__init__(*args, **kwargs)
+        super(EditorScreen, self).__init__(*args, **kwargs)
 
     def compose(self):
         yield TextArea(text=self._content, show_line_numbers=True)

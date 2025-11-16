@@ -39,7 +39,7 @@ class User(SQLModel, table=True):
     )
 
     def __init__(self, **data: Any):
-        super().__init__(**data)
+        super(User, self).__init__(**data)
 
     def __repr__(self):  # pragma: no cover
         return f"User({self.name}#{self.id})"

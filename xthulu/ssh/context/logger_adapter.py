@@ -15,7 +15,7 @@ class ContextLoggerAdapter(LoggerAdapter):
     def __init__(
         self, logger: Any, extra: Mapping[str, object] | None = None
     ) -> None:
-        super().__init__(logger, extra)
+        super(ContextLoggerAdapter, self).__init__(logger, extra)
 
         if extra and "whoami" in extra.keys():
             self.whoami = str(extra["whoami"])

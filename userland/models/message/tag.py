@@ -20,7 +20,7 @@ class MessageTag(SQLModel, table=True):
     __tablename__ = "message_tag"  # type: ignore
 
     def __init__(self, **data: Any):
-        super().__init__(**data)
+        super(MessageTag, self).__init__(**data)
 
     def __repr__(self):  # pragma: no cover
         return f"MessageTag({self.name})"

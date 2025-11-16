@@ -39,7 +39,7 @@ class BannerApp(XthuluApp[ReturnType]):
         self.art_encoding = art_encoding
         self.art_path = art_path
         self.artwork = []
-        super().__init__(context=context, **kwargs)
+        super(BannerApp, self).__init__(context=context, **kwargs)
 
     def _update_banner(self):
         padded = []

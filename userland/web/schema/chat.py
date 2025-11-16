@@ -17,7 +17,7 @@ class ChatPost(BaseModel):
     """The client's CSRF token"""
 
     def __init__(self, **data: Any):
-        super().__init__(**data)
+        super(ChatPost, self).__init__(**data)
 
 
 class ChatToken(BaseModel):
@@ -27,4 +27,4 @@ class ChatToken(BaseModel):
     """The token value"""
 
     def __init__(self, **data: Any):
-        super().__init__(**data)
+        super(ChatToken, self).__init__(**data)

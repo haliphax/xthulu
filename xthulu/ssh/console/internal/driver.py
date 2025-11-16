@@ -31,7 +31,7 @@ class SSHDriver(LinuxDriver):
         if "size" in kwargs:
             del kwargs["size"]
 
-        super().__init__(
+        super(SSHDriver, self).__init__(
             app,
             size=self._get_terminal_size(),
             **kwargs,

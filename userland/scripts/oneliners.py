@@ -19,7 +19,7 @@ LIMIT = 200
 """Total number of oneliners to load"""
 
 
-class OnlinersApp(BannerApp):
+class OnelinersApp(BannerApp):
     """Oneliners Textual app"""
 
     CSS = """
@@ -44,11 +44,11 @@ class OnlinersApp(BannerApp):
     """Stylesheet"""
 
     def __init__(self, context: SSHContext, **kwargs):
-        super().__init__(context, **kwargs)
+        super(OnelinersApp, self).__init__(context, **kwargs)
         self.bind("escape", "quit")
 
     def compose(self):
-        for widget in super().compose():
+        for widget in super(OnelinersApp, self).compose():
             yield widget
 
         # oneliners
@@ -106,7 +106,7 @@ class OnlinersApp(BannerApp):
 
 async def main(cx: SSHContext) -> None:
     cx.console.set_window_title("oneliners")
-    await OnlinersApp(
+    await OnelinersApp(
         cx,
         art_path=path.join("userland", "artwork", "oneliners.ans"),
         art_encoding="amiga",

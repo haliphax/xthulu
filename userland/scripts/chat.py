@@ -42,15 +42,15 @@ class ChatApp(XthuluApp):
     pubsub: PubSub
     """Redis PubSub connection"""
 
-    _log: deque[ChatMessage]
+    _chatlog: deque[ChatMessage]
     _exit_event: Event
 
     def __init__(self, context: SSHContext, **kwargs):
-        super().__init__(context, **kwargs)
+        super(ChatApp, self).__init__(context, **kwargs)
         self.redis = Resources().cache
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe(**{"chat": self.on_chat})
-        self._log = deque(maxlen=LIMIT)
+        self._chatlog = deque(maxlen=LIMIT)
         self._exit_event = Event()
         self.run_worker(self._listen, exclusive=True, thread=True)
 
@@ -91,11 +91,11 @@ class ChatApp(XthuluApp):
             )
 
         msg = ChatMessage(**json.loads(message["data"]))
-        self._log.append(msg)
+        self._chatlog.append(msg)
         l: Static = self.get_widget_by_id("log")  # type: ignore
         l.update(
             self.console.render_str(
-                "".join([format_message(m) for m in self._log])
+                "".join([format_message(m) for m in self._chatlog])
             )
         )
         vs = self.query_one(VerticalScroll)
@@ -103,14 +103,14 @@ class ChatApp(XthuluApp):
         input = self.query_one(Input)
         input.value = ""
 
-    def exit(self) -> None:
+    def exit(self, **kwargs) -> None:
         msg = ChatMessage(
             user=None, message=f"{self.context.username} has left"
         )
         self.redis.publish("chat", msg.model_dump_json())
         self._exit_event.set()
         self.workers.cancel_all()
-        super().exit()
+        super(ChatApp, self).exit()
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         val = event.input.value.strip()

@@ -34,7 +34,7 @@ class NuaApp(BannerApp[str]):
     """Stylesheet"""
 
     def compose(self) -> ComposeResult:
-        for widget in super().compose():
+        for widget in super(NuaApp, self).compose():
             yield widget
 
         yield Center(

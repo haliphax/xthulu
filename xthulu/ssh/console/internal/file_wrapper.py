@@ -16,7 +16,7 @@ class FileWrapper(IO[str]):
     def __init__(self, wrapped: SSHWriter[Any], encoding: str):
         self._encoding = encoding
         self._wrapped = wrapped
-        super().__init__()
+        super(FileWrapper, self).__init__()
 
     def write(self, string: str) -> int:
         try:

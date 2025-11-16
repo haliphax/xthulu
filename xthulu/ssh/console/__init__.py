@@ -41,7 +41,7 @@ class XthuluConsole(Console):
             if term_type.find("256") >= 0
             else "standard"
         )
-        super().__init__(
+        super(XthuluConsole, self).__init__(
             **kwargs,
             color_system=color_system,
             file=FileWrapper(ssh_writer, encoding),  # type: ignore
