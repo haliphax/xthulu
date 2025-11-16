@@ -4,6 +4,7 @@
 from typing import Sequence
 
 # 3rd party
+from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
 from textual.widgets import Footer, Label, MarkdownViewer
@@ -15,7 +16,10 @@ from userland.models import Message
 class ViewScreen(Screen):
     """Message viewer screen"""
 
-    BINDINGS = [("escape", "app.pop_screen", "Exit")]
+    BINDINGS = [
+        ("escape", "app.pop_screen", "Exit"),
+        Binding("f", "", show=False),
+    ]
     CSS = """
         Label {
             width: 50%;

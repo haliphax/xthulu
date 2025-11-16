@@ -10,7 +10,6 @@ from sqlalchemy.orm import joinedload
 from sqlmodel import select
 from textual import events
 from textual.app import ComposeResult
-from textual.css.query import NoMatches
 from textual.widgets import Footer, Label, ListItem, ListView
 
 # api
@@ -48,9 +47,9 @@ class MessagesApp(BannerApp):
 
     BINDINGS = [
         ("escape", "quit", "Exit"),
-        ("f", "filter", "Filter"),
         ("n", "compose", "Compose"),
         ("r", "reply", "Reply"),
+        ("f", "filter", "Filter"),
     ]
 
     CSS = """
@@ -242,9 +241,7 @@ class MessagesApp(BannerApp):
         yield Footer()
 
     async def action_compose(self) -> None:
-        try:
-            self.query_one(ListView)
-        except NoMatches:
+        if self.screen.id != "_default":
             # not in message list screen; pop screen first
             self.pop_screen()
             return await self.action_compose()
@@ -252,12 +249,8 @@ class MessagesApp(BannerApp):
         await self.push_screen(EditorScreen())
 
     async def action_filter(self) -> None:
-        try:
-            self.query_one(ListView)
-        except NoMatches:
-            # not in message list screen; pop screen first
-            self.pop_screen()
-            return await self.action_filter()
+        if self.screen.id != "_default":
+            return
 
         await self.push_screen(
             FilterModal(tags=self.filter.tags),
@@ -265,13 +258,12 @@ class MessagesApp(BannerApp):
         )
 
     async def action_reply(self) -> None:
-        try:
-            lv: ListView = self.query_one(ListView)
-        except NoMatches:
-            # not in message list screen; pop screen first
+        # not in message list screen; pop screen first
+        if self.screen.id != "_default":
             self.pop_screen()
             return await self.action_reply()
 
+        lv: ListView = self.query_one(ListView)
         assert lv.index is not None
         selected = lv.children[lv.index]
         assert selected.id
@@ -303,6 +295,9 @@ class MessagesApp(BannerApp):
         self.exit()
 
     async def on_key(self, event: events.Key) -> None:
+        if self.screen.id != "_default":
+            return
+
         if event.key not in [
             "down",
             "end",
@@ -313,11 +308,7 @@ class MessagesApp(BannerApp):
         ]:
             return
 
-        try:
-            lv: ListView = self.get_widget_by_id("messages_list")  # type: ignore
-        except NoMatches:
-            # we're not in the messages list screen; bail out
-            return
+        lv: ListView = self.get_widget_by_id("messages_list")  # type: ignore
 
         if event.key in ("home", "pageup"):
             if lv.index == 0 and self._allow_refresh():
@@ -374,6 +365,10 @@ class MessagesApp(BannerApp):
 
     async def on_event(self, event: events.Event | events.MouseScrollDown):
         await super().on_event(event)
+
+        if self.screen.id != "_default":
+            return
+
         down = False
 
         if isinstance(event, events.MouseScrollDown):
@@ -383,11 +378,7 @@ class MessagesApp(BannerApp):
         else:
             return
 
-        try:
-            lv = self.query_one(ListView)
-        except NoMatches:
-            # no ListView; might be in modal/editor
-            return
+        lv = self.query_one(ListView)
 
         if down and lv.is_vertical_scroll_end and await self._allow_refresh():
             await self._load_messages()
