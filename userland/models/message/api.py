@@ -4,9 +4,10 @@
 from typing import Sequence, Tuple
 
 # 3rd party
-from sqlmodel import and_, col, select
+from sqlmodel import col, select
 
 # api
+from xthulu.models import User
 from xthulu.resources import db_session
 
 # local
@@ -25,25 +26,33 @@ def get_messages_query(tags: list[str] | None = None):
         A query object
     """
 
-    query = select(Message.id, Message.title)
-
-    return (
-        query
-        if not tags or len(tags) == 0
-        else query.select_from(Message)
+    query = (
+        select(
+            Message.id,
+            Message.title,
+            User.name,
+        )
+        .select_from(Message)
         .join(MessageTags)
         .where(
-            and_(
-                MessageTags.message_id == Message.id,
-                col(MessageTags.tag_name).in_(tags),
-            )
+            MessageTags.message_id == Message.id,
+            Message.author_id == User.id,
         )
+    )
+
+    if tags:
+        query = query.where(col(MessageTags.tag_name).in_(tags))
+
+    return query.group_by(
+        col(Message.id),
+        col(Message.title),
+        col(User.name),
     )
 
 
 async def get_latest_messages(
     tags: list[str] | None = None, limit=100
-) -> Sequence[Tuple[int, str]]:
+) -> Sequence[Tuple[int, str, str]]:
     """
     Get the latest messages (in descending order).
 
@@ -52,7 +61,7 @@ async def get_latest_messages(
         limit: The number of messages to return
 
     Returns:
-        A list of messages matching the provided criteria
+        A list of (id, title, author) matching the provided criteria
     """
 
     async with db_session() as db:
@@ -67,7 +76,7 @@ async def get_latest_messages(
 
 async def get_newer_messages(
     id: int, tags: list[str] | None = None, limit=100
-) -> Sequence[Tuple[int, str]]:
+) -> Sequence[Tuple[int, str, str]]:
     """
     Get messages newer than the provided ID (in ascending order).
 
@@ -77,7 +86,7 @@ async def get_newer_messages(
         limit: The number of messages to return
 
     Returns:
-        A list of messages matching the provided criteria
+        A list of (id, title, author) matching the provided criteria
     """
 
     async with db_session() as db:
@@ -93,7 +102,7 @@ async def get_newer_messages(
 
 async def get_older_messages(
     id: int, tags: list[str] | None = None, limit=100
-) -> Sequence[Tuple[int, str]]:
+) -> Sequence[Tuple[int, str, str]]:
     """
     Get messages older than the provided ID (in descending order).
 
@@ -103,7 +112,7 @@ async def get_older_messages(
         limit: The number of messages to return
 
     Returns:
-        A list of messages matching the provided criteria
+        A list of (id, title, author) matching the provided criteria
     """
 
     async with db_session() as db:

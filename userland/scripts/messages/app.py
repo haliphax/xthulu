@@ -19,7 +19,7 @@ from xthulu.ssh.console.banner_app import BannerApp
 from xthulu.ssh.context import SSHContext
 
 # local
-from userland.models import Message
+from userland.models import Message, MessageTags
 from userland.models.message.api import (
     get_latest_messages,
     get_newer_messages,
@@ -65,19 +65,30 @@ class MessagesApp(BannerApp):
             background: $secondary-background;
         }
 
-        ListView ListItem.--highlight {
+        ListView ListItem.-highlight {
             background: $highlight 50%;
         }
 
-        ListView:focus ListItem.--highlight {
+        ListView:focus ListItem.-highlight {
             background: $highlight;
         }
 
-        ListItem Label.message_id {
+        ListItem Label.message_id, ListItem Label.message_title {
             margin-right: 1;
         }
+
+        ListItem Label.message_id {
+            width: 8;
+        }
+
+        ListItem Label.message_title {
+            width: 75%;
+        }
+
+        ListItem Label.message_author {
+            align: right middle;
+        }
     """
-    """Stylesheet"""
 
     filter: MessageFilter
     """Current message filter"""
@@ -123,7 +134,7 @@ class MessagesApp(BannerApp):
         first = len(lv.children) == 0
         limit = lv.region.height * 2
         query_limit = limit if first else lv.region.height
-        messages: Sequence[Tuple[int, str]]
+        messages: Sequence[Tuple[int, str, str]]
 
         if first:
             messages = await get_latest_messages(self.filter.tags, query_limit)
@@ -145,7 +156,7 @@ class MessagesApp(BannerApp):
         coros = []
 
         # append/prepend items to ListView
-        for idx, [message_id, title] in enumerate(messages):
+        for idx, [message_id, title, author] in enumerate(messages):
             if self._first == -1 or message_id < self._first:
                 self._first = message_id
 
@@ -154,9 +165,11 @@ class MessagesApp(BannerApp):
 
             item = ListItem(
                 Label(
-                    f"[italic][white]({message_id})[/][/]", classes="message_id"
+                    f"[italic][white]#{message_id}[/][/]",
+                    classes="message_id",
                 ),
                 Label(title, classes="message_title", markup=False),
+                Label(author, classes="message_author", markup=False),
                 id=f"message_{message_id}",
                 classes="even" if idx % 2 else "",
             )
@@ -190,7 +203,7 @@ class MessagesApp(BannerApp):
                     # remove from top if loading older items
                     coros.append(lv.children[0].remove())
 
-            # fix CSS striping
+            # adjust CSS striping
             for idx, c in enumerate(lv.children):
                 c.set_classes("even" if idx % 2 else "")
 
@@ -341,25 +354,33 @@ class MessagesApp(BannerApp):
         message_id = int(event.item.id.split("_")[1])
 
         async with db_session() as db:
-            message = await db.get(Message, message_id)
+            message = (
+                await db.exec(
+                    select(Message)
+                    .where(Message.id == message_id)
+                    .options(joinedload(Message.author))  # type: ignore
+                )
+            ).one()
+            tags = (
+                await db.exec(
+                    select(MessageTags.tag_name).where(
+                        MessageTags.message_id == message_id
+                    )
+                )
+            ).all()
 
         assert message
-        await self.push_screen(ViewScreen(message=message))
+        await self.push_screen(ViewScreen(message=message, tags=tags))
 
     async def on_event(self, event: events.Event | events.MouseScrollDown):
         await super().on_event(event)
-        scroll = False
         down = False
 
         if isinstance(event, events.MouseScrollDown):
-            scroll = True
             down = True
-
         elif isinstance(event, events.MouseScrollUp):
-            scroll = True
             down = False
-
-        if not scroll:
+        else:
             return
 
         try:
