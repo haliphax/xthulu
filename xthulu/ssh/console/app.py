@@ -27,6 +27,8 @@ class _ErrorConsoleProxy:
 class XthuluApp(App[ReturnType]):
     """SSH wrapper for Textual apps"""
 
+    ENABLE_COMMAND_PALETTE = False
+
     context: SSHContext
     """The current SSH context"""
 
@@ -34,9 +36,8 @@ class XthuluApp(App[ReturnType]):
         # avoid cyclic import
         from .internal.driver import SSHDriver
 
-        self.use_command_palette = False
-        self.context = context
         super().__init__(driver_class=SSHDriver, **kwargs)
+        self.context = context
         self.console = context.console
         self.error_console = _ErrorConsoleProxy()  # type: ignore
         self.run_worker(self._watch_for_resize, exclusive=True)
