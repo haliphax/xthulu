@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# update xthulu repo, rebuild docker images and static web resources
+
+set -eo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+git pull
+cd bin
+./build-web
+cd ../docker
+docker compose build base-image
+docker compose up -d
