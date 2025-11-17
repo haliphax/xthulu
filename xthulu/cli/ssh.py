@@ -1,7 +1,6 @@
 """SSH server CLI"""
 
 # stdlib
-from asyncio import get_event_loop, new_event_loop
 from signal import SIGTERM
 import sys
 
@@ -10,10 +9,10 @@ from asyncssh import Error as AsyncSSHError, SSHAcceptor
 from click import group
 
 # local
+from ._util import loop
 from ..locks import _Locks, expire
 from ..logger import log
 from ..ssh import start_server
-
 
 @group("ssh")
 def cli():
@@ -24,11 +23,7 @@ def cli():
 def start():
     """Start SSH server process"""
 
-    try:
-        loop = get_event_loop()
-    except RuntimeError:
-        loop = new_event_loop()
-
+    _loop = loop()
     server: SSHAcceptor  # type: ignore
 
     def shutdown():
@@ -36,21 +31,21 @@ def start():
         log.debug("Closing SSH listener")
         server.close()
         log.debug("Stopping event loop")
-        loop.stop()
+        _loop.stop()
         log.debug("Expiring locks")
 
         for owner in _Locks.locks.copy().keys():
             log.debug(f"Expiring locks for {owner}")
             expire(owner)
 
-    loop.add_signal_handler(SIGTERM, shutdown)
+    _loop.add_signal_handler(SIGTERM, shutdown)
 
     try:
-        server = loop.run_until_complete(start_server())
+        server = _loop.run_until_complete(start_server())
     except (OSError, AsyncSSHError) as exc:  # pragma: no cover
         sys.exit(f"Error: {exc}")
 
     try:
-        loop.run_forever()
+        _loop.run_forever()
     except KeyboardInterrupt:
         pass

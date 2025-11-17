@@ -28,7 +28,7 @@ def clear_locks():
 
 @pytest.fixture(autouse=True)
 def mock_loop():
-    with patch("xthulu.cli.ssh.get_event_loop") as p:
+    with patch("xthulu.cli.ssh.loop") as p:
         yield p.return_value
 
 

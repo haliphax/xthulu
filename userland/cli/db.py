@@ -1,14 +1,14 @@
 """Command line database module"""
 
-# stdlib
-from asyncio import get_event_loop
-
 # 3rd party
 from click import echo, group, option
 from sqlmodel import SQLModel
 
 # api
+from xthulu.cli._util import loop
 from xthulu.resources import db_session, Resources
+
+_loop = loop()
 
 
 @group("db")
@@ -35,7 +35,7 @@ def create(seed_data=False):
         async with Resources().db.begin() as conn:
             await conn.run_sync(SQLModel.metadata.create_all)
 
-    get_event_loop().run_until_complete(f())
+    _loop.run_until_complete(f())
 
     if seed_data:
         _seed()
@@ -81,7 +81,7 @@ def _seed():
                     )
                     await db.commit()
 
-    get_event_loop().run_until_complete(f())
+    _loop.run_until_complete(f())
 
 
 @cli.command()
