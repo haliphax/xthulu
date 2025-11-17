@@ -52,7 +52,6 @@ class ChatApp(XthuluApp):
         self.pubsub.subscribe(**{"chat": self.on_chat})
         self._chatlog = deque(maxlen=LIMIT)
         self._exit_event = Event()
-        self.run_worker(self._listen, exclusive=True, thread=True)
 
     def _listen(self) -> None:
         self.redis.publish(
@@ -111,6 +110,9 @@ class ChatApp(XthuluApp):
         self._exit_event.set()
         self.workers.cancel_all()
         super(ChatApp, self).exit()
+
+    async def on_ready(self) -> None:
+        self.run_worker(self._listen, exclusive=True, thread=True)
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         val = event.input.value.strip()
