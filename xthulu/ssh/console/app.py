@@ -32,11 +32,13 @@ class XthuluApp(App[ReturnType]):
     context: SSHContext
     """The current SSH context"""
 
-    def __init__(self, context: SSHContext, **kwargs):
+    def __init__(self, context: SSHContext, ansi_color=True, **kwargs):
         # avoid cyclic import
         from .internal.driver import SSHDriver
 
-        super(XthuluApp, self).__init__(driver_class=SSHDriver, **kwargs)
+        super(XthuluApp, self).__init__(
+            driver_class=SSHDriver, ansi_color=ansi_color, **kwargs
+        )
         self.context = context
         self.console = context.console
         self.error_console = _ErrorConsoleProxy()  # type: ignore
