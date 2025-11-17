@@ -34,7 +34,8 @@ class ViewScreen(Screen):
         }
 
         #header {
-            background: #700;
+            background: #007 100%;
+            color: #fff;
             height: 5;
             padding-left: 1;
             padding-right: 1;
@@ -61,23 +62,27 @@ class ViewScreen(Screen):
             Vertical(
                 Horizontal(
                     Label(
-                        "[bold underline]Author:[/]    "
+                        "[bold underline ansi_cyan]Author:[/]    "
                         f"{self.message.author.name}"
                     ),
                     Label(
-                        "[bold underline]Posted:[/] "
+                        "[bold underline ansi_cyan]Posted:[/] "
                         f"{self.message.created.strftime('%H:%M %a %b %d %Y')}"
                     ),
                 ),
                 Horizontal(
                     Label(
-                        "[bold underline]Recipient:[/] "
+                        "[bold underline ansi_cyan]Recipient:[/] "
                         f"{self.message.recipient.name if self.message.recipient else '<N/A>'}"
                     ),
-                    Label(f"[bold underline]Tags:[/]   {', '.join(self.tags)}"),
+                    Label(
+                        f"[bold underline ansi_cyan]Tags:[/]   "
+                        f"{', '.join(self.tags)}"
+                    ),
                 ),
                 Label(
-                    f"[bold underline]Title:[/]     {self.message.title}",
+                    f"[bold underline ansi_cyan]Title:[/]     "
+                    f"{self.message.title}",
                     id="title",
                 ),
                 id="header",

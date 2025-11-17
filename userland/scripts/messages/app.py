@@ -53,7 +53,26 @@ class MessagesApp(BannerApp):
     ]
 
     CSS = """
-        $highlight: ansi_yellow;
+        $highlight: ansi_magenta;
+
+        Footer, Footer:ansi {
+            &,
+            .footer-key--key,
+            .footer-key--description {
+                background: #007 100%;
+                color: #077;
+            }
+
+            .footer-key--key {
+                color: #0ff;
+            }
+
+            FooterKey:hover,
+            FooterKey:hover .footer-key--key {
+                background: #077 100%;
+                color: #fff;
+            }
+        }
 
         ListItem {
             background: $primary-background;
@@ -65,11 +84,11 @@ class MessagesApp(BannerApp):
         }
 
         ListView ListItem.-highlight {
-            background: $highlight 50%;
+            background: $highlight 100%;
         }
 
         ListView:focus ListItem.-highlight {
-            background: $highlight;
+            background: $highlight 100%;
         }
 
         ListItem Label.message_id, ListItem Label.message_title {
