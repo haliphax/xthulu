@@ -21,6 +21,8 @@ BANNER_PADDING = 10
 class BannerApp(XthuluApp[ReturnType]):
     """Textual app with banner display"""
 
+    _alt: str
+
     art_encoding: str
     """Encoding of the artwork file"""
 
@@ -34,11 +36,17 @@ class BannerApp(XthuluApp[ReturnType]):
     """Banner widget"""
 
     def __init__(
-        self, context: SSHContext, art_path: str, art_encoding: str, **kwargs
+        self,
+        context: SSHContext,
+        art_path: str,
+        art_encoding: str,
+        alt: str,
+        **kwargs,
     ):
         self.art_encoding = art_encoding
         self.art_path = art_path
         self.artwork = []
+        self._alt = f"{alt}\n"
         super(BannerApp, self).__init__(context=context, **kwargs)
 
     def _update_banner(self):
@@ -63,7 +71,7 @@ class BannerApp(XthuluApp[ReturnType]):
             self.console.height < lines + BANNER_PADDING
             or self.console.width < 80
         ):
-            self.banner.display = False
+            self.banner.update(self._alt)
         elif lines > 0:
             self._update_banner()
 
@@ -78,8 +86,6 @@ class BannerApp(XthuluApp[ReturnType]):
             event.size.height < len(self.artwork) + BANNER_PADDING
             or event.size.width < 80
         ):
-            self.banner.update("")
-            self.banner.display = False
+            self.banner.update(self._alt)
         else:
             self._update_banner()
-            self.banner.display = True

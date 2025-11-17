@@ -1,29 +1,38 @@
 """Main menu script"""
 
+# stdlib
+from os import path
+
 # 3rd party
 from textual.app import ComposeResult
-from textual.containers import Center, Middle, VerticalScroll
+from textual.containers import Center, Vertical
 from textual.widgets import Button
 
 # api
-from xthulu.ssh.console.app import XthuluApp
+from xthulu.ssh.console.banner_app import BannerApp
 from xthulu.ssh.context import SSHContext
 
 
-class MenuApp(XthuluApp[str]):
+class MenuApp(BannerApp[str]):
     """Main menu"""
 
     BINDINGS = [("escape", "quit", "Log off")]
     CSS = """
         Button {
-            margin-bottom: 1;
-            max-width: 100%;
-            width: 20;
+            height: 5;
+            width: 100%;
         }
 
-        VerticalScroll {
-            height: auto;
-            width: 20;
+        #wrapper {
+            overflow-x: auto;
+            overflow-y: auto;
+        }
+
+        #buttons {
+            layout: grid;
+            grid-gutter: 1 2;
+            grid-size: 3;
+            max-width: 80;
         }
     """
     """Stylesheet"""
@@ -34,15 +43,22 @@ class MenuApp(XthuluApp[str]):
         self._last = last
 
     def compose(self) -> ComposeResult:
-        yield Center(
-            Middle(
-                VerticalScroll(
+        self.context.console.clear()
+
+        for widget in super(MenuApp, self).compose():
+            yield widget
+
+        yield Vertical(
+            Center(
+                Center(
                     Button("Messages", id="messages"),
                     Button("Node chat", id="chat"),
                     Button("Oneliners", id="oneliners"),
                     Button("Lock example", id="lock_example"),
                     Button("Log off", id="goto_logoff", variant="error"),
-                )
+                    id="buttons",
+                ),
+                id="wrapper",
             )
         )
         # disable alternate buffer for main menu
@@ -57,6 +73,8 @@ class MenuApp(XthuluApp[str]):
         self.context.goto("logoff")
 
     async def on_ready(self) -> None:
+        self.set_focus(None)
+
         if self._last:
             btn = self.get_widget_by_id(self._last)
             btn.focus()
@@ -67,13 +85,21 @@ async def main(cx: SSHContext) -> None:
 
     while True:
         cx.console.set_window_title("main menu")
-        result = await MenuApp(cx, result).run_async()
+        result = await MenuApp(
+            cx,
+            result,
+            art_path=path.join("userland", "artwork", "main.ans"),
+            art_encoding="amiga",
+            alt="79 Columns // Main menu",
+        ).run_async()
 
         if not result:
             result = "goto_logoff"
 
         if result.startswith("goto_"):
-            cx.console.clear()
-            return cx.goto(result[5:])
+            break
 
         await cx.gosub(result)
+
+    cx.console.clear()
+    cx.goto(result[5:])

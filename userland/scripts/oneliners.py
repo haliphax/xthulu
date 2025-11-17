@@ -110,4 +110,5 @@ async def main(cx: SSHContext) -> None:
         cx,
         art_path=path.join("userland", "artwork", "oneliners.ans"),
         art_encoding="amiga",
+        alt="79 Columns // Oneliners",
     ).run_async()

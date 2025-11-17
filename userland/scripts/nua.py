@@ -19,16 +19,19 @@ class NuaApp(BannerApp[str]):
 
     CSS = """
         Button {
-            width: 21;
+            height: 3;
+            width: 100%;
         }
+
         Center {
-            height: 5;
+            height: 3;
         }
+
         Horizontal {
+            layout: grid;
+            grid-size: 3;
+            grid-gutter: 1;
             width: 65;
-        }
-        #create, #guest {
-            margin-right: 1;
         }
     """
     """Stylesheet"""
@@ -69,4 +72,5 @@ async def main(cx: SSHContext) -> str | None:
         cx,
         art_path=path.join("userland", "artwork", "nua.ans"),
         art_encoding="amiga",
+        alt="79 Columns // New user application",
     ).run_async()
