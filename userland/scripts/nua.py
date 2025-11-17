@@ -17,6 +17,7 @@ from xthulu.ssh.context import SSHContext
 class NuaApp(BannerApp[str]):
     """New user application"""
 
+    BANNER_PADDING = 5
     CSS = """
         Button {
             height: 3;

@@ -19,6 +19,7 @@ class MenuApp(BannerApp[str]):
     _last: str | None = None
 
     AUTO_FOCUS = None
+    BANNER_PADDING = 8
     BINDINGS = [("escape", "quit", "Log off")]
     CSS = """
         Button {

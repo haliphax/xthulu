@@ -14,12 +14,12 @@ from ..context import SSHContext
 from .app import XthuluApp
 from .art import load_art
 
-BANNER_PADDING = 10
-"""Required space left over to display banner art"""
-
 
 class BannerApp(XthuluApp[ReturnType]):
     """Textual app with banner display"""
+
+    BANNER_PADDING = 10
+    """Required space left over to display banner art"""
 
     _alt: str
 
@@ -68,7 +68,7 @@ class BannerApp(XthuluApp[ReturnType]):
         lines = len(self.artwork)
 
         if (
-            self.console.height < lines + BANNER_PADDING
+            self.console.height < lines + self.BANNER_PADDING
             or self.console.width < 80
         ):
             self.banner.update(self._alt)
@@ -83,7 +83,7 @@ class BannerApp(XthuluApp[ReturnType]):
 
     def on_resize(self, event: events.Resize) -> None:
         if (
-            event.size.height < len(self.artwork) + BANNER_PADDING
+            event.size.height < len(self.artwork) + self.BANNER_PADDING
             or event.size.width < 80
         ):
             self.banner.update(self._alt)
