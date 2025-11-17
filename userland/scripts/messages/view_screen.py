@@ -21,8 +21,12 @@ class ViewScreen(Screen):
         Binding("f", "", show=False),
     ]
     CSS = """
-        Label {
+        Horizontal Label {
             width: 50%;
+        }
+
+        Label {
+            margin: 0;
         }
 
         MarkdownViewer {
@@ -31,10 +35,15 @@ class ViewScreen(Screen):
 
         #header {
             background: #700;
-            height: 4;
+            height: 5;
             padding-left: 1;
             padding-right: 1;
             padding-top: 1;
+        }
+
+        #title {
+            width: auto;
+            margin-bottom: 1;
         }
     """
 
@@ -52,15 +61,24 @@ class ViewScreen(Screen):
             Vertical(
                 Horizontal(
                     Label(
-                        f"[bold underline]Author:[/] {self.message.author.name}"
+                        "[bold underline]Author:[/]    "
+                        f"{self.message.author.name}"
                     ),
                     Label(
-                        f"[bold underline]Posted:[/] {self.message.created.strftime('%H:%M %a %b %d %Y')}"
+                        "[bold underline]Posted:[/] "
+                        f"{self.message.created.strftime('%H:%M %a %b %d %Y')}"
                     ),
                 ),
                 Horizontal(
-                    Label(f"[bold underline]Title:[/]  {self.message.title}"),
+                    Label(
+                        "[bold underline]Recipient:[/] "
+                        f"{self.message.recipient.name if self.message.recipient else '<N/A>'}"
+                    ),
                     Label(f"[bold underline]Tags:[/]   {', '.join(self.tags)}"),
+                ),
+                Label(
+                    f"[bold underline]Title:[/]     {self.message.title}",
+                    id="title",
                 ),
                 id="header",
             ),

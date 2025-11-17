@@ -1,8 +1,10 @@
 """Message details screen"""
 
-# 3rd party
+# stdlib
 from typing import Sequence
-from sqlmodel import and_, col, select
+
+# 3rd party
+from sqlmodel import and_, col, func, select
 from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
 from textual import validation
@@ -10,6 +12,7 @@ from textual.widgets import Button, Input, Label, SelectionList, TextArea
 from textual.widgets.selection_list import Selection
 
 # api
+from xthulu.models import User
 from xthulu.resources import db_session
 from xthulu.ssh.console.app import XthuluApp
 
@@ -54,7 +57,7 @@ class DetailsModal(ModalScreen):
 
         #wrapper {
             background: $primary-background;
-            height: 20;
+            height: 23;
             padding: 1;
             width: 60;
         }
@@ -87,6 +90,13 @@ class DetailsModal(ModalScreen):
                     validate_on=("changed", "submitted"),
                 ),
             ),
+            Horizontal(
+                Label("To", shrink=True),
+                Input(
+                    id="to",
+                    max_length=User.MAX_NAME_LENGTH,
+                ),
+            ),
             SelectionList(id="tags"),
             Horizontal(
                 Button("Save", variant="success", name="save", id="save"),
@@ -100,8 +110,14 @@ class DetailsModal(ModalScreen):
 
         async with db_session() as db:
             if not self.reply_to:
+                my_recipient = None
                 my_tags = []
             else:
+                my_recipient = (
+                    await db.exec(
+                        select(User).where(User.id == self.reply_to.author_id)
+                    )
+                ).one_or_none()
                 my_tags = (
                     await db.exec(
                         select(MessageTags.tag_name).where(
@@ -110,6 +126,8 @@ class DetailsModal(ModalScreen):
                     )
                 ).all()
 
+            to: Input = self.get_widget_by_id("to")  # type: ignore
+            to.value = my_recipient.name if my_recipient else ""
             all_tags: Sequence[str] = (  # type: ignore
                 await db.exec(
                     select(MessageTag.name).where(
@@ -133,17 +151,35 @@ class DetailsModal(ModalScreen):
             return
 
         content = self.app._background_screens[-1].query_one(TextArea)
+        to: Input = self.get_widget_by_id("to")  # type: ignore
         tags: SelectionList = self.get_widget_by_id("tags")  # type: ignore
 
         if len(tags.selected) == 0:
             return
 
-        # create message
         async with db_session() as db:
+            recipient: User | None = None
+
+            # validate recipient
+            if to.value != "":
+                recipient = (
+                    await db.exec(
+                        select(User).where(
+                            func.lower(User.name) == to.value.lower()
+                        )
+                    )
+                ).one_or_none()
+
+                if recipient is None:
+                    to.value = "No such user!"
+                    return
+
+            # create message
             message = Message(
                 author_id=app.context.user.id,
                 title=title.value,
                 content=content.text,
+                recipient=recipient,
                 parent_id=self.reply_to.id if self.reply_to else None,
             )
             db.add(message)

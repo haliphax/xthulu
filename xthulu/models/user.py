@@ -2,7 +2,7 @@
 
 # stdlib
 from datetime import datetime
-from typing import Any
+from typing import Any, ClassVar
 
 # 3rd party
 import bcrypt
@@ -12,10 +12,13 @@ from sqlmodel import Field, func, Index, SQLModel
 class User(SQLModel, table=True):
     """User model"""
 
+    MAX_NAME_LENGTH: ClassVar[int] = 24
+    """Maximum allowed user name length"""
+
     id: int | None = Field(primary_key=True, default=None)
     """Unique ID"""
 
-    name: str = Field(max_length=24, unique=True)
+    name: str = Field(max_length=MAX_NAME_LENGTH, unique=True)
     """User name"""
 
     email: str = Field(max_length=64, unique=True)

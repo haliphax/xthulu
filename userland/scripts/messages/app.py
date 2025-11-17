@@ -349,7 +349,10 @@ class MessagesApp(BannerApp):
                 await db.exec(
                     select(Message)
                     .where(Message.id == message_id)
-                    .options(joinedload(Message.author))  # type: ignore
+                    .options(
+                        joinedload(Message.author),  # type: ignore
+                        joinedload(Message.recipient),  # type: ignore
+                    )
                 )
             ).one()
             tags = (
