@@ -16,6 +16,9 @@ from xthulu.ssh.context import SSHContext
 class MenuApp(BannerApp[str]):
     """Main menu"""
 
+    _last: str | None = None
+
+    AUTO_FOCUS = None
     BINDINGS = [("escape", "quit", "Log off")]
     CSS = """
         Button {
@@ -36,14 +39,14 @@ class MenuApp(BannerApp[str]):
         }
     """
     """Stylesheet"""
-    _last: str | None = None
 
     def __init__(self, context: SSHContext, last: str | None = None, **kwargs):
         super(MenuApp, self).__init__(context, **kwargs)
         self._last = last
 
     def compose(self) -> ComposeResult:
-        self.context.console.clear()
+        # disable alternate buffer for main menu
+        self.context.proc.stdout.write(b"\x1b[?1049l")
 
         for widget in super(MenuApp, self).compose():
             yield widget
@@ -61,8 +64,6 @@ class MenuApp(BannerApp[str]):
                 id="wrapper",
             )
         )
-        # disable alternate buffer for main menu
-        self.context.proc.stdout.write(b"\x1b[?1049l")
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         assert event.button.id
@@ -73,8 +74,6 @@ class MenuApp(BannerApp[str]):
         self.context.goto("logoff")
 
     async def on_ready(self) -> None:
-        self.set_focus(None)
-
         if self._last:
             btn = self.get_widget_by_id(self._last)
             btn.focus()

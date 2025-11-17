@@ -51,6 +51,7 @@ async def main(cx: SSHContext) -> None:
             return
 
     if await choice(cx, "Skip to main menu? ", ("No", "Yes")) == "Yes":
+        cx.console.clear()
         cx.goto("main")
         return
 
@@ -87,4 +88,5 @@ async def main(cx: SSHContext) -> None:
 
     await cx.inkey(timeout=0.1)  # show bar at 100% before switching screens
     await cx.gosub("oneliners")
+    cx.console.clear()
     cx.goto("main")
