@@ -7,6 +7,7 @@ from math import floor
 from rich.text import Text
 from textual import events
 from textual.app import ComposeResult, ReturnType
+from textual.containers import Horizontal
 from textual.widgets import Static
 
 # local
@@ -49,43 +50,41 @@ class BannerApp(XthuluApp[ReturnType]):
         self._alt = f"{alt}\n"
         super(BannerApp, self).__init__(context=context, **kwargs)
 
-    def _update_banner(self):
-        padded = []
-        # assumes art is 80 columns wide; improve this
-        pad_left = " " * floor(self.context.console.width / 2 - 40)
-
-        for line in self.artwork:
-            padded += [pad_left, line]
-
-        text = Text.from_ansi(
-            "".join(padded), overflow="crop", no_wrap=True, end=""
-        )
-        self.banner.update(text)
-
     def compose(self) -> ComposeResult:
         # banner
         self.banner = Static(id="banner", markup=False)
-        lines = len(self.artwork)
 
-        if (
-            self.console.height < lines + self.BANNER_PADDING
-            or self.console.width < 80
-        ):
+        with Horizontal(id="banner_wrapper"):
+            yield self.banner
+
+    def _check_size(self, width: int, height: int) -> None:
+        lines = len(self.artwork)
+        pad_left = floor(self.context.console.width / 2 - 40)
+        lines = len(self.artwork)
+        self.banner.styles.width = 88
+        self.banner.styles.height = lines
+        h: Horizontal = self.get_widget_by_id("banner_wrapper")  # type: ignore
+        h.styles.margin = (0, pad_left)
+        h.styles.overflow_x = "hidden"
+        h.styles.overflow_y = "hidden"
+        h.styles.width = self.console.width
+
+        if width < lines + self.BANNER_PADDING or self.console.width < 80:
+            h.styles.height = self.banner.styles.height = len(
+                self._alt.splitlines()
+            )
             self.banner.update(self._alt)
         elif lines > 0:
-            self._update_banner()
+            h.styles.height = self.banner.styles.height = lines
+            text = Text.from_ansi(
+                "".join(self.artwork), overflow="ignore", end=""
+            )
+            self.banner.update(text)
 
-        yield self.banner
-
-    async def on_mount(self):
+    async def on_mount(self) -> None:
+        # assumes art is 80 columns wide; improve this
         self.artwork = await load_art(self.art_path, self.art_encoding)
-        self._update_banner()
+        self._check_size(self.console.width, self.console.height)
 
     def on_resize(self, event: events.Resize) -> None:
-        if (
-            event.size.height < len(self.artwork) + self.BANNER_PADDING
-            or event.size.width < 80
-        ):
-            self.banner.update(self._alt)
-        else:
-            self._update_banner()
+        self._check_size(event.size.width, event.size.height)

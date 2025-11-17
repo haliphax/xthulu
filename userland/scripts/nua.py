@@ -28,7 +28,7 @@ class NuaApp(BannerApp[str]):
             height: 3;
         }
 
-        Horizontal {
+        #buttons_wrapper {
             layout: grid;
             grid-size: 3;
             grid-gutter: 1;
@@ -54,6 +54,7 @@ class NuaApp(BannerApp[str]):
                     id="create",
                 ),
                 Button("Log off", variant="error", id="logoff"),
+                id="buttons_wrapper",
             )
         )
 

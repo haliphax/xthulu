@@ -6,61 +6,12 @@ from re import Match, sub
 # 3rd party
 import aiofiles as aiof
 from rich.text import Text
-from textual import events
-from textual.widgets import Log
 
 # local
 from ..context import SSHContext
-from .app import XthuluApp
 
-FIND_CUF_REGEX = r"\x1b\[(\d+)C"
+FIND_CUF_REGEX = r"\x1b\[(\d+)?C"
 FIND_BOLD_REGEX = r"(\x1b\[(?:\d+;)?)30m"
-
-
-class ArtLog(XthuluApp):
-    """Displays artwork"""
-
-    artwork: list[str]
-    delay: float
-    swap_bold: bool
-
-    def __init__(
-        self,
-        context: SSHContext,
-        artwork: list[str],
-        delay: float = 0.1,
-        swap_bold=True,
-        **kwargs,
-    ):
-        self.artwork = artwork
-        self.delay = delay
-        self.swap_bold = swap_bold
-        super(ArtLog, self).__init__(context, **kwargs)
-        self.run_worker(self._worker, exclusive=True)
-
-    @property
-    def scrollbars_enabled(self) -> bool:
-        return False
-
-    def compose(self):
-        yield Log()
-
-    async def _worker(self):
-        artlog: Log = self.query_one(Log)  # type: ignore
-
-        for line in self.artwork:
-            if self._exit:
-                return
-
-            artlog.write_line(line)
-
-            if self.context.inkey(timeout=0.1):
-                break
-
-        self.exit()
-
-    async def on_key(self, _: events.Key):
-        self.exit()
 
 
 def _swap_bold(match: Match[str]) -> str:
@@ -68,7 +19,12 @@ def _swap_bold(match: Match[str]) -> str:
 
 
 def _replace_cuf(match: Match[str]) -> str:
-    return " " * int(match.group(1))
+    how_many = int(match.group(1) or 1)
+
+    if how_many < 1:
+        how_many = 1
+
+    return " " * how_many
 
 
 def normalize_ansi(text: str, swap_bold=True) -> str:
@@ -113,31 +69,6 @@ async def load_art(path: str, encoding="cp437", swap_bold=True) -> list[str]:
     return artwork
 
 
-async def scroll_art_app(
-    context: SSHContext,
-    path: str,
-    encoding="cp437",
-    delay=0.1,
-    swap_bold=True,
-):
-    """
-    Display ANSI artwork in a scrolling Log panel.
-
-    Args:
-        context: The current `xthulu.ssh.context.SSHContext`.
-        path: The path of the file to display.
-        encoding: The encoding of the file to display.
-        delay: The delay (in seconds) between displaying each line.
-        swap_bold: If "bold" ANSI codes should be swapped for "bright" codes.
-    """
-
-    if context.encoding != "utf-8":
-        encoding = context.encoding
-
-    artwork = await load_art(path, encoding, swap_bold)
-    await ArtLog(context, artwork, delay).run_async()
-
-
 async def scroll_art(
     context: SSHContext,
     path: str,
@@ -177,7 +108,7 @@ async def scroll_art(
             height=1,
             highlight=False,
             markup=False,
-            overflow="crop",
+            overflow="ignore",
             no_wrap=True,
         )
 

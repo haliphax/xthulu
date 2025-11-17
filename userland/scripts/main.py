@@ -5,7 +5,7 @@ from os import path
 
 # 3rd party
 from textual.app import ComposeResult
-from textual.containers import Center, Vertical
+from textual.containers import Center, VerticalScroll
 from textual.widgets import Button
 
 # api
@@ -18,7 +18,6 @@ class MenuApp(BannerApp[str]):
 
     _last: str | None = None
 
-    AUTO_FOCUS = None
     BANNER_PADDING = 8
     BINDINGS = [("escape", "quit", "Log off")]
     CSS = """
@@ -27,9 +26,8 @@ class MenuApp(BannerApp[str]):
             width: 100%;
         }
 
-        #wrapper {
-            overflow-x: auto;
-            overflow-y: auto;
+        VerticalScroll {
+            width: 100%;
         }
 
         #buttons {
@@ -52,19 +50,14 @@ class MenuApp(BannerApp[str]):
         for widget in super(MenuApp, self).compose():
             yield widget
 
-        yield Vertical(
-            Center(
-                Center(
-                    Button("Messages", id="messages"),
-                    Button("Node chat", id="chat"),
-                    Button("Oneliners", id="oneliners"),
-                    Button("Lock example", id="lock_example"),
-                    Button("Log off", id="goto_logoff", variant="error"),
-                    id="buttons",
-                ),
-                id="wrapper",
-            )
-        )
+        with VerticalScroll():
+            with Center():
+                with Center(id="buttons"):
+                    yield Button("Messages", id="messages")
+                    yield Button("Node chat", id="chat")
+                    yield Button("Oneliners", id="oneliners")
+                    yield Button("Lock example", id="lock_example")
+                    yield Button("Log off", id="goto_logoff", variant="error")
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         assert event.button.id

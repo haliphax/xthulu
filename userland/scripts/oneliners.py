@@ -29,6 +29,10 @@ class OnelinersApp(BannerApp):
             width: 100%;
         }
 
+        ListView {
+            width: 100%;
+        }
+
         ListItem {
             background: $primary-background;
         }

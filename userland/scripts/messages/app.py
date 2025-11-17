@@ -74,6 +74,10 @@ class MessagesApp(BannerApp):
             }
         }
 
+        ListView {
+            width: 100%;
+        }
+
         ListItem {
             background: $primary-background;
             layout: horizontal;
