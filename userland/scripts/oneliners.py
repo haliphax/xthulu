@@ -23,6 +23,7 @@ class OnelinersApp(BannerApp):
     """Oneliners Textual app"""
 
     AUTO_FOCUS = "Input"
+    BANNER_PADDING = 15
 
     CSS = """
         $accent: ansi_red;

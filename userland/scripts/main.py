@@ -18,7 +18,7 @@ class MenuApp(BannerApp[str]):
 
     _last: str | None = None
 
-    BANNER_PADDING = 8
+    BANNER_PADDING = 9
     BINDINGS = [("escape", "quit", "Log off")]
 
     CSS = """

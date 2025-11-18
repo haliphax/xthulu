@@ -17,9 +17,12 @@ from xthulu.ssh.context import SSHContext
 class NuaApp(BannerApp[str]):
     """New user application"""
 
-    BANNER_PADDING = 5
-
+    BANNER_PADDING = 2
     CSS = """
+        * {
+            overflow: hidden;
+        }
+
         Button {
             height: 3;
             width: 100%;
@@ -27,12 +30,17 @@ class NuaApp(BannerApp[str]):
 
         Center {
             height: 3;
+            margin: 0;
+            padding: 0;
+            padding-top: -1;
         }
 
         #buttons_wrapper {
             layout: grid;
             grid-size: 3;
             grid-gutter: 1;
+            margin: 0;
+            padding: 0;
             width: 65;
         }
     """
@@ -45,15 +53,22 @@ class NuaApp(BannerApp[str]):
             with Horizontal(id="buttons_wrapper"):
                 yield Button(
                     "Continue as guest",
+                    flat=True,
                     variant="success",
                     id="guest",
                 )
                 yield Button(
                     "Create an account",
+                    flat=True,
                     variant="primary",
                     id="create",
                 )
-                yield Button("Log off", variant="error", id="logoff")
+                yield Button(
+                    "Log off",
+                    flat=True,
+                    variant="error",
+                    id="logoff",
+                )
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         self.exit(result=event.button.id)

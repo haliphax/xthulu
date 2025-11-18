@@ -45,6 +45,8 @@ class MessageFilter:
 class MessagesApp(BannerApp):
     """Message bases Textual app"""
 
+    BANNER_PADDING = 8
+
     BINDINGS = [
         ("escape", "quit", "Exit"),
         ("n", "compose", "Compose"),

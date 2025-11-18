@@ -59,12 +59,13 @@ class BannerApp(XthuluApp[ReturnType]):
     def _check_size(self, width: int, height: int) -> None:
         # assumes art is 80 columns wide; improve this
         lines = len(self.artwork)
-        pad_left = floor(self.context.console.width / 2 - 40)
+        pad_left = floor(width / 2 - 40)
         self.banner.styles.margin = (0, pad_left)
         self.banner.styles.width = 80
         self.banner.styles.height = lines
+        self.context.log.info(self.BANNER_PADDING)
 
-        if width < lines + self.BANNER_PADDING or self.console.width < 80:
+        if height < lines + self.BANNER_PADDING or width < 80:
             self.banner.styles.height = len(self._alt.splitlines())
             self.banner.update(self._alt)
         elif lines > 0:
