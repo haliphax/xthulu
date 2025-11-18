@@ -44,7 +44,7 @@ class BannerApp(XthuluApp[ReturnType]):
         alt: str,
         **kwargs,
     ):
-        "" # empty docstring
+        ""  # empty docstring
         self.art_encoding = art_encoding
         self.art_path = art_path
         self.artwork = []
@@ -52,7 +52,7 @@ class BannerApp(XthuluApp[ReturnType]):
         super(BannerApp, self).__init__(context=context, **kwargs)
 
     def compose(self) -> ComposeResult:
-        "" # empty docstring
+        ""  # empty docstring
         self.banner = Static(id="banner", markup=False)
         yield self.banner
 

@@ -34,7 +34,7 @@ class XthuluApp(App[ReturnType]):
     """The current SSH context"""
 
     def __init__(self, context: SSHContext, ansi_color=True, **kwargs):
-        "" # empty docstring
+        ""  # empty docstring
         # avoid cyclic import
         from .internal.driver import SSHDriver
 
@@ -62,7 +62,7 @@ class XthuluApp(App[ReturnType]):
             d.process_message(events.Resize(new_size, new_size))
 
     def exit(self, **kwargs) -> None:  # type: ignore
-        "" # empty docstring
+        ""  # empty docstring
         # avoid cyclic import
         from .internal.driver import SSHDriver
 
