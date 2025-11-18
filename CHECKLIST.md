@@ -46,7 +46,7 @@
         requests, IM, etc.)
   - [ ] Server events queue (IPC coordination, etc.)
   - [x] <s>Locks (IPC semaphore)</s>
-  - [ ] Global IPC (CLI, web, etc.) via Redis PubSub
+  - [x] Global IPC (CLI, web, etc.) via Redis PubSub
 - [ ] Data layer
   - [x] <s>PostgreSQL for data</s>
   - [x] <s>Asynchronous ORM ([SQLModel][])</s>
