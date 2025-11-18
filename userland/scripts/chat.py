@@ -4,6 +4,7 @@
 from asyncio import Event
 from collections import deque
 import json
+from typing import Any
 
 # 3rd party
 from pydantic import BaseModel
@@ -27,8 +28,17 @@ MAX_LENGTH = 256
 
 
 class ChatMessage(BaseModel):
-    user: str | None
+    """Posted chat message"""
+
     message: str
+    """Message text"""
+
+    user: str | None
+    """Message author (or `None` if system)"""
+
+    def __init__(self, **data: Any):
+        ""  # empty docstring
+        super(ChatMessage, self).__init__(**data)
 
 
 class ChatApp(XthuluApp):
@@ -46,6 +56,7 @@ class ChatApp(XthuluApp):
     _exit_event: Event
 
     def __init__(self, context: SSHContext, **kwargs):
+        ""  # empty docstring
         super(ChatApp, self).__init__(context, **kwargs)
         self.redis = Resources().cache
         self.pubsub = self.redis.pubsub()
@@ -65,6 +76,8 @@ class ChatApp(XthuluApp):
             self.pubsub.get_message(True, 0.01)
 
     def compose(self):
+        ""  # empty docstring
+
         # chat log
         yield VerticalScroll(Static(id="log"))
 

@@ -22,6 +22,7 @@ class BannerApp(XthuluApp[ReturnType]):
     """Required space left over to display banner art"""
 
     _alt: str
+    """Alternate text if banner won't fit"""
 
     art_encoding: str
     """Encoding of the artwork file"""
@@ -43,6 +44,7 @@ class BannerApp(XthuluApp[ReturnType]):
         alt: str,
         **kwargs,
     ):
+        "" # empty docstring
         self.art_encoding = art_encoding
         self.art_path = art_path
         self.artwork = []
@@ -50,6 +52,7 @@ class BannerApp(XthuluApp[ReturnType]):
         super(BannerApp, self).__init__(context=context, **kwargs)
 
     def compose(self) -> ComposeResult:
+        "" # empty docstring
         self.banner = Static(id="banner", markup=False)
         yield self.banner
 

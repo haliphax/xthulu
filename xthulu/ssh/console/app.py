@@ -28,11 +28,13 @@ class XthuluApp(App[ReturnType]):
     """SSH wrapper for Textual apps"""
 
     ENABLE_COMMAND_PALETTE = False
+    """Command palette is disabled by default"""
 
     context: SSHContext
     """The current SSH context"""
 
     def __init__(self, context: SSHContext, ansi_color=True, **kwargs):
+        "" # empty docstring
         # avoid cyclic import
         from .internal.driver import SSHDriver
 
@@ -60,6 +62,7 @@ class XthuluApp(App[ReturnType]):
             d.process_message(events.Resize(new_size, new_size))
 
     def exit(self, **kwargs) -> None:  # type: ignore
+        "" # empty docstring
         # avoid cyclic import
         from .internal.driver import SSHDriver
 
