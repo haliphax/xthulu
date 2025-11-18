@@ -48,6 +48,7 @@ class OnelinersApp(BannerApp):
     """Stylesheet"""
 
     def __init__(self, context: SSHContext, **kwargs):
+        ""  # empty docstring
         super(OnelinersApp, self).__init__(context, **kwargs)
         self.bind("escape", "quit")
 

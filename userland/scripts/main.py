@@ -19,7 +19,11 @@ class MenuApp(BannerApp[str]):
     _last: str | None = None
 
     BANNER_PADDING = 8
+    """Required vertical space left on screen after banner"""
+
     BINDINGS = [("escape", "quit", "Log off")]
+    """Key bindings"""
+
     CSS = """
         Button {
             height: 5;
@@ -40,6 +44,7 @@ class MenuApp(BannerApp[str]):
     """Stylesheet"""
 
     def __init__(self, context: SSHContext, last: str | None = None, **kwargs):
+        ""  # empty docstring
         super(MenuApp, self).__init__(context, **kwargs)
         self._last = last
 
@@ -64,6 +69,7 @@ class MenuApp(BannerApp[str]):
         return self.exit(result=event.button.id)
 
     async def action_quit(self) -> None:
+        ""  # empty docstring
         self.context.console.clear()
         self.context.goto("logoff")
 

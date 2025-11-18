@@ -71,10 +71,10 @@ class DetailsModal(ModalScreen):
         self.reply_to = reply_to
 
     def compose(self):
-        yield Vertical(
-            Horizontal(
-                Label("Title", shrink=True),
-                Input(
+        with Vertical():
+            with Horizontal():
+                yield Label("Title", shrink=True)
+                yield Input(
                     (
                         f"Re: {self.reply_to.title.lstrip('Re: ')}"
                         if self.reply_to
@@ -88,22 +88,20 @@ class DetailsModal(ModalScreen):
                         )
                     ],
                     validate_on=("changed", "submitted"),
-                ),
-            ),
-            Horizontal(
-                Label("To", shrink=True),
-                Input(
+                )
+
+            with Horizontal():
+                yield Label("To", shrink=True)
+                yield Input(
                     id="to",
                     max_length=User.MAX_NAME_LENGTH,
-                ),
-            ),
-            SelectionList(id="tags"),
-            Horizontal(
-                Button("Save", variant="success", name="save", id="save"),
-                Button("Cancel", variant="error", name="cancel"),
-            ),
-            id="wrapper",
-        )
+                )
+
+            yield SelectionList(id="tags")
+
+            with Horizontal(id="wrapper"):
+                yield Button("Save", variant="success", name="save", id="save")
+                yield Button("Cancel", variant="error", name="cancel")
 
     async def on_mount(self) -> None:
         tags: SelectionList = self.get_widget_by_id("tags")  # type: ignore

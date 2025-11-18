@@ -45,6 +45,7 @@ class ChatApp(XthuluApp):
     """Node chat Textual app"""
 
     BINDINGS = [Binding("escape", "quit", show=False)]
+    """Key bindings"""
 
     redis: Redis
     """Redis connection"""
@@ -76,8 +77,6 @@ class ChatApp(XthuluApp):
             self.pubsub.get_message(True, 0.01)
 
     def compose(self):
-        ""  # empty docstring
-
         # chat log
         yield VerticalScroll(Static(id="log"))
 

@@ -45,15 +45,13 @@ class SaveModal(ModalScreen):
         self.reply_to = reply_to
 
     def compose(self):
-        yield Vertical(
-            Label("Do you want to save your message?"),
-            Horizontal(
-                Button("Save", variant="success", id="save"),
-                Button("Continue", variant="primary", id="continue"),
-                Button("Discard", variant="error", id="discard"),
-            ),
-            id="wrapper",
-        )
+        with Vertical(id="wrapper"):
+            yield Label("Do you want to save your message?")
+
+            with Horizontal():
+                yield Button("Save", variant="success", id="save")
+                yield Button("Continue", variant="primary", id="continue")
+                yield Button("Discard", variant="error", id="discard")
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         assert event.button.id

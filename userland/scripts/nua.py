@@ -18,6 +18,8 @@ class NuaApp(BannerApp[str]):
     """New user application"""
 
     BANNER_PADDING = 5
+    """Required vertical space left on screen after banner"""
+
     CSS = """
         Button {
             height: 3;
@@ -41,22 +43,19 @@ class NuaApp(BannerApp[str]):
         for widget in super(NuaApp, self).compose():
             yield widget
 
-        yield Center(
-            Horizontal(
-                Button(
+        with Center():
+            with Horizontal(id="buttons_wrapper"):
+                yield Button(
                     "Continue as guest",
                     variant="success",
                     id="guest",
-                ),
-                Button(
+                )
+                yield Button(
                     "Create an account",
                     variant="primary",
                     id="create",
-                ),
-                Button("Log off", variant="error", id="logoff"),
-                id="buttons_wrapper",
-            )
-        )
+                )
+                yield Button("Log off", variant="error", id="logoff")
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         self.exit(result=event.button.id)

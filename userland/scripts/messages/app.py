@@ -51,6 +51,7 @@ class MessagesApp(BannerApp):
         ("r", "reply", "Reply"),
         ("f", "filter", "Filter"),
     ]
+    """Key bindings"""
 
     CSS = """
         $highlight: ansi_magenta;
@@ -111,6 +112,7 @@ class MessagesApp(BannerApp):
             align: right middle;
         }
     """
+    """Stylesheet"""
 
     filter: MessageFilter
     """Current message filter"""
@@ -132,6 +134,7 @@ class MessagesApp(BannerApp):
         context: SSHContext,
         **kwargs,
     ):
+        ""  # empty docstring
         self.filter = MessageFilter()
         super(MessagesApp, self).__init__(context, **kwargs)
 
@@ -315,6 +318,7 @@ class MessagesApp(BannerApp):
             )
 
     async def action_quit(self) -> None:
+        ""  # empty docstring
         self.exit()
 
     async def on_key(self, event: events.Key) -> None:
@@ -390,6 +394,7 @@ class MessagesApp(BannerApp):
         await self.push_screen(ViewScreen(message=message, tags=tags))
 
     async def on_event(self, event: events.Event | events.MouseScrollDown):
+        ""  # empty docstring
         await super(MessagesApp, self).on_event(event)
 
         try:

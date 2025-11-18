@@ -4,6 +4,7 @@
 from typing import Sequence
 
 # 3rd party
+from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
@@ -56,40 +57,39 @@ class ViewScreen(Screen):
         self.message = message
         self.tags = tags
 
-    def compose(self):
+    def compose(self) -> ComposeResult:
         assert self.message.author
-        yield Vertical(
-            Vertical(
-                Horizontal(
-                    Label(
+
+        with Vertical():
+            with Vertical(id="header"):
+                with Horizontal():
+                    yield Label(
                         "[bold underline ansi_cyan]Author:[/]    "
                         f"{self.message.author.name}"
-                    ),
-                    Label(
+                    )
+                    yield Label(
                         "[bold underline ansi_cyan]Posted:[/] "
                         f"{self.message.created.strftime('%H:%M %a %b %d %Y')}"
-                    ),
-                ),
-                Horizontal(
-                    Label(
+                    )
+
+                with Horizontal():
+                    yield Label(
                         "[bold underline ansi_cyan]Recipient:[/] "
                         f"{self.message.recipient.name if self.message.recipient else '<N/A>'}"
-                    ),
-                    Label(
+                    )
+                    yield Label(
                         f"[bold underline ansi_cyan]Tags:[/]   "
                         f"{', '.join(self.tags)}"
-                    ),
-                ),
-                Label(
+                    )
+
+                yield Label(
                     f"[bold underline ansi_cyan]Title:[/]     "
                     f"{self.message.title}",
                     id="title",
-                ),
-                id="header",
-            ),
-            MarkdownViewer(
+                )
+
+            yield MarkdownViewer(
                 markdown=self.message.content,
                 show_table_of_contents=False,
-            ),
-            Footer(),
-        )
+            )
+            yield Footer()

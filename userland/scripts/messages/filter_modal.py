@@ -56,15 +56,13 @@ class FilterModal(ModalScreen[list[str]]):
         self._tags = tags or []
 
     def compose(self):
-        yield Vertical(
-            SelectionList(id="tags"),
-            Horizontal(
-                Button("Filter", variant="success", id="filter"),
-                Button("Reset", id="reset"),
-                Button("Cancel", variant="error", id="cancel"),
-            ),
-            id="wrapper",
-        )
+        with Vertical(id="wrapper"):
+            yield SelectionList(id="tags")
+
+            with Horizontal():
+                yield Button("Filter", variant="success", id="filter")
+                yield Button("Reset", id="reset")
+                yield Button("Cancel", variant="error", id="cancel")
 
     def _submit(self) -> None:
         tags = self.query_one(SelectionList)
