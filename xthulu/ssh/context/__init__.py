@@ -20,12 +20,12 @@ from ...events import EventQueue
 from ...logger import log
 from ...models import User
 from ...resources import db_session
-from ...scripting import load_userland_module
 from ..console import XthuluConsole
 from ..exceptions import Goto, ProcessClosing, ProcessForciblyClosed
 from ..structs import Script
 from .lock_manager import _LockManager
 from .logger_adapter import ContextLoggerAdapter
+from .scripting import load_userland_module
 
 
 class SSHContext:

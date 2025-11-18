@@ -5,7 +5,7 @@ from importlib.machinery import ModuleSpec, PathFinder
 from types import ModuleType
 
 # local
-from .configuration import get_config
+from ...configuration import get_config
 
 
 def load_userland_module(name: str) -> ModuleType | None:

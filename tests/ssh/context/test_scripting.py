@@ -7,14 +7,14 @@ from unittest.mock import Mock, patch
 import pytest
 
 # local
-from xthulu.scripting import load_userland_module
+from xthulu.ssh.context.scripting import load_userland_module
 
 
 @pytest.mark.parametrize(
     ["path", "found"], [["root.good", True], ["root.bad", False]]
 )
-@patch("xthulu.scripting.PathFinder")
-@patch("xthulu.scripting.get_config", return_value=["/test"])
+@patch("xthulu.ssh.context.scripting.PathFinder")
+@patch("xthulu.ssh.context.scripting.get_config", return_value=["/test"])
 def test_load_userland_module(
     mock_config: Mock, mock_pathfinder: Mock, path: str, found: bool
 ):
