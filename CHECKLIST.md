@@ -53,6 +53,9 @@
   - [x] <s>User model</s>
   - [x] <s>Message bases</s>
   - [ ] Simple JSONB table for mixed use
+- [ ] Permissions
+  - [ ] User groups
+  - [ ] ACLs system
 
 [asyncssh]: https://asyncssh.readthedocs.io/en/latest/
 [fastapi]: https://fastapi.tiangolo.com
