@@ -10,12 +10,12 @@ from rich.text import Text
 # local
 from ..context import SSHContext
 
-FIND_CUF_REGEX = r"\x1b\[(\d+)?C"
 FIND_BOLD_REGEX = r"(\x1b\[(?:\d+;)?)30m"
+FIND_CUF_REGEX = r"\x1b\[(\d+)?C"
 
 
-def _swap_bold(match: Match[str]) -> str:
-    return f"\x1b[{match.group(1)}90m"
+def _replace_bold(match: Match[str]) -> str:
+    return f"{match.group(1)}90m"
 
 
 def _replace_cuf(match: Match[str]) -> str:
@@ -27,44 +27,34 @@ def _replace_cuf(match: Match[str]) -> str:
     return " " * how_many
 
 
-def normalize_ansi(text: str, swap_bold=True) -> str:
+def normalize_ansi(text: str) -> str:
     """
     Replace CUF sequences with spaces.
 
     Args:
         text: The text to modify.
-        swap_bold: If "bold" ANSI codes should be swapped for "bright" codes.
 
     Returns:
-        Text with CUF sequences replaced by whitespace (and "bold" swapped
-        for "bright" if that option was chosen).
+        Text with CUF sequences replaced by whitespace.
     """
 
-    text = sub(FIND_CUF_REGEX, _replace_cuf, text)
-
-    if swap_bold:
-        text = sub(FIND_BOLD_REGEX, _swap_bold, text)
-
-    return text
+    return sub(FIND_CUF_REGEX, _replace_cuf, text)
 
 
-async def load_art(path: str, encoding="cp437", swap_bold=True) -> list[str]:
+async def load_art(path: str, encoding="cp437") -> list[str]:
     """
     Load normalized, properly-encoded artwork files.
 
     Args:
         path: The path of the file to load.
         encoding: The encoding of the file to load.
-        swap_bold: If "bold" ANSI codes should be swapped for "bright" codes.
 
     Returns:
         A list of normalized lines from the target file.
     """
 
     async with aiof.open(path, encoding=encoding) as f:
-        artwork = [
-            normalize_ansi(line, swap_bold) for line in await f.readlines()
-        ]
+        artwork = [normalize_ansi(line) for line in await f.readlines()]
 
     return artwork
 
@@ -74,7 +64,7 @@ async def scroll_art(
     path: str,
     encoding="cp437",
     delay=0.1,
-    swap_bold=True,
+    bold_as_bright=True,
 ) -> bytes | None:
     """
     Display ANSI artwork directly to the console.
@@ -84,7 +74,7 @@ async def scroll_art(
         path: The path of the file to display.
         encoding: The encoding of the file to display.
         delay: The delay (in seconds) between displaying each line.
-        swap_bold: If "bold" ANSI codes should be swapped for "bright" codes.
+        bold_as_bright: Render "bold" as "bright" (e.g. for classic DOS ANSI).
 
     Returns:
         The byte sequence of a key pressed during display, if any.
@@ -93,13 +83,16 @@ async def scroll_art(
     if context.encoding != "utf-8":
         encoding = context.encoding
 
-    artwork = await load_art(path, encoding, swap_bold)
+    artwork = await load_art(path, encoding)
 
     # show entire piece immediately if shorter than terminal
     if context.console.height >= len(artwork):
         delay = 0.0
 
     for line in artwork:
+        if bold_as_bright:
+            line = sub(FIND_BOLD_REGEX, _replace_bold, line)
+
         processed = Text.from_ansi(line, overflow="crop", no_wrap=True, end="")
         context.console.print(
             processed,
@@ -123,12 +116,7 @@ async def scroll_art(
     return None
 
 
-async def show_art(
-    context: SSHContext,
-    path: str,
-    encoding="cp437",
-    swap_bold=True,
-) -> None:
+async def show_art(context: SSHContext, path: str, encoding="cp437") -> None:
     """
     Display ANSI artwork directly to the console without scrolling.
 
@@ -136,7 +124,6 @@ async def show_art(
         context: The current `xthulu.ssh.context.SSHContext`.
         path: The path of the file to display.
         encoding: The encoding of the file to display.
-        swap_bold: If "bold" ANSI codes should be swapped for "bright" codes.
     """
 
-    await scroll_art(context, path, encoding, 0.0, swap_bold)
+    await scroll_art(context, path, encoding, 0.0)
