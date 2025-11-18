@@ -51,7 +51,6 @@ class MessagesApp(BannerApp):
         ("r", "reply", "Reply"),
         ("f", "filter", "Filter"),
     ]
-    """Key bindings"""
 
     CSS = """
         $highlight: ansi_magenta;
@@ -112,7 +111,6 @@ class MessagesApp(BannerApp):
             align: right middle;
         }
     """
-    """Stylesheet"""
 
     filter: MessageFilter
     """Current message filter"""
@@ -436,4 +434,3 @@ class MessagesApp(BannerApp):
         await self._load_messages()
         lv = self.query_one(ListView)
         lv.index = 0
-        lv.focus()

@@ -18,7 +18,6 @@ class NuaApp(BannerApp[str]):
     """New user application"""
 
     BANNER_PADDING = 5
-    """Required vertical space left on screen after banner"""
 
     CSS = """
         Button {
@@ -37,7 +36,6 @@ class NuaApp(BannerApp[str]):
             width: 65;
         }
     """
-    """Stylesheet"""
 
     def compose(self) -> ComposeResult:
         for widget in super(NuaApp, self).compose():

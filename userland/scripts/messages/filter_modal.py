@@ -21,6 +21,7 @@ class FilterModal(ModalScreen[list[str]]):
     """Filter messages screen"""
 
     BINDINGS = [("escape", "app.pop_screen", "")]
+
     CSS = """
         FilterModal {
             align: center middle;

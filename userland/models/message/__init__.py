@@ -2,7 +2,7 @@
 
 # stdlib
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, ClassVar, Optional
 
 # 3rd party
 from sqlmodel import Field, Relationship, SQLModel
@@ -13,6 +13,8 @@ from xthulu.models.user import User
 
 class Message(SQLModel, table=True):
     """Message model"""
+
+    MAX_TITLE_LENGTH: ClassVar[int] = 120
 
     id: int | None = Field(primary_key=True, default=None)
     """Unique ID"""
@@ -52,7 +54,7 @@ class Message(SQLModel, table=True):
     created: datetime = Field(default_factory=datetime.now)
     """Creation time"""
 
-    title: str = Field(max_length=120)
+    title: str = Field(max_length=MAX_TITLE_LENGTH)
     """Title of the message"""
 
     content: str = Field()

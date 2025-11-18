@@ -21,6 +21,7 @@ class ViewScreen(Screen):
         ("escape", "app.pop_screen", "Exit"),
         Binding("f", "", show=False),
     ]
+
     CSS = """
         Horizontal Label {
             width: 50%;

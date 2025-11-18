@@ -22,6 +22,8 @@ LIMIT = 200
 class OnelinersApp(BannerApp):
     """Oneliners Textual app"""
 
+    AUTO_FOCUS = "Input"
+
     CSS = """
         $accent: ansi_red;
 
@@ -45,7 +47,6 @@ class OnelinersApp(BannerApp):
             background: $accent;
         }
     """
-    """Stylesheet"""
 
     def __init__(self, context: SSHContext, **kwargs):
         ""  # empty docstring
@@ -65,12 +66,10 @@ class OnelinersApp(BannerApp):
         yield lv
 
         # input
-        input_widget = Input(
+        yield Input(
             max_length=Oneliner.MAX_LENGTH,
             placeholder="Enter a oneliner or press ESC",
         )
-        input_widget.focus()
-        yield input_widget
 
     async def on_input_submitted(self, event: Input.Submitted) -> None:
         val = event.input.value.strip()

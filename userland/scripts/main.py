@@ -19,10 +19,7 @@ class MenuApp(BannerApp[str]):
     _last: str | None = None
 
     BANNER_PADDING = 8
-    """Required vertical space left on screen after banner"""
-
     BINDINGS = [("escape", "quit", "Log off")]
-    """Key bindings"""
 
     CSS = """
         Button {
@@ -41,7 +38,6 @@ class MenuApp(BannerApp[str]):
             max-width: 80;
         }
     """
-    """Stylesheet"""
 
     def __init__(self, context: SSHContext, last: str | None = None, **kwargs):
         ""  # empty docstring

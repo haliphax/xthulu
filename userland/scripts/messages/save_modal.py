@@ -14,6 +14,7 @@ class SaveModal(ModalScreen):
     """Save confirmation screen"""
 
     BINDINGS = [("escape", "app.pop_screen", "")]
+
     CSS = """
         SaveModal {
             align: center middle;
