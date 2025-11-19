@@ -44,6 +44,7 @@ default_config = {
         "userland": {
             "modules": ["userland.web"],
         },
+        "proxy": True,
     },
 }
 """Default configuration"""

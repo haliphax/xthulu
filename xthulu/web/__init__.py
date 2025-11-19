@@ -56,9 +56,13 @@ def create_app():
 def start_server():
     """Run ASGI web application in a uvicorn server."""
 
+    proxy = get_config("web.proxy", True)
+
     run(
         "xthulu.web.asgi:app",
+        forwarded_allow_ips="*" if proxy else None,
         host=get_config("web.host"),
-        port=int(get_config("web.port")),
         lifespan="on",
+        port=int(get_config("web.port")),
+        proxy_headers=proxy,
     )

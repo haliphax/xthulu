@@ -124,6 +124,10 @@
 					"type": "integer",
 					"minimum": 1
 				},
+				"proxy": {
+					"type": "boolean",
+					"default": true
+				},
 				"userland": {
 					"type": "object",
 					"properties": {

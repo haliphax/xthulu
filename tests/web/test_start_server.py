@@ -33,9 +33,11 @@ def test_uses_config(mock_run: Mock):
     # assert
     mock_run.assert_called_once_with(
         "xthulu.web.asgi:app",
+        forwarded_allow_ips="*",
         host=test_web_config["host"],
-        port=test_web_config["port"],
         lifespan="on",
+        port=test_web_config["port"],
+        proxy_headers=True,
     )
 
 
