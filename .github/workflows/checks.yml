@@ -21,6 +21,7 @@ jobs:
     outputs:
       misc: ${{ steps.changes.outputs.misc }}
       py: ${{ steps.changes.outputs.py }}
+      ts: ${{ steps.changes.outputs.ts }}
     steps:
       - name: Check out
         uses: actions/checkout@v4
@@ -30,9 +31,6 @@ jobs:
         uses: dorny/paths-filter@v3
         with:
           filters: |
-            ts:
-              - "**.js"
-              - "**.ts"
             misc:
               - "**.html"
               - "**.json"
@@ -44,6 +42,11 @@ jobs:
               - "**.py"
               - "requirements/**"
               - pyproject.toml
+            ts:
+              - "**.js"
+              - "**.mjs"
+              - "**.mts"
+              - "**.ts"
 
   # formatting
 
