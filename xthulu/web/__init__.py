@@ -10,10 +10,12 @@ from os import path
 # 3rd party
 from fastapi import APIRouter, FastAPI
 from uvicorn import run
+from uvicorn.logging import AccessFormatter
 
 # local
 from ..configuration import get_config
 from ..logger import log, namer, rotator
+
 
 api = APIRouter()
 """Main router"""
@@ -29,6 +31,12 @@ async def lifespan(app: FastAPI):
     )
     fileHandler.rotator = rotator
     fileHandler.namer = namer
+    fileHandler.setFormatter(
+        AccessFormatter(
+            '%(asctime)s %(client_addr)s - "%(request_line)s" %(status_code)s',
+            use_colors=False,
+        )
+    )
     access_log.addHandler(fileHandler)
     yield
 
