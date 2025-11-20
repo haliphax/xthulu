@@ -11,7 +11,6 @@ from textual.geometry import Size
 
 # local
 from ...logger import log
-from ...events.structs import EventData
 from ..context import SSHContext
 
 
@@ -51,7 +50,7 @@ class XthuluApp(App[ReturnType]):
         from .internal.driver import SSHDriver
 
         while True:
-            ev: list[EventData] = self.context.events.get("resize")
+            ev = self.context.events.get("resize")
 
             if not ev:
                 await sleep(0.5)
