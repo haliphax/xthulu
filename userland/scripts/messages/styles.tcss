@@ -1,0 +1,57 @@
+$highlight: ansi_magenta;
+
+Footer, Footer:ansi {
+	&,
+	.footer-key--key,
+	.footer-key--description {
+		background: #007 100%;
+		color: #077;
+	}
+
+	.footer-key--key {
+		color: #0ff;
+	}
+
+	FooterKey:hover,
+	FooterKey:hover .footer-key--key {
+		background: #077 100%;
+		color: #fff;
+	}
+}
+
+ListView {
+	width: 100%;
+}
+
+ListItem {
+	background: $primary-background;
+	layout: horizontal;
+}
+
+ListItem.even {
+	background: $secondary-background;
+}
+
+ListView ListItem.-highlight {
+	background: $highlight 100%;
+}
+
+ListView:focus ListItem.-highlight {
+	background: $highlight 100%;
+}
+
+ListItem Label.message_id, ListItem Label.message_title {
+	margin-right: 1;
+}
+
+ListItem Label.message_id {
+	width: 8;
+}
+
+ListItem Label.message_title {
+	width: 75%;
+}
+
+ListItem Label.message_author {
+	align: right middle;
+}

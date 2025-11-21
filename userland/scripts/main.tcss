@@ -1,0 +1,15 @@
+Button {
+	height: 5;
+	width: 100%;
+}
+
+VerticalScroll {
+	width: 100%;
+}
+
+#buttons {
+	layout: grid;
+	grid-gutter: 1 2;
+	grid-size: 3;
+	max-width: 80;
+}

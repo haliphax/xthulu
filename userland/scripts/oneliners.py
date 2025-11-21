@@ -24,30 +24,7 @@ class OnelinersApp(BannerApp):
 
     AUTO_FOCUS = "Input"
     BANNER_PADDING = 15
-
-    CSS = """
-        $accent: ansi_red;
-
-        Label {
-            width: 100%;
-        }
-
-        ListView {
-            width: 100%;
-        }
-
-        ListItem {
-            background: $primary-background;
-        }
-
-        ListItem.even {
-            background: $secondary-background;
-        }
-
-        ListView:focus ListItem.-highlight {
-            background: $accent;
-        }
-    """
+    CSS_PATH = path.join(path.dirname(__file__), "oneliners.tcss")
 
     def __init__(self, context: SSHContext, **kwargs):
         ""  # empty docstring

@@ -1,0 +1,21 @@
+$accent: ansi_red;
+
+Label {
+	width: 100%;
+}
+
+ListView {
+	width: 100%;
+}
+
+ListItem {
+	background: $primary-background;
+}
+
+ListItem.even {
+	background: $secondary-background;
+}
+
+ListView:focus ListItem.-highlight {
+	background: $accent;
+}

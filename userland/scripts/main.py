@@ -20,24 +20,7 @@ class MenuApp(BannerApp[str]):
 
     BANNER_PADDING = 9
     BINDINGS = [("escape", "quit", "Log off")]
-
-    CSS = """
-        Button {
-            height: 5;
-            width: 100%;
-        }
-
-        VerticalScroll {
-            width: 100%;
-        }
-
-        #buttons {
-            layout: grid;
-            grid-gutter: 1 2;
-            grid-size: 3;
-            max-width: 80;
-        }
-    """
+    CSS_PATH = path.join(path.dirname(__file__), "main.tcss")
 
     def __init__(self, context: SSHContext, last: str | None = None, **kwargs):
         ""  # empty docstring

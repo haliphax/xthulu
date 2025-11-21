@@ -18,32 +18,7 @@ class NuaApp(BannerApp[str]):
     """New user application"""
 
     BANNER_PADDING = 2
-    CSS = """
-        * {
-            overflow: hidden;
-        }
-
-        Button {
-            height: 3;
-            width: 100%;
-        }
-
-        Center {
-            height: 3;
-            margin: 0;
-            padding: 0;
-            padding-top: -1;
-        }
-
-        #buttons_wrapper {
-            layout: grid;
-            grid-size: 3;
-            grid-gutter: 1;
-            margin: 0;
-            padding: 0;
-            width: 65;
-        }
-    """
+    CSS_PATH = path.join(path.dirname(__file__), "nua.tcss")
 
     def compose(self) -> ComposeResult:
         for widget in super(NuaApp, self).compose():
