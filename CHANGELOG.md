@@ -1,3 +1,37 @@
+# [v0.11.0](https://github.com/haliphax/xthulu/compare/v0.10.0...v0.11.0) (2025-11-21)
+
+## ✨ New Features
+- [`8a4e0c5`](https://github.com/haliphax/xthulu/commit/8a4e0c5)  gino -&gt; sqlmodel migration 
+- [`7bc02d1`](https://github.com/haliphax/xthulu/commit/7bc02d1)  return success on lock.release 
+- [`e970b0b`](https://github.com/haliphax/xthulu/commit/e970b0b)  remember selected button in main menu 
+- [`4ceb178`](https://github.com/haliphax/xthulu/commit/4ceb178)  force utf-8 in top 
+- [`ecc3cef`](https://github.com/haliphax/xthulu/commit/ecc3cef)  add choice helper function, skip to main menu 
+- [`4ffc66c`](https://github.com/haliphax/xthulu/commit/4ffc66c)  add reset button to message filter modal 
+- [`a821a38`](https://github.com/haliphax/xthulu/commit/a821a38)  header for message view screen 
+- [`0077aff`](https://github.com/haliphax/xthulu/commit/0077aff)  show author in message list 
+- [`da160cf`](https://github.com/haliphax/xthulu/commit/da160cf)  log out of web interface 
+- [`25617a9`](https://github.com/haliphax/xthulu/commit/25617a9)  add swap_bold feature to artwork-related apps/functions 
+- [`27249a9`](https://github.com/haliphax/xthulu/commit/27249a9)  alt text for banner, spruce up main menu 
+- [`cf71653`](https://github.com/haliphax/xthulu/commit/cf71653)  adjustable banner padding 
+- [`65f7f17`](https://github.com/haliphax/xthulu/commit/65f7f17)  include proxied ip info in www logs 
+
+## 🐛 Bug Fixes
+- [`a27f916`](https://github.com/haliphax/xthulu/commit/a27f916)  fix seed parameter in db scripts 
+- [`380fed0`](https://github.com/haliphax/xthulu/commit/380fed0)  fix overlapping esc handling in messages app 
+- [`ad88fd6`](https://github.com/haliphax/xthulu/commit/ad88fd6)  fix resize event for textual apps 
+- [`ec6ee7f`](https://github.com/haliphax/xthulu/commit/ec6ee7f)  start new event loop if no current loop 
+- [`a8b23e8`](https://github.com/haliphax/xthulu/commit/a8b23e8)  fix cli event loop stuff 
+- [`748dd50`](https://github.com/haliphax/xthulu/commit/748dd50)  start pubsub listener after chat app is ready 
+- [`92d173b`](https://github.com/haliphax/xthulu/commit/92d173b)  fix banner padding 
+- [`c044b9e`](https://github.com/haliphax/xthulu/commit/c044b9e)  add backend&#x3D;auto to fail2ban conf 
+
+## 🔒 Security Issues
+- [`667214e`](https://github.com/haliphax/xthulu/commit/667214e) ️ remove h11 override 
+- [`e88d8c1`](https://github.com/haliphax/xthulu/commit/e88d8c1) ️ add tmp override, bump npm override 
+- [`cc9db5b`](https://github.com/haliphax/xthulu/commit/cc9db5b) ️ bump validator from 13.15.15 to 13.15.20 
+- [`96edbb3`](https://github.com/haliphax/xthulu/commit/96edbb3) ️ bump js-yaml from 4.1.0 to 4.1.1 
+- [`933f747`](https://github.com/haliphax/xthulu/commit/933f747) ️ mass requirements bump
+
 # [v0.10.0](https://github.com/haliphax/xthulu/compare/v0.9.0...v0.10.0) (2024-07-11)
 
 ## ✨ New Features
