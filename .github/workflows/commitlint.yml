@@ -7,7 +7,7 @@ on:
 
 concurrency:
   cancel-in-progress: true
-  group: ${{ github.workflow }}-${{ github.branch }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
 
 jobs:
   commitlint:
