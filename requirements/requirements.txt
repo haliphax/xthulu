@@ -27,7 +27,7 @@ click==8.3.0
     # via
     #   -r requirements.in
     #   uvicorn
-cryptography==46.0.3
+cryptography==46.0.5
     # via asyncssh
 fastapi==0.121.2
     # via -r requirements.in
