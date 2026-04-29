@@ -48,7 +48,7 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           edit-mode: replace
           body: |
-            <a name="commitlint-workflow"></a>❌ Your pull request title does not follow the conventional commit standard enforced by the project. It must begin with one of the emoji from the [gitmoji](https://gitmoji.dev) set appropriate for the change(s) being made.
+            <a name="commitlint-workflow"></a>❌ Your pull request title does not follow the conventional commit standard enforced by the project. It must begin with one of the emoji from the [gitmoji](https://gitmoji.dev) set appropriate for the change(s) being made, and it must be lowercase.
 
       - name: Delete comment
         if: steps.find.outputs.comment-id != 0
