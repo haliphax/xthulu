@@ -5,8 +5,8 @@
 		"@semantic-release/git": "^10.0.1",
 		"@semantic-release/github": "^10.0.2",
 		"@types/node": "^20.11.30",
-		"@typescript-eslint/eslint-plugin": "^7.4.0",
-		"@typescript-eslint/parser": "^7.4.0",
+		"@typescript-eslint/eslint-plugin": "^7.18.0",
+		"@typescript-eslint/parser": "^7.18.0",
 		"commitlint": "^20.4.1",
 		"commitlint-config-gitmoji": "^2.3.1",
 		"eslint": "^8.57.0",
@@ -22,7 +22,7 @@
 		"semantic-release-gitmoji": "^1.6.5",
 		"semantic-release-replace-plugin": "^1.2.7",
 		"typescript": "^5.4.3",
-		"vite": "^7.3.5"
+		"vite": "^7.3.6"
 	},
 	"engines": {
 		"node": "^22"
