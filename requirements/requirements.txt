@@ -17,7 +17,7 @@ anyio==4.11.0
     #   watchfiles
 asyncpg==0.30.0
     # via -r requirements.in
-asyncssh==2.21.1
+asyncssh==2.24.0
     # via -r requirements.in
 bcrypt==5.0.0
     # via -r requirements.in
@@ -39,7 +39,7 @@ hiredis==3.3.0
     # via -r requirements.in
 httptools==0.7.1
     # via uvicorn
-idna==3.11
+idna==3.15
     # via anyio
 linkify-it-py==2.0.3
     # via markdown-it-py
@@ -66,7 +66,7 @@ pygments==2.19.2
     # via
     #   rich
     #   textual
-python-dotenv==1.2.1
+python-dotenv==1.2.2
     # via uvicorn
 pyyaml==6.0.3
     # via uvicorn
